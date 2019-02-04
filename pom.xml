@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.gbif</groupId>
+        <artifactId>motherpom</artifactId>
+        <version>37</version>
+    </parent>
+
+    <groupId>org.gbif.kvs</groupId>
+    <artifactId>key-value-store</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <modules>
+        <module>core</module>
+        <module>indexing</module>
+        <module>rest-clients</module>
+        <module>gbif-kv-stores</module>
+    </modules>
+
+    <name>KeyValue Store :: Parent</name>
+    <description>Generic client and indexing services to store key value elements</description>
+    <url>http://github.com/gbif/key-value-store</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:gbif/key-value-store.git</connection>
+        <url>https://github.com/gbif/key-value-store</url>
+        <developerConnection>scm:git:git@github.com:gbif/key-value-store.git</developerConnection>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>gh-pages</id>
+            <url>http://gbif.github.io/key-value-store/</url>
+        </site>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>gbif-all</id>
+            <url>http://repository.gbif.org/content/groups/gbif</url>
+        </repository>
+        <repository>
+            <id>osgeo</id>
+            <name>Open Source Geospatial Foundation Repository</name>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+        </repository>
+        <repository>
+            <id>cloudera-release</id>
+            <url>http://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <!-- Common variables -->
+        <jdkLevel>1.8</jdkLevel>
+        <encoding>UTF-8</encoding>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+        <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
+
+        <!-- GBIF libraries -->
+        <gbif-parsers.version>0.36</gbif-parsers.version>
+        <dwca-io.version>2.5</dwca-io.version>
+        <gbif-api.version>0.70</gbif-api.version>
+        <gbif-common.version>0.44</gbif-common.version>
+        <dwc-api.version>1.19</dwc-api.version>
+
+        <!-- Common libraries -->
+        <avro.version>1.8.2</avro.version>
+        <apache.beam.version>2.9.0</apache.beam.version>
+        <hadoop-common.version>2.6.0-cdh5.12.1</hadoop-common.version>
+        <hadoop-core.version>2.6.0-mr1-cdh5.15.0</hadoop-core.version>
+        <hbase.version>1.2.0-cdh5.12.0</hbase.version>
+
+        <geotools.version>12.1</geotools.version>
+        <commons-lang3.version>3.4</commons-lang3.version>
+        <guava.version>18.0</guava.version>
+
+        <!-- Logging -->
+        <slf4j.version>1.7.5</slf4j.version>
+        <logback.version>1.2.3</logback.version>
+        <log4j.version>1.2.17</log4j.version>
+        <logstash-gelf.version>1.11.2</logstash-gelf.version>
+
+        <elasticsearch.version>6.4.1</elasticsearch.version>
+        <apache.httpcomponents.version>4.4.5</apache.httpcomponents.version>
+
+        <jackson.version>2.9.8</jackson.version>
+
+        <retrofit.version>2.5.0</retrofit.version>
+        <okhttp.version>3.11.0</okhttp.version>
+        <okio.version>2.0.0</okio.version>
+
+        <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
+        <joda-time.version>2.4</joda-time.version>
+
+        <commons-compress.version>1.18</commons-compress.version>
+        <commons-digester.version>2.1</commons-digester.version>
+        <mapdb.version>3.0.6</mapdb.version>
+        <commons-beanutils.version>1.9.3</commons-beanutils.version>
+
+        <spark.embedded.version>2.4.0</spark.embedded.version>
+        <lz4.version>1.3.0</lz4.version>
+        <commons-codec.version>1.11</commons-codec.version>
+
+        <!-- Test -->
+        <junit.version>4.12</junit.version>
+        <mockwebserver.version>3.11.0</mockwebserver.version>
+        <hamcrest-core.version>1.3</hamcrest-core.version>
+        <hamcrest-java.version>2.0.0.0</hamcrest-java.version>
+        <embedded.elasticsearch.version>2.7.1</embedded.elasticsearch.version>
+
+        <!-- Maven plugin -->
+        <maven-plugin-api.version>3.5.4</maven-plugin-api.version>
+        <maven-plugin-annotations.version>3.5.2</maven-plugin-annotations.version>
+
+        <!-- Plugins -->
+        <build-helper-maven.version>3.0.0</build-helper-maven.version>
+        <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
+        <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
+        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <maven-plugin-plugin.version>3.5.2</maven-plugin-plugin.version>
+        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+
+        <!-- Checkstyle -->
+        <plexus-compiler-javac-errorprone.version>2.8.3</plexus-compiler-javac-errorprone.version>
+        <error_prone_core.version>2.3.1</error_prone_core.version>
+
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro-maven-plugin</artifactId>
+                    <version>${avro.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.gbif.pipelines</groupId>
+                    <artifactId>pipelines-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <doclint>none</doclint>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper-maven.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven-clean-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${maven-plugin-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <compilerId>javac-with-errorprone</compilerId>
+                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                        <source>${jdkLevel}</source>
+                        <target>${jdkLevel}</target>
+                        <compilerArgs>
+                            <arg>-XepExcludedPaths:.*/src/main/java-generated/.*</arg>
+                            <arg>-XepDisableWarningsInGeneratedCode</arg>
+                            <arg>-Xep:MissingOverride:ERROR</arg>
+                        </compilerArgs>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-compiler-javac-errorprone</artifactId>
+                            <version>${plexus-compiler-javac-errorprone.version}</version>
+                        </dependency>
+                        <!-- override plexus-compiler-javac-errorprone's dependency on
+                             Error Prone with the latest version -->
+                        <dependency>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error_prone_core.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+    <!--
+    All dependencies of all modules are listed here with the project-wide default version.  Only when necessary
+    are library versions overridden in modules.
+  -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- This project -->
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>indexing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>rest-clients</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>gbif-kv-stores</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- GBIF -->
+            <dependency>
+                <groupId>org.gbif</groupId>
+                <artifactId>dwc-api</artifactId>
+                <version>${dwc-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.gbif</groupId>
+                <artifactId>gbif-api</artifactId>
+                <version>${gbif-api.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.gbif</groupId>
+                        <artifactId>dwc-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Avro -->
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+
+            <!-- Beam -->
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-core</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-runners-direct-java</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-runners-spark</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-io-hbase</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+
+            <!-- Hadoop -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>${hadoop-common.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <!-- Avoid conflicts with Apache Beam -->
+                    <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- hbase -->
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${hbase.version}</version>
+                <exclusions>
+                    <!-- ignore MR1 artifacts -->
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                    <!-- remove logging which we'll ship to logback -->
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+                <version>${hadoop-core.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-hdfs</artifactId>
+                <version>${hadoop-common.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Utils -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${findbugs-jsr305.version}</version>
+            </dependency>
+
+            <!-- Logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <!-- Http clients -->
+            <dependency>
+                <groupId>com.squareup.retrofit2</groupId>
+                <artifactId>retrofit</artifactId>
+                <version>${retrofit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.retrofit2</groupId>
+                <artifactId>converter-jackson</artifactId>
+                <version>${retrofit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>${okio.version}</version>
+            </dependency>
+
+            <!-- Json -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <!-- Mini Pipeline-->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_2.11</artifactId>
+                <version>${spark.embedded.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-streaming_2.11</artifactId>
+                <version>${spark.embedded.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-scala_2.11</artifactId>
+                <version>${jackson.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+            <!-- Added to resolve conflicts -->
+            <dependency>
+                <groupId>net.jpountz.lz4</groupId>
+                <artifactId>lz4</artifactId>
+                <version>${lz4.version}</version>
+            </dependency>
+
+            <!-- Maven plugin -->
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>${maven-plugin-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>${maven-plugin-annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Test -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>${hamcrest-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>java-hamcrest</artifactId>
+                <version>${hamcrest-java.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-minicluster</artifactId>
+                <version>${hadoop-common.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+
+</project>

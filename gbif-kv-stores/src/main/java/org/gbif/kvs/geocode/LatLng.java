@@ -1,0 +1,110 @@
+package org.gbif.kvs.geocode;
+
+import org.gbif.kvs.hbase.LogicalKey;
+
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.StringJoiner;
+
+/**
+ * Geographic Coordinate: latitude and longitude.
+ */
+public class LatLng implements Serializable, LogicalKey {
+
+    private final Double latitude;
+    private final Double longitude;
+
+    /**
+     * Full constructor.
+     * @param latitude decimal latitude
+     * @param longitude decimal longitude
+     */
+    public LatLng(Double latitude, Double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    /**
+     *
+     * @return decimal latitude
+     */
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    /**
+     *
+     * @return decimal longitude
+     */
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    /**
+     * Is this coordinates valid?.
+     * Both can't be null and -90 <= latitude <= 90 and -180 <= longitude <= 180.
+     * @return true if the coordinate is valid, false otherwise
+     */
+    public boolean isValid() {
+        return Objects.nonNull(latitude) && Objects.nonNull(longitude) &&
+               latitude <= 90.0 && latitude >= -90 && longitude <= 180 && longitude >= -180;
+    }
+
+    /**
+     * Concatenates as a string the latitude and longitude.
+     * @return latitude + longitude
+     */
+    @Override
+    public byte[] getLogicalKey() {
+        return (latitude.toString() + longitude.toString()).getBytes();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LatLng latLng = (LatLng) o;
+        return Objects.equals(latitude, latLng.latitude) &&
+               Objects.equals(longitude, latLng.longitude);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(latitude, longitude);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", LatLng.class.getSimpleName() + "[", "]")
+                .add("latitude=" + latitude)
+                .add("longitude=" + longitude)
+                .toString();
+    }
+
+
+    /**
+     * LatLng builder utility.
+     */
+    public static class Builder {
+        private Double latitude;
+        private Double longitude;
+
+        public Builder setLatitude(Double latitude) {
+            this.latitude = latitude;
+            return this;
+        }
+
+        public Builder setLongitude(Double longitude) {
+            this.longitude = longitude;
+            return this;
+        }
+
+        public LatLng build() {
+            return new LatLng(latitude, longitude);
+        }
+    }
+}
