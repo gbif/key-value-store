@@ -20,147 +20,147 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *  Implementation of a key-value based on HBase.
+ * Implementation of a key-value based on HBase.
  *
  * @param <K> type of key elements
  * @param <V> type of values
  * @param <L> type of values produced by the loader
  */
-public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K,V>, Closeable {
+public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V>, Closeable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HBaseStore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HBaseStore.class);
 
-    //HBase table name where KV pairs are stored
-    private final TableName tableName;
+  // HBase table name where KV pairs are stored
+  private final TableName tableName;
 
-    //Function to convert a value V into byte[], as expected by HBase
-    private final BiFunction<byte[], L, Put> valueMutator;
+  // Function to convert a value V into byte[], as expected by HBase
+  private final BiFunction<byte[], L, Put> valueMutator;
 
-    //Function to convert a byte[] into a V instance
-    private final Function<Result,V> resultMapper;
+  // Function to convert a byte[] into a V instance
+  private final Function<Result, V> resultMapper;
 
-    //Function that loads data from external sources when the value is not in the KV store.
-    private final Function<K,L> loader;
+  // Function that loads data from external sources when the value is not in the KV store.
+  private final Function<K, L> loader;
 
-    //Active HBase connection
-    private final Connection connection;
+  // Active HBase connection
+  private final Connection connection;
 
-    //Salted key generator for the specified number of buckets
-    private final SaltedKeyGenerator saltedKeyGenerator;
+  // Salted key generator for the specified number of buckets
+  private final SaltedKeyGenerator saltedKeyGenerator;
 
+  private HBaseStore(
+      HBaseKVStoreConfiguration config,
+      BiFunction<byte[], L, Put> valueMutator,
+      Function<Result, V> resultMapper,
+      Function<K, L> loader)
+      throws IOException {
+    connection = ConnectionFactory.createConnection(config.hbaseConfig());
+    saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
+    this.tableName = TableName.valueOf(config.getTableName());
+    this.valueMutator = valueMutator;
+    this.resultMapper = resultMapper;
+    this.loader = loader;
+  }
 
-    private HBaseStore(HBaseKVStoreConfiguration config,
-                       BiFunction<byte[], L, Put> valueMutator,
-                       Function<Result, V> resultMapper,
-                       Function<K,L> loader) throws IOException {
-        connection = ConnectionFactory.createConnection(config.hbaseConfig());
-        saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
-        this.tableName = TableName.valueOf(config.getTableName());
-        this.valueMutator = valueMutator;
-        this.resultMapper = resultMapper;
-        this.loader = loader;
+  /**
+   * Stores in HBase a value for using the key element.
+   *
+   * @param key HBase row key
+   * @param value value to transform
+   */
+  private void store(byte[] key, L value) {
+    try (Table table = connection.getTable(tableName)) {
+      table.put(valueMutator.apply(key, value));
+    } catch (IOException ex) {
+      LOG.error("Appending data to store failed", ex);
+      throw new IllegalStateException(ex);
+    }
+  }
+
+  /**
+   * Gets a V value associated with the K key. If the value is not found in the KV store, the loader
+   * function is used to retrieve the value from an external source.
+   *
+   * @param key identifier of element to be retrieved
+   * @return the value found, null otherwise
+   */
+  @Override
+  public V get(K key) {
+    try (Table table = connection.getTable(tableName)) {
+      byte[] saltedKey = saltedKeyGenerator.computeKey(key.getLogicalKey());
+      Get get = new Get(saltedKey);
+      Result result = table.get(get);
+      if (result.isEmpty()) { // the key does not exists, create a new entry
+        L newValue = loader.apply(key);
+        if (Objects.nonNull(newValue)) {
+          store(saltedKey, newValue);
+        }
+        return null;
+      }
+      return resultMapper.apply(result);
+    } catch (IOException ex) {
+      LOG.error("Error retrieving data", ex);
+      throw new IllegalStateException(ex);
+    }
+  }
+
+  /**
+   * Closes the underlying HBase resources.
+   *
+   * @throws IOException if HBase throws any error
+   */
+  @Override
+  public void close() throws IOException {
+    if (!connection.isClosed()) {
+      connection.close();
+    }
+  }
+
+  /**
+   * Creates a new {@link HBaseStore.Builder}.
+   *
+   * @param <K> type of key elements
+   * @param <V> type of values to store
+   * @return a new instance of a HBaseKVStore.Builder
+   */
+  public static <K extends Indexable, V, L> Builder<K, V, L> builder() {
+    return new Builder<>();
+  }
+
+  /**
+   * Builder of {@link HBaseStore} instances.
+   *
+   * @param <K> type of key elements
+   * @param <V> type of values to store
+   */
+  public static class Builder<K extends Indexable, V, L> {
+    private HBaseKVStoreConfiguration configuration;
+    private BiFunction<byte[], L, Put> valueMutator;
+    private Function<Result, V> resultMapper;
+    private Function<K, L> loader;
+
+    public Builder<K, V, L> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
+      this.configuration = configuration;
+      return this;
     }
 
-    /**
-     * Stores in HBase a value for using the key element.
-     * @param key HBase row key
-     * @param value value to transform
-     */
-    private void store(byte[] key, L value) {
-        try(Table table = connection.getTable(tableName)) {
-            table.put(valueMutator.apply(key, value));
-        } catch (IOException ex) {
-            LOG.error("Appending data to store failed",ex);
-            throw new IllegalStateException(ex);
-        }
+    public Builder<K, V, L> withValueMutator(BiFunction<byte[], L, Put> valueMutator) {
+      this.valueMutator = valueMutator;
+      return this;
     }
 
-
-    /**
-     * Gets a V value associated with the K key.
-     * If the value is not found in the KV store, the loader function is used to retrieve the value from
-     * an external source.
-     * @param key identifier of element to be retrieved
-     * @return the value found, null otherwise
-     */
-    @Override
-    public V get(K key) {
-        try(Table table = connection.getTable(tableName)) {
-            byte[] saltedKey = saltedKeyGenerator.computeKey(key.getLogicalKey());
-            Get get = new Get(saltedKey);
-            Result result = table.get(get);
-            if (result.isEmpty()) { //the key does not exists, create a new entry
-                L newValue =  loader.apply(key);
-                if (Objects.nonNull(newValue)) {
-                    store(saltedKey, newValue);
-                }
-                return null;
-            }
-            return resultMapper.apply(result);
-        } catch (IOException ex) {
-            LOG.error("Error retrieving data",ex);
-            throw new IllegalStateException(ex);
-        }
+    public Builder<K, V, L> withResultMapper(Function<Result, V> resultMapper) {
+      this.resultMapper = resultMapper;
+      return this;
     }
 
-    /**
-     * Closes the underlying HBase resources.
-     * @throws IOException if HBase throws any error
-     */
-    @Override
-    public void close() throws IOException {
-        if (!connection.isClosed()) {
-        connection.close();
-        }
+    public Builder<K, V, L> withLoader(Function<K, L> loader) {
+      this.loader = loader;
+      return this;
     }
 
-    /**
-     * Creates a new {@link HBaseStore.Builder}.
-     * @param <K> type of key elements
-     * @param <V> type of values to store
-     * @return a new instance of a HBaseKVStore.Builder
-     */
-    public static <K extends Indexable, V, L> Builder<K, V, L> builder() {
-        return new Builder<>();
+    public HBaseStore<K, V, L> build() throws IOException {
+      return new HBaseStore<K, V, L>(configuration, valueMutator, resultMapper, loader);
     }
-
-
-    /**
-     * Builder of {@link HBaseStore} instances.
-     * @param <K> type of key elements
-     * @param <V> type of values to store
-     */
-    public static class Builder<K extends Indexable, V, L> {
-        private HBaseKVStoreConfiguration configuration;
-        private BiFunction<byte[], L, Put> valueMutator;
-        private Function<Result, V> resultMapper;
-        private Function<K, L> loader;
-
-
-        public Builder<K, V, L>  withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
-            this.configuration = configuration;
-            return this;
-        }
-
-
-        public Builder<K, V, L> withValueMutator(BiFunction<byte[], L, Put> valueMutator) {
-            this.valueMutator = valueMutator;
-            return this;
-        }
-
-        public Builder<K, V, L> withResultMapper(Function<Result, V> resultMapper) {
-            this.resultMapper = resultMapper;
-            return this;
-        }
-
-        public Builder<K, V, L>  withLoader(Function<K, L> loader) {
-            this.loader = loader;
-            return this;
-        }
-
-
-        public HBaseStore<K, V, L> build() throws IOException {
-            return new HBaseStore<K, V, L>(configuration, valueMutator, resultMapper, loader);
-        }
-    }
+  }
 }

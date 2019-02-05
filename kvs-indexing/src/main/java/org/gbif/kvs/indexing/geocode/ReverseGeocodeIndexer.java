@@ -33,131 +33,151 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Response;
 
-/**
- * Apache Beam Pipeline that indexes Geocode country lookup responses in a HBase KV table.
- */
+/** Apache Beam Pipeline that indexes Geocode country lookup responses in a HBase KV table. */
 public class ReverseGeocodeIndexer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
 
+  public static void main(String[] args) {
+    GeocodeIndexingOptions options =
+        PipelineOptionsFactory.fromArgs(args).withValidation().as(GeocodeIndexingOptions.class);
+    run(options);
+  }
 
-    public static void main(String[] args) {
-        GeocodeIndexingOptions options = PipelineOptionsFactory
-                                            .fromArgs(args)
-                                            .withValidation().as(GeocodeIndexingOptions.class);
-        run(options);
-    }
+  /**
+   * Creates a {@link GeocodeKVStoreConfiguration} from a {@link GeocodeIndexingOptions} instance.
+   *
+   * @param options pipeline options
+   * @return a new instance of GeocodeKVStoreConfiguration
+   */
+  private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(
+      GeocodeIndexingOptions options) {
+    return new GeocodeKVStoreConfiguration.Builder()
+        .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
+        .withGeocodeClientConfig(ConfigurationMapper.clientConfig(options))
+        .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
+        .withJsonColumnQualifier(options.getJsonColumnQualifier())
+        .build();
+  }
 
+  /**
+   * Runs the indexing beam pipeline. 1. Reads all latitude and longitude from the occurrence table.
+   * 2. Selects only distinct coordinates 3. Store the Geocode country lookup in table with the KV
+   * format: latitude+longitude -> isoCountryCode2Digit.
+   *
+   * @param options beam HBase indexing options
+   */
+  private static void run(GeocodeIndexingOptions options) {
 
+    Pipeline pipeline = Pipeline.create(options);
+    options.setRunner(SparkRunner.class);
 
-    /**
-     * Creates a {@link GeocodeKVStoreConfiguration} from a {@link GeocodeIndexingOptions} instance.
-     * @param options pipeline options
-     * @return a new instance of GeocodeKVStoreConfiguration
-     */
-    private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
-        return new GeocodeKVStoreConfiguration.Builder()
-                .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-                .withGeocodeClientConfig(ConfigurationMapper.clientConfig(options))
-                .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
-                .withJsonColumnQualifier(options.getJsonColumnQualifier())
-                .build();
-    }
+    // Occurrence table to read
+    String sourceTable = options.getSourceTable();
 
+    // Config
+    GeocodeKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
+    Configuration hBaseConfiguration =
+        storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
-    /**
-     * Runs the indexing beam pipeline.
-     * 1. Reads all latitude and longitude from the occurrence table.
-     * 2. Selects only distinct coordinates
-     * 3. Store the Geocode country lookup in table with the KV format: latitude+longitude -> isoCountryCode2Digit.
-     *
-     * @param options beam HBase indexing options
-     */
-    private static void run(GeocodeIndexingOptions options) {
+    // Reade the occurrence table
+    PCollection<Result> inputRecords =
+        pipeline.apply(
+            HBaseIO.read().withConfiguration(hBaseConfiguration).withTableId(sourceTable));
+    // Select distinct coordinates
+    PCollection<LatLng> distinctCoordinates =
+        inputRecords
+            .apply(
+                ParDo.of(
+                    new DoFn<Result, LatLng>() {
 
-        Pipeline pipeline = Pipeline.create(options);
-        options.setRunner(SparkRunner.class);
+                      @ProcessElement
+                      public void processElement(ProcessContext context) {
+                        LatLng latLng = OccurrenceHBaseBuilder.toLatLng(context.element());
+                        if (latLng.isValid()) {
+                          context.output(latLng);
+                        }
+                      }
+                      // Selects distinct values
+                    }))
+            .apply(
+                Distinct.<LatLng, String>withRepresentativeValueFn(
+                        latLng -> new String(latLng.getLogicalKey()))
+                    .withRepresentativeType(TypeDescriptor.of(String.class)));
 
-        //Occurrence table to read
-        String sourceTable = options.getSourceTable();
+    // Perform Geocode lookup
+    distinctCoordinates
+        .apply(
+            ParDo.of(
+                new DoFn<LatLng, Mutation>() {
 
-        //Config
-        GeocodeKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
-        Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
+                  private final SaltedKeyGenerator keyGenerator =
+                      new SaltedKeyGenerator(
+                          storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
-        //Reade the occurrence table
-        PCollection<Result> inputRecords = pipeline.apply(HBaseIO.read()
-                                                            .withConfiguration(hBaseConfiguration)
-                                                            .withTableId(sourceTable));
-        //Select distinct coordinates
-        PCollection<LatLng> distinctCoordinates = inputRecords.apply(ParDo.of( new DoFn<Result,LatLng>() {
+                  private GeocodeService geocodeService;
 
-            @ProcessElement
-            public void processElement(ProcessContext context) {
-                LatLng latLng = OccurrenceHBaseBuilder.toLatLng(context.element());
-                if (latLng.isValid()) {
-                    context.output(latLng);
-                }
-            }
-            //Selects distinct values
-        })).apply(Distinct.<LatLng,String>withRepresentativeValueFn(latLng -> new String(latLng.getLogicalKey()))
-                          .withRepresentativeType(TypeDescriptor.of(String.class)));
+                  private BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator;
 
-        //Perform Geocode lookup
-        distinctCoordinates.apply(ParDo.of(new DoFn<LatLng, Mutation>() {
+                  @Setup
+                  public void start() {
+                    geocodeService =
+                        GeocodeServiceFactory.createGeocodeServiceClient(
+                            storeConfiguration.getGeocodeClientConfig());
+                    valueMutator =
+                        GeocodeKVStoreFactory.valueMutator(
+                            storeConfiguration
+                                .getHBaseKVStoreConfiguration()
+                                .getColumnFamily()
+                                .getBytes(),
+                            storeConfiguration.getCountryCodeColumnQualifier().getBytes(),
+                            storeConfiguration.getJsonColumnQualifier().getBytes());
+                  }
 
-            private final SaltedKeyGenerator keyGenerator = new SaltedKeyGenerator(storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
+                  /**
+                   * Performs the Geocode lookup.
+                   *
+                   * @param latLng to lookup
+                   * @return an Optional.of(countryCode), empty() otherwise
+                   * @throws IOException in case of communication error
+                   */
+                  private Optional<Collection<GeocodeResponse>> callGeocodeService(LatLng latLng)
+                      throws IOException {
+                    Response<Collection<GeocodeResponse>> response =
+                        geocodeService
+                            .reverse(latLng.getLatitude(), latLng.getLongitude())
+                            .execute();
+                    if (response.isSuccessful()
+                        && Objects.nonNull(response.body())
+                        && !response.body().isEmpty()) {
+                      return Optional.of(response.body());
+                    }
+                    return Optional.empty();
+                  }
 
-            private GeocodeService geocodeService;
-
-            private BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator;
-
-            @Setup
-            public void start() {
-                geocodeService = GeocodeServiceFactory.createGeocodeServiceClient(storeConfiguration.getGeocodeClientConfig());
-                valueMutator = GeocodeKVStoreFactory.valueMutator(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily().getBytes(),
-                                                                  storeConfiguration.getCountryCodeColumnQualifier().getBytes(),
-                                                                  storeConfiguration.getJsonColumnQualifier().getBytes());
-            }
-
-            /**
-             * Performs the Geocode lookup.
-             * @param latLng to lookup
-             * @return an Optional.of(countryCode), empty() otherwise
-             * @throws IOException in case of communication error
-             */
-            private Optional<Collection<GeocodeResponse>> callGeocodeService(LatLng latLng) throws IOException {
-                Response<Collection<GeocodeResponse>> response = geocodeService.reverse(latLng.getLatitude(),
-                                                                                        latLng.getLongitude()).execute();
-                if (response.isSuccessful() && Objects.nonNull(response.body()) && !response.body().isEmpty()) {
-                    return Optional.of(response.body());
-                }
-                return Optional.empty();
-            }
-
-            @ProcessElement
-            public void processElement(ProcessContext context) {
-                try {
-                    LatLng latLng = context.element();
-                    callGeocodeService(latLng)
-                            .ifPresent(geocodeResponses -> {
+                  @ProcessElement
+                  public void processElement(ProcessContext context) {
+                    try {
+                      LatLng latLng = context.element();
+                      callGeocodeService(latLng)
+                          .ifPresent(
+                              geocodeResponses -> {
                                 byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                 context.output(valueMutator.apply(saltedKey, geocodeResponses));
-                            });
-                } catch (IOException ex) {
-                    LOG.error("Error performing Geocode lookup", ex);
-                }
+                              });
+                    } catch (IOException ex) {
+                      LOG.error("Error performing Geocode lookup", ex);
+                    }
+                  }
+                  // Write to HBase
+                }))
+        .apply(
+            HBaseIO.write()
+                .withConfiguration(hBaseConfiguration)
+                .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));
 
-            }
-            //Write to HBase
-        })).apply(HBaseIO.write()
-                    .withConfiguration(hBaseConfiguration)
-                    .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));
-
-        //Run and wait
-        PipelineResult result = pipeline.run(options);
-        result.waitUntilFinish();
-
-    }
-
+    // Run and wait
+    PipelineResult result = pipeline.run(options);
+    result.waitUntilFinish();
+  }
 }

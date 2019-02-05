@@ -9,21 +9,19 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class GeocodeServiceFactory {
 
+  public static GeocodeService createGeocodeServiceClient(ClientConfig config) {
+    // create client
+    OkHttpClient client = HttpClientFactory.createClient(config);
 
+    // create service
+    Retrofit retrofit =
+        new Retrofit.Builder()
+            .client(client)
+            .baseUrl(config.getBaseApiUrl())
+            .addConverterFactory(JacksonConverterFactory.create())
+            .validateEagerly(true)
+            .build();
 
-    public static GeocodeService createGeocodeServiceClient(ClientConfig config) {
-        // create client
-        OkHttpClient client = HttpClientFactory.createClient(config);
-
-        // create service
-        Retrofit retrofit =
-                new Retrofit.Builder()
-                        .client(client)
-                        .baseUrl(config.getBaseApiUrl())
-                        .addConverterFactory(JacksonConverterFactory.create())
-                        .validateEagerly(true)
-                        .build();
-
-        return retrofit.create(GeocodeService.class);
-    }
+    return retrofit.create(GeocodeService.class);
+  }
 }
