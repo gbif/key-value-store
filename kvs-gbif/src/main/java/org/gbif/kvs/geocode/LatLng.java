@@ -3,6 +3,7 @@ package org.gbif.kvs.geocode;
 import org.gbif.kvs.hbase.Indexable;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -55,7 +56,7 @@ public class LatLng implements Serializable, Indexable {
    */
   @Override
   public byte[] getLogicalKey() {
-    return (latitude.toString() + longitude.toString()).getBytes();
+    return (latitude.toString() + longitude.toString()).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override
@@ -83,10 +84,25 @@ public class LatLng implements Serializable, Indexable {
         .toString();
   }
 
+  /**
+   * Creates a new {@link Builder} instance.
+   * @return a new builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
   /** LatLng builder utility. */
   public static class Builder {
     private Double latitude;
     private Double longitude;
+
+    /**
+     * Hidden constructor to force use the containing class builder() method.
+     */
+    private Builder() {
+      //DO NOTHING
+    }
 
     public Builder withLatitude(Double latitude) {
       this.latitude = latitude;

@@ -1,4 +1,4 @@
-package org.gbif.rest.client.config;
+package org.gbif.rest.client.configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +17,8 @@ public final class HttpClientFactory {
 
   private HttpClientFactory() {}
 
-  /** Creates a {@link OkHttpClient} with a {@link Cache} from a specific {@link ClientConfig}. */
-  public static OkHttpClient createClient(ClientConfig config) {
+  /** Creates a {@link OkHttpClient} with a {@link Cache} from a specific {@link ClientConfiguration}. */
+  public static OkHttpClient createClient(ClientConfiguration config) {
 
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()

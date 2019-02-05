@@ -3,6 +3,7 @@ package org.gbif.kvs.indexing.geocode;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.kvs.geocode.LatLng;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.hadoop.hbase.client.Result;
@@ -12,7 +13,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 class OccurrenceHBaseBuilder {
 
   // Occurrence column family
-  private static final byte[] CF = "o".getBytes();
+  private static final byte[] CF = "o".getBytes(StandardCharsets.UTF_8);
 
   /** Private constructor of utility class. */
   private OccurrenceHBaseBuilder() {
@@ -26,7 +27,7 @@ class OccurrenceHBaseBuilder {
    * @return a LatLng object with the coordinates info
    */
   static LatLng toLatLng(Result result) {
-    LatLng.Builder builder = new LatLng.Builder();
+    LatLng.Builder builder = LatLng.builder();
     getDouble(result, DwcTerm.decimalLatitude).ifPresent(builder::withLatitude);
     getDouble(result, DwcTerm.decimalLongitude).ifPresent(builder::withLongitude);
     return builder.build();

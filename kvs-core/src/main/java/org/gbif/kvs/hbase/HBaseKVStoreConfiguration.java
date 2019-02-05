@@ -101,12 +101,28 @@ public class HBaseKVStoreConfiguration implements Serializable {
     return hbaseConfig;
   }
 
+  /**
+   * Creates a new {@link Builder} instance.
+   * @return a new builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
   /** Builder for {@link HBaseKVStoreConfiguration} instances. */
   public static class Builder {
+
     private String hbaseZk;
     private String tableName;
     private String columnFamily;
     private int numOfKeyBuckets;
+
+    /**
+     * Hidden constructor to force use the containing class builder() method.
+     */
+    private Builder() {
+      //DO NOTHING
+    }
 
     public Builder withHBaseZk(String hbaseZk) {
       this.hbaseZk = hbaseZk;

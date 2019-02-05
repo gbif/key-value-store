@@ -10,6 +10,7 @@ import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.GeocodeServiceFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,12 +53,12 @@ public class ReverseGeocodeIndexer {
    */
   private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(
       GeocodeIndexingOptions options) {
-    return new GeocodeKVStoreConfiguration.Builder()
-        .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-        .withGeocodeClientConfig(ConfigurationMapper.clientConfig(options))
-        .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
-        .withJsonColumnQualifier(options.getJsonColumnQualifier())
-        .build();
+    return GeocodeKVStoreConfiguration.builder()
+            .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
+            .withGeocodeClientConfig(ConfigurationMapper.clientConfiguration(options))
+            .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
+            .withJsonColumnQualifier(options.getJsonColumnQualifier())
+            .build();
   }
 
   /**
@@ -102,7 +103,7 @@ public class ReverseGeocodeIndexer {
                     }))
             .apply(
                 Distinct.<LatLng, String>withRepresentativeValueFn(
-                        latLng -> new String(latLng.getLogicalKey()))
+                        latLng -> new String(latLng.getLogicalKey(), StandardCharsets.UTF_8))
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
@@ -123,15 +124,15 @@ public class ReverseGeocodeIndexer {
                   public void start() {
                     geocodeService =
                         GeocodeServiceFactory.createGeocodeServiceClient(
-                            storeConfiguration.getGeocodeClientConfig());
+                            storeConfiguration.getGeocodeClientConfiguration());
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             storeConfiguration
                                 .getHBaseKVStoreConfiguration()
                                 .getColumnFamily()
-                                .getBytes(),
-                            storeConfiguration.getCountryCodeColumnQualifier().getBytes(),
-                            storeConfiguration.getJsonColumnQualifier().getBytes());
+                                .getBytes(StandardCharsets.UTF_8),
+                            storeConfiguration.getCountryCodeColumnQualifier().getBytes(StandardCharsets.UTF_8),
+                            storeConfiguration.getJsonColumnQualifier().getBytes(StandardCharsets.UTF_8));
                   }
 
                   /**

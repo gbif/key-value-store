@@ -1,9 +1,9 @@
-package org.gbif.rest.client.config;
+package org.gbif.rest.client.configuration;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-public class ClientConfig implements Serializable {
+public class ClientConfiguration implements Serializable {
 
   private final String baseApiUrl;
 
@@ -11,7 +11,7 @@ public class ClientConfig implements Serializable {
 
   private final Long fileCacheMaxSizeMb;
 
-  private ClientConfig(String baseApiUrl, long timeOut, long fileCacheMaxSizeMb) {
+  private ClientConfiguration(String baseApiUrl, long timeOut, long fileCacheMaxSizeMb) {
     this.baseApiUrl = baseApiUrl;
     this.timeOut = timeOut;
     this.fileCacheMaxSizeMb = fileCacheMaxSizeMb;
@@ -37,7 +37,7 @@ public class ClientConfig implements Serializable {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ClientConfig that = (ClientConfig) o;
+    ClientConfiguration that = (ClientConfiguration) o;
     return Objects.equals(timeOut, that.timeOut)
         && Objects.equals(fileCacheMaxSizeMb, that.fileCacheMaxSizeMb)
         && Objects.equals(baseApiUrl, that.baseApiUrl);
@@ -48,10 +48,27 @@ public class ClientConfig implements Serializable {
     return Objects.hash(baseApiUrl, timeOut, fileCacheMaxSizeMb);
   }
 
+  /**
+   * Creates a new {@link Builder} instance.
+   * @return a new builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder {
+
     private String baseApiUrl;
     private Long timeOut = 60L;
     private Long fileCacheMaxSizeMb = 64L;
+
+    /**
+     * Hidden constructor to force use the containing class builder() method.
+     */
+    private Builder() {
+      //DO NOTHING
+    }
+
 
     public Builder withBaseApiUrl(String baseApiUrl) {
       this.baseApiUrl = baseApiUrl;
@@ -68,8 +85,8 @@ public class ClientConfig implements Serializable {
       return this;
     }
 
-    public ClientConfig build() {
-      return new ClientConfig(baseApiUrl, timeOut, fileCacheMaxSizeMb);
+    public ClientConfiguration build() {
+      return new ClientConfiguration(baseApiUrl, timeOut, fileCacheMaxSizeMb);
     }
   }
 }

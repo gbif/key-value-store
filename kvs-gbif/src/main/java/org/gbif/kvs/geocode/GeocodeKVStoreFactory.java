@@ -7,6 +7,7 @@ import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.GeocodeServiceFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -79,7 +80,7 @@ public class GeocodeKVStoreFactory {
         put.addColumn(
             columnFamily,
             countryCodeColumnQualifier,
-            countryCodeMapper().apply(geocodeResponses).getBytes());
+            countryCodeMapper().apply(geocodeResponses).getBytes(StandardCharsets.UTF_8));
         put.addColumn(
             columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
         return put;
@@ -101,18 +102,18 @@ public class GeocodeKVStoreFactory {
   public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(
       GeocodeKVStoreConfiguration configuration) throws IOException {
     GeocodeService geocodeService =
-        GeocodeServiceFactory.createGeocodeServiceClient(configuration.getGeocodeClientConfig());
+        GeocodeServiceFactory.createGeocodeServiceClient(configuration.getGeocodeClientConfiguration());
     return HBaseStore.<LatLng, String, Collection<GeocodeResponse>>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
             simpleResultMapper(
-                configuration.getHBaseKVStoreConfiguration().getColumnFamily().getBytes(),
-                configuration.getCountryCodeColumnQualifier().getBytes()))
+                configuration.getHBaseKVStoreConfiguration().getColumnFamily().getBytes(StandardCharsets.UTF_8),
+                configuration.getCountryCodeColumnQualifier().getBytes(StandardCharsets.UTF_8)))
         .withValueMutator(
             valueMutator(
-                configuration.getHBaseKVStoreConfiguration().getColumnFamily().getBytes(),
-                configuration.getCountryCodeColumnQualifier().getBytes(),
-                configuration.getJsonColumnQualifier().getBytes()))
+                configuration.getHBaseKVStoreConfiguration().getColumnFamily().getBytes(StandardCharsets.UTF_8),
+                configuration.getCountryCodeColumnQualifier().getBytes(StandardCharsets.UTF_8),
+                configuration.getJsonColumnQualifier().getBytes(StandardCharsets.UTF_8)))
         .withLoader(
             latLng -> {
               try {

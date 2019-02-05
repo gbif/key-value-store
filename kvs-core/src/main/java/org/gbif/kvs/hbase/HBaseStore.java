@@ -21,6 +21,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a key-value based on HBase.
+ * This implementation base its implementation on loader function that no necessarily produces values as the one provided by the KV store.
+ *   - A loader function provides instances of data (L) from {@link Indexable} key elements.
+ *   - A valueMutator is used to convert values of L data into HBase Put mutation.
+ *   - A resultMapper function converts HBase {@link Result} into value V.
+ *
+ * The get method provides a getOrPut behaviour, if the key is not found in the store the loader function is used to
+ * externally retrieve its value.
  *
  * @param <K> type of key elements
  * @param <V> type of values
@@ -48,12 +55,8 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   // Salted key generator for the specified number of buckets
   private final SaltedKeyGenerator saltedKeyGenerator;
 
-  private HBaseStore(
-      HBaseKVStoreConfiguration config,
-      BiFunction<byte[], L, Put> valueMutator,
-      Function<Result, V> resultMapper,
-      Function<K, L> loader)
-      throws IOException {
+  private HBaseStore(HBaseKVStoreConfiguration config, BiFunction<byte[], L, Put> valueMutator,
+                     Function<Result, V> resultMapper, Function<K, L> loader) throws IOException {
     connection = ConnectionFactory.createConnection(config.hbaseConfig());
     saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
     this.tableName = TableName.valueOf(config.getTableName());

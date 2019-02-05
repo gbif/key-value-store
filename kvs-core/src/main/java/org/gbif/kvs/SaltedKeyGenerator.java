@@ -1,6 +1,7 @@
 package org.gbif.kvs;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -30,7 +31,7 @@ public class SaltedKeyGenerator implements Serializable {
    */
   public byte[] computeKey(String logicalKey) {
     return (String.format(paddingFormat, logicalKey.hashCode() % numOfBuckets) + logicalKey)
-        .getBytes();
+        .getBytes(StandardCharsets.UTF_8);
   }
 
   /**
@@ -41,7 +42,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return a zeros left-padded string {0*}+bucketNumber+logicalKey
    */
   public byte[] computeKey(byte[] logicalKey) {
-    return computeKey(new String(logicalKey));
+    return computeKey(new String(logicalKey, StandardCharsets.UTF_8));
   }
 
   /**
@@ -51,7 +52,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the bucket prefix
    */
   public byte[] bucketOf(String saltedKey) {
-    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes();
+    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(StandardCharsets.UTF_8);
   }
 
   /**

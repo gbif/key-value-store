@@ -1,5 +1,6 @@
 package org.gbif.kvs;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -24,12 +25,12 @@ public class SaltedKeyGeneratorTest {
   @Test
   public void saltedKeyGenerationTest() {
 
-    String saltedKey = new String(SALT_KEY_GENERATOR.computeKey(TEST_LOGICAL_KEY));
+    String saltedKey = new String(SALT_KEY_GENERATOR.computeKey(TEST_LOGICAL_KEY), StandardCharsets.UTF_8);
 
     Assert.assertTrue(
         "Salted key must end with provided logical key", saltedKey.endsWith(TEST_LOGICAL_KEY));
 
-    String bucket = new String(SALT_KEY_GENERATOR.bucketOf(saltedKey));
+    String bucket = new String(SALT_KEY_GENERATOR.bucketOf(saltedKey), StandardCharsets.UTF_8);
 
     Assert.assertTrue(
         "Salted key must end with provided logical key", saltedKey.startsWith(bucket));
@@ -44,7 +45,7 @@ public class SaltedKeyGeneratorTest {
             .mapToObj(key -> SALT_KEY_GENERATOR.computeKey(Integer.toString(key)))
             .collect(
                 Collectors.groupingBy(
-                    key -> new String(SALT_KEY_GENERATOR.bucketOf(key)), Collectors.counting()));
+                    key -> new String(SALT_KEY_GENERATOR.bucketOf(key), StandardCharsets.UTF_8), Collectors.counting()));
 
     // The elements must be allocated in all the buckets
     Assert.assertEquals("Wrong number of expected buckets", NUM_OF_BUCKETS, counts.size());
