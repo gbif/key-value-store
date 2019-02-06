@@ -1,5 +1,8 @@
 package org.gbif.kvs;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Store of V data indexed by a key (byte[]).
  *
@@ -15,4 +18,12 @@ public interface KeyValueStore<K, V> {
    * @return the element associated with key, null otherwise
    */
   V get(K key);
+
+  /**
+   * Character encoding for byte handling.
+   * @return the character encoding used by this store
+   */
+  default Charset getEncodingCharset() {
+    return StandardCharsets.UTF_8;
+  }
 }

@@ -10,7 +10,6 @@ import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.GeocodeServiceFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Response;
@@ -103,7 +103,7 @@ public class ReverseGeocodeIndexer {
                     }))
             .apply(
                 Distinct.<LatLng, String>withRepresentativeValueFn(
-                        latLng -> new String(latLng.getLogicalKey(), StandardCharsets.UTF_8))
+                        latLng -> Bytes.toString(latLng.getLogicalKey()))
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
@@ -127,12 +127,9 @@ public class ReverseGeocodeIndexer {
                             storeConfiguration.getGeocodeClientConfiguration());
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
-                            storeConfiguration
-                                .getHBaseKVStoreConfiguration()
-                                .getColumnFamily()
-                                .getBytes(StandardCharsets.UTF_8),
-                            storeConfiguration.getCountryCodeColumnQualifier().getBytes(StandardCharsets.UTF_8),
-                            storeConfiguration.getJsonColumnQualifier().getBytes(StandardCharsets.UTF_8));
+                            Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                            Bytes.toBytes(storeConfiguration.getCountryCodeColumnQualifier()),
+                            Bytes.toBytes(storeConfiguration.getJsonColumnQualifier()));
                   }
 
                   /**

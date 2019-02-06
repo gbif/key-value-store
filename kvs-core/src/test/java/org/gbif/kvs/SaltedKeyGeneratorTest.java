@@ -1,6 +1,5 @@
 package org.gbif.kvs;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,16 +20,16 @@ public class SaltedKeyGeneratorTest {
   // Logical test key
   private static final String TEST_LOGICAL_KEY = "abcd";
 
-  /** Asserts that a generated salted contains the expected prefix and sufix. */
+  /** Asserts that a generated salted contains the expected prefix and suffix. */
   @Test
   public void saltedKeyGenerationTest() {
 
-    String saltedKey = new String(SALT_KEY_GENERATOR.computeKey(TEST_LOGICAL_KEY), StandardCharsets.UTF_8);
+    String saltedKey = new String(SALT_KEY_GENERATOR.computeKey(TEST_LOGICAL_KEY), SALT_KEY_GENERATOR.getCharset());
 
     Assert.assertTrue(
         "Salted key must end with provided logical key", saltedKey.endsWith(TEST_LOGICAL_KEY));
 
-    String bucket = new String(SALT_KEY_GENERATOR.bucketOf(saltedKey), StandardCharsets.UTF_8);
+    String bucket = new String(SALT_KEY_GENERATOR.bucketOf(saltedKey), SALT_KEY_GENERATOR.getCharset());
 
     Assert.assertTrue(
         "Salted key must end with provided logical key", saltedKey.startsWith(bucket));
@@ -45,7 +44,7 @@ public class SaltedKeyGeneratorTest {
             .mapToObj(key -> SALT_KEY_GENERATOR.computeKey(Integer.toString(key)))
             .collect(
                 Collectors.groupingBy(
-                    key -> new String(SALT_KEY_GENERATOR.bucketOf(key), StandardCharsets.UTF_8), Collectors.counting()));
+                    key -> new String(SALT_KEY_GENERATOR.bucketOf(key), SALT_KEY_GENERATOR.getCharset()), Collectors.counting()));
 
     // The elements must be allocated in all the buckets
     Assert.assertEquals("Wrong number of expected buckets", NUM_OF_BUCKETS, counts.size());
@@ -54,6 +53,6 @@ public class SaltedKeyGeneratorTest {
     counts.values().stream()
         .mapToDouble(count -> count)
         .average()
-        .ifPresent(average -> Assert.assertEquals(average, NUM_OF_BUCKETS, 0.0001));
+        .ifPresent(average -> Assert.assertEquals(NUM_OF_BUCKETS, average, 0.0001));
   }
 }

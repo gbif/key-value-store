@@ -1,6 +1,7 @@
 package org.gbif.kvs;
 
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -15,11 +16,36 @@ public class SaltedKeyGenerator implements Serializable {
 
   // Cached variable that holds the left-padding format calculated from the number of bucket
   private final String paddingFormat;
+  
+  //Charset encoding
+  private final Charset charset;
 
+  /**
+   * Creates a new instance using UTF_8 as default Charset.
+   * @param numOfBuckets salted key buckets
+   */
   public SaltedKeyGenerator(int numOfBuckets) {
+    this(numOfBuckets, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Creates a new instance using a defined number of buckets and a charset.
+   * @param numOfBuckets salted key buckets
+   * @param charset encoding charset
+   */
+  public SaltedKeyGenerator(int numOfBuckets, Charset charset) {
     this.numOfBuckets = numOfBuckets;
+    this.charset = charset;
     // Calculated format is stored to avoid subsequent calculations of it
     paddingFormat = "%0" + Integer.toString(numOfBuckets).length() + 'd';
+  }
+
+  /**
+   *
+   * @return the charset used by this key generator
+   */
+  public Charset getCharset() {
+    return charset;
   }
 
   /**
@@ -31,7 +57,7 @@ public class SaltedKeyGenerator implements Serializable {
    */
   public byte[] computeKey(String logicalKey) {
     return (String.format(paddingFormat, logicalKey.hashCode() % numOfBuckets) + logicalKey)
-        .getBytes(StandardCharsets.UTF_8);
+        .getBytes(charset);
   }
 
   /**
@@ -42,7 +68,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return a zeros left-padded string {0*}+bucketNumber+logicalKey
    */
   public byte[] computeKey(byte[] logicalKey) {
-    return computeKey(new String(logicalKey, StandardCharsets.UTF_8));
+    return computeKey(new String(logicalKey, charset));
   }
 
   /**
@@ -52,7 +78,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the bucket prefix
    */
   public byte[] bucketOf(String saltedKey) {
-    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(StandardCharsets.UTF_8);
+    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(charset);
   }
 
   /**

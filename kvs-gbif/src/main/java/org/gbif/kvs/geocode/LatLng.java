@@ -3,7 +3,7 @@ package org.gbif.kvs.geocode;
 import org.gbif.kvs.hbase.Indexable;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -52,11 +52,12 @@ public class LatLng implements Serializable, Indexable {
   /**
    * Concatenates as a string the latitude and longitude.
    *
+   * @param charset encoding charset
    * @return latitude + longitude
    */
   @Override
-  public byte[] getLogicalKey() {
-    return (latitude.toString() + longitude.toString()).getBytes(StandardCharsets.UTF_8);
+  public byte[] getLogicalKey(Charset charset) {
+    return (latitude.toString() + longitude.toString()).getBytes(charset);
   }
 
   @Override

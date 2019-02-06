@@ -3,7 +3,6 @@ package org.gbif.kvs.indexing.geocode;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.kvs.geocode.LatLng;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.hadoop.hbase.client.Result;
@@ -13,7 +12,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 class OccurrenceHBaseBuilder {
 
   // Occurrence column family
-  private static final byte[] CF = "o".getBytes(StandardCharsets.UTF_8);
+  private static final byte[] CF = Bytes.toBytes("o");
 
   /** Private constructor of utility class. */
   private OccurrenceHBaseBuilder() {
