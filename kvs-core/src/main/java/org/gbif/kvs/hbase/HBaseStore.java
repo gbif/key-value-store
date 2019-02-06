@@ -6,6 +6,7 @@ import org.gbif.kvs.SaltedKeyGenerator;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -46,6 +47,9 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   // Function to convert a byte[] into a V instance
   private final Function<Result, V> resultMapper;
 
+  // Function to convert a L instance into a V instance
+  private final Function<L, V> valueMapper;
+
   // Function that loads data from external sources when the value is not in the KV store.
   private final Function<K, L> loader;
 
@@ -56,12 +60,14 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   private final SaltedKeyGenerator saltedKeyGenerator;
 
   private HBaseStore(HBaseKVStoreConfiguration config, BiFunction<byte[], L, Put> valueMutator,
-                     Function<Result, V> resultMapper, Function<K, L> loader) throws IOException {
+                     Function<Result, V> resultMapper, Function<L, V> valueMapper,
+                     Function<K, L> loader) throws IOException {
     connection = ConnectionFactory.createConnection(config.hbaseConfig());
     saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
     this.tableName = TableName.valueOf(config.getTableName());
     this.valueMutator = valueMutator;
     this.resultMapper = resultMapper;
+    this.valueMapper = valueMapper;
     this.loader = loader;
   }
 
@@ -71,9 +77,10 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
    * @param key HBase row key
    * @param value value to transform
    */
-  private void store(byte[] key, L value) {
+  private V store(byte[] key, L value) {
     try (Table table = connection.getTable(tableName)) {
       table.put(valueMutator.apply(key, value));
+      return Optional.ofNullable(valueMapper.apply(value)).orElse(null);
     } catch (IOException ex) {
       LOG.error("Appending data to store failed", ex);
       throw new IllegalStateException(ex);
@@ -90,13 +97,13 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   @Override
   public V get(K key) {
     try (Table table = connection.getTable(tableName)) {
-      byte[] saltedKey = saltedKeyGenerator.computeKey(key.getLogicalKey());
+      byte[] saltedKey = saltedKeyGenerator.computeKey(key.getLogicalKey(getEncodingCharset()));
       Get get = new Get(saltedKey);
       Result result = table.get(get);
       if (result.isEmpty()) { // the key does not exists, create a new entry
         L newValue = loader.apply(key);
         if (Objects.nonNull(newValue)) {
-          store(saltedKey, newValue);
+          return store(saltedKey, newValue);
         }
         return null;
       }
@@ -140,6 +147,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     private HBaseKVStoreConfiguration configuration;
     private BiFunction<byte[], L, Put> valueMutator;
     private Function<Result, V> resultMapper;
+    private Function<L, V> valueMapper;
     private Function<K, L> loader;
 
     public Builder<K, V, L> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
@@ -157,13 +165,18 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       return this;
     }
 
+    public Builder<K, V, L> withValueMapper(Function<L, V> valueMapper) {
+      this.valueMapper = valueMapper;
+      return this;
+    }
+
     public Builder<K, V, L> withLoader(Function<K, L> loader) {
       this.loader = loader;
       return this;
     }
 
     public HBaseStore<K, V, L> build() throws IOException {
-      return new HBaseStore<K, V, L>(configuration, valueMutator, resultMapper, loader);
+      return new HBaseStore<K, V, L>(configuration, valueMutator, resultMapper, valueMapper, loader);
     }
   }
 }

@@ -108,6 +108,7 @@ public class GeocodeKVStoreFactory {
             simpleResultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
                 Bytes.toBytes(configuration.getCountryCodeColumnQualifier())))
+        .withValueMapper(countryCodeMapper())
         .withValueMutator(
             valueMutator(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
