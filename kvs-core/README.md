@@ -12,6 +12,14 @@ The [HBaseStore](src/main/java/org/gbif/kvs/hbase/HBaseStore.java) implementatio
 In particular, a `loader' function has to be provided which is used internally to retrieve values from external sources and store them in the KV store.
 
 
+## HBase table
+
+It is recommended to enable bloom filters, snappy compression and fast diff for data block enconding.
+
+```
+create 'geocode_kv', {NAME => 'v', BLOOMFILTER => 'ROW', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY'}
+```
+
 ## Build
 
 To build, install and run tests, execute the Maven command:

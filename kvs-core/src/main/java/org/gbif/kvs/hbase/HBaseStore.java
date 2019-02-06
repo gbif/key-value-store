@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +98,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   @Override
   public V get(K key) {
     try (Table table = connection.getTable(tableName)) {
-      byte[] saltedKey = saltedKeyGenerator.computeKey(key.getLogicalKey(getEncodingCharset()));
+      byte[] saltedKey = saltedKeyGenerator.computeKey(Bytes.toBytes(key.getLogicalKey()));
       Get get = new Get(saltedKey);
       Result result = table.get(get);
       if (result.isEmpty()) { // the key does not exists, create a new entry

@@ -119,9 +119,7 @@ public class GeocodeKVStoreFactory {
               try {
                 Response<Collection<GeocodeResponse>> response =
                     geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()).execute();
-                if (response.isSuccessful()
-                    && Objects.nonNull(response.body())
-                    && !response.body().isEmpty()) {
+                if (response.isSuccessful() && Objects.nonNull(response.body()) && !response.body().isEmpty()) {
                   return response.body();
                 }
               } catch (IOException ex) {

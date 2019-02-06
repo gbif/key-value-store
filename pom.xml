@@ -78,6 +78,7 @@
         <retrofit.version>2.5.0</retrofit.version>
         <okhttp.version>3.11.0</okhttp.version>
         <okio.version>2.0.0</okio.version>
+        <mockwebserver.version>3.11.0</mockwebserver.version>
 
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
 
@@ -239,7 +240,7 @@
                 </exclusions>
             </dependency>
 
-            <!-- hbase -->
+            <!-- HBase -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
@@ -316,6 +317,22 @@
                 <scope>provided</scope>
             </dependency>
 
+
+            <!-- Hadoop and HBase tests -->
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-testing-util</artifactId>
+                <version>${hbase.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-minicluster</artifactId>
+                <version>${hadoop-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
             <!-- Utils -->
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
@@ -355,6 +372,14 @@
                 <groupId>com.squareup.okio</groupId>
                 <artifactId>okio</artifactId>
                 <version>${okio.version}</version>
+            </dependency>
+
+            <!-- Retrofit test -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>mockwebserver</artifactId>
+                <version>${mockwebserver.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Json -->

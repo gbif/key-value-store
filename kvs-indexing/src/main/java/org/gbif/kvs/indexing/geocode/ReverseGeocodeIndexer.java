@@ -10,7 +10,6 @@ import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.GeocodeServiceFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -103,8 +102,7 @@ public class ReverseGeocodeIndexer {
                       // Selects distinct values
                     }))
             .apply(
-                Distinct.<LatLng, String>withRepresentativeValueFn(
-                        latLng -> Bytes.toString(latLng.getLogicalKey(StandardCharsets.UTF_8)))
+                Distinct.<LatLng, String>withRepresentativeValueFn(LatLng::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
@@ -161,7 +159,7 @@ public class ReverseGeocodeIndexer {
                       callGeocodeService(latLng)
                           .ifPresent(
                               geocodeResponses -> {
-                                byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey(StandardCharsets.UTF_8));
+                                byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                 context.output(valueMutator.apply(saltedKey, geocodeResponses));
                               });
                     } catch (IOException ex) {

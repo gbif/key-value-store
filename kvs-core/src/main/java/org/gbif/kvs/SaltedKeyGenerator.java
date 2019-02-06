@@ -17,8 +17,8 @@ public class SaltedKeyGenerator implements Serializable {
   // Cached variable that holds the left-padding format calculated from the number of bucket
   private final String paddingFormat;
   
-  //Charset encoding
-  private final Charset charset;
+  //Charset encoding, only the name is store because th Charset class is not serializable
+  private final String charset;
 
   /**
    * Creates a new instance using UTF_8 as default Charset.
@@ -35,7 +35,7 @@ public class SaltedKeyGenerator implements Serializable {
    */
   public SaltedKeyGenerator(int numOfBuckets, Charset charset) {
     this.numOfBuckets = numOfBuckets;
-    this.charset = charset;
+    this.charset = charset.name();
     // Calculated format is stored to avoid subsequent calculations of it
     paddingFormat = "%0" + Integer.toString(numOfBuckets).length() + 'd';
   }
@@ -45,7 +45,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the charset used by this key generator
    */
   public Charset getCharset() {
-    return charset;
+    return Charset.forName(charset);
   }
 
   /**
@@ -57,7 +57,7 @@ public class SaltedKeyGenerator implements Serializable {
    */
   public byte[] computeKey(String logicalKey) {
     return (String.format(paddingFormat, logicalKey.hashCode() % numOfBuckets) + logicalKey)
-        .getBytes(charset);
+        .getBytes(getCharset());
   }
 
   /**
@@ -68,7 +68,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return a zeros left-padded string {0*}+bucketNumber+logicalKey
    */
   public byte[] computeKey(byte[] logicalKey) {
-    return computeKey(new String(logicalKey, charset));
+    return computeKey(new String(logicalKey, getCharset()));
   }
 
   /**
@@ -78,7 +78,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the bucket prefix
    */
   public byte[] bucketOf(String saltedKey) {
-    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(charset);
+    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(getCharset());
   }
 
   /**
