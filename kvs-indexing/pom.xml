@@ -115,6 +115,7 @@
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>retrofit</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Logging -->

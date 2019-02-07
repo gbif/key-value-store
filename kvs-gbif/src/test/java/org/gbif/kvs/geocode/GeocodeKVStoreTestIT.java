@@ -1,91 +1,136 @@
 package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
-import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
-import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 import org.apache.hadoop.hbase.HBaseTestingUtility;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-@Ignore
+@RunWith(Parameterized.class)
 public class GeocodeKVStoreTestIT {
+
+  //-- Static elements shared for all tests
+
+  private static TestConfiguration testConfiguration;
 
   private static HBaseTestingUtility utility;
 
   private static HTable geocodeKvTable;
 
-  private static HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
-
   private static KeyValueStore<LatLng,String> geocodeKeyValueStore;
 
+  //-- End of shared elements
 
-  private final static HBaseKVStoreConfiguration.Builder HBASE_KV_STORE_CONFIGURATION = HBaseKVStoreConfiguration.builder()
-                                                                                  .withTableName("geocode_kv")
-                                                                                  .withNumOfKeyBuckets(4)
-                                                                                  .withColumnFamily("v");
+  //--- Elements of parameterized tests
+  private final LatLng latLng;
+
+  private final String countryCode;
+
+  //-- End of parameterized tests
 
 
-  private static HBaseKVStoreConfiguration hBaseKVStoreConfiguration() {
-    if (Objects.isNull(hBaseKVStoreConfiguration)) {
-      hBaseKVStoreConfiguration = HBASE_KV_STORE_CONFIGURATION
-                                    .withHBaseZk("localhost:" + utility.getZkCluster().getClientPort())
-                                    .build();
-    }
-    return  hBaseKVStoreConfiguration;
+  @Parameterized.Parameters(name = "{index}: Lookup({0})=Country({1})")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {
+        { LatLng.create(48.019573, 66.923684), "KZ" },
+        { LatLng.create(35.937496, 14.375416), "MT" },
+        { LatLng.create(36.93, 13.37), null }
+    });
   }
 
+  /**
+   * Creates an instance using the test data.
+   * @param latLng coordinate to test
+   * @param countryCode expected country code
+   */
+  public GeocodeKVStoreTestIT(LatLng latLng, String countryCode) {
+    this.latLng = latLng;
+    this.countryCode = countryCode;
+  }
+
+
+  /**
+   *
+   * @return a new HBase table
+   * @throws IOException in case of error creating the table
+   */
   private static HTable createTable() throws IOException {
-    return utility.createTable(Bytes.toBytes(hBaseKVStoreConfiguration().getTableName()),
-                               Bytes.toBytes(hBaseKVStoreConfiguration().getColumnFamily()));
+    return utility.createTable(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getTableName()),
+                               Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()));
   }
 
+  /**
+   * Creates a Geocode KV store using a test {@link GeocodeTestService}.
+   * @return a new Geocode KV store
+   * @throws IOException if something went wrong creating the store
+   */
   private static KeyValueStore<LatLng,String> geocodeKeyValueStore() throws IOException {
-    HBaseKVStoreConfiguration hBaseKVStoreConfiguration = hBaseKVStoreConfiguration();
-    return GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder()
-            .withJsonColumnQualifier("j") //stores JSON data
-            .withCountryCodeColumnQualifier("c") //stores ISO country code
-            .withHBaseKVStoreConfiguration(hBaseKVStoreConfiguration).build(),
-           ClientConfiguration.builder()
-                .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
-                .withFileCacheMaxSizeMb(64L) //Max file cache size
-                .withTimeOut(60L) //Geocode service connection time-out
-                .build());
+    return GeocodeKVStoreFactory.simpleGeocodeKVStore(testConfiguration.getGeocodeKVStoreConfiguration(),
+                                                      new GeocodeTestService());
   }
 
-  private static KeyValueStore<LatLng,String> geocodeKvStore;
-
-  @Before
-  public void setup() throws Exception {
+  @BeforeClass
+  public static void setup() throws Exception {
     utility = new HBaseTestingUtility();
     utility.startMiniCluster();
+    testConfiguration = new TestConfiguration(utility.getZkCluster().getClientPort());
     geocodeKvTable = createTable();
     geocodeKeyValueStore = geocodeKeyValueStore();
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     if (Objects.nonNull(geocodeKvTable)) {
       geocodeKvTable.close();
     }
     if (Objects.nonNull(utility)) {
       utility.shutdownMiniCluster();
     }
+    if (Objects.nonNull(geocodeKeyValueStore)) {
+      geocodeKeyValueStore.close();
+    }
   }
 
 
+  /**
+   * Is the LatLng present in HBase.
+   */
+  private void assertIsInHBase() throws IOException {
+    SaltedKeyGenerator saltedKeyGenerator = new SaltedKeyGenerator(testConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
+    Get get = new Get(saltedKeyGenerator.computeKey(latLng.getLogicalKey()));
+    Result result = geocodeKvTable.get(get);
+    Assert.assertEquals("Country stored is different",  Objects.isNull(countryCode), result.isEmpty());
+    String hCountryCode = Bytes.toString(result.getValue(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                                                         Bytes.toBytes(testConfiguration.getGeocodeKVStoreConfiguration().getCountryCodeColumnQualifier())));
+    Assert.assertEquals(countryCode, hCountryCode);
+  }
+
+  /**
+   * Test that a coordinate is created in HBase and it can be later retrieved from the table.
+   */
   @Test
-  public void insertTest() {
-    String countryCode = geocodeKeyValueStore.get(LatLng.builder().withLatitude(45.0).withLongitude(75.8).build());
-    Assert.assertEquals("KZ", countryCode);
+  public void getAndInsertTest() throws IOException {
+    String storedCountryCode = geocodeKeyValueStore.get(latLng);
+    Assert.assertEquals(countryCode, storedCountryCode);
+    assertIsInHBase();
   }
 
 }

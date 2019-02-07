@@ -80,8 +80,12 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
    */
   private V store(byte[] key, L value) {
     try (Table table = connection.getTable(tableName)) {
-      table.put(valueMutator.apply(key, value));
-      return Optional.ofNullable(valueMapper.apply(value)).orElse(null);
+      Put put = valueMutator.apply(key, value);
+      if(Objects.nonNull(put)) {
+        table.put(valueMutator.apply(key, value));
+        return Optional.ofNullable(valueMapper.apply(value)).orElse(null);
+      }
+      return null;
     } catch (IOException ex) {
       LOG.error("Appending data to store failed", ex);
       throw new IllegalStateException(ex);
