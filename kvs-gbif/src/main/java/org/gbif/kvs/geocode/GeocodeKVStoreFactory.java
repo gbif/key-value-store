@@ -58,8 +58,10 @@ public class GeocodeKVStoreFactory {
    */
   public static Function<Collection<GeocodeResponse>, String> countryCodeMapper() {
     return geocodeResponses -> {
-      GeocodeResponse firstCountry = geocodeResponses.iterator().next();
-      return firstCountry.getIsoCountryCode2Digit();
+      if (Objects.nonNull(geocodeResponses) && geocodeResponses.iterator().hasNext()) {
+        return geocodeResponses.iterator().next().getIsoCountryCode2Digit();
+      }
+      return null;
     };
   }
 
@@ -76,14 +78,17 @@ public class GeocodeKVStoreFactory {
       byte[] columnFamily, byte[] countryCodeColumnQualifier, byte[] jsonColumnQualifier) {
     return (key, geocodeResponses) -> {
       try {
-        Put put = new Put(key);
-        put.addColumn(
-            columnFamily,
-            countryCodeColumnQualifier,
-            Bytes.toBytes(countryCodeMapper().apply(geocodeResponses)));
-        put.addColumn(
-            columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
-        return put;
+        if (Objects.nonNull(geocodeResponses) && !geocodeResponses.isEmpty()) {
+          Put put = new Put(key);
+          put.addColumn(
+              columnFamily,
+              countryCodeColumnQualifier,
+              Bytes.toBytes(countryCodeMapper().apply(geocodeResponses)));
+          put.addColumn(
+              columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
+          return put;
+        }
+        return null;
       } catch (IOException ex) {
         LOG.error("Error serializing response into bytes", ex);
         throw new RuntimeException(ex);
