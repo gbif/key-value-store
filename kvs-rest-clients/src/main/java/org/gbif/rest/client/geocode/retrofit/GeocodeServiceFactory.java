@@ -1,4 +1,4 @@
-package org.gbif.rest.client.geocode;
+package org.gbif.rest.client.geocode.retrofit;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.configuration.HttpClientFactory;
@@ -8,9 +8,10 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
- * Factory of {@link GeocodeService} instances.
+ * Factory of {@link GeocodeRetrofitService} instances.
+ * This class should not be access out from this packages.
  */
-public class GeocodeServiceFactory {
+class GeocodeServiceFactory {
 
   /**
    * Hidden constructor.
@@ -20,11 +21,11 @@ public class GeocodeServiceFactory {
   }
 
   /**
-   * Creates a new instance of the client {@link GeocodeService} using the provided client configuration.
+   * Creates a new instance of the client {@link GeocodeRetrofitService} using the provided client configuration.
    * @param config client configuration
-   * @return a new GeocodeService instance
+   * @return a new GeocodeRetrofitService instance
    */
-  public static GeocodeService createGeocodeServiceClient(ClientConfiguration config) {
+  static GeocodeRetrofitService createGeocodeServiceClient(ClientConfiguration config) {
     // create client
     OkHttpClient client = HttpClientFactory.createClient(config);
 
@@ -37,6 +38,6 @@ public class GeocodeServiceFactory {
             .validateEagerly(true)
             .build();
 
-    return retrofit.create(GeocodeService.class);
+    return retrofit.create(GeocodeRetrofitService.class);
   }
 }

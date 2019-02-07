@@ -2,21 +2,17 @@ package org.gbif.rest.client.geocode;
 
 import java.util.Collection;
 
-import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
-
 /**
- * GBIF Geocode service client.
+ * GBIF Geocode Service client.
+ * This class is used for creation of Sync and Async clients. It is not exposed outside this package.
  */
 public interface GeocodeService {
 
   /**
-   * Builds an executable call to the reverse geocode service.
+   * Gets the list of proposed geo-locations of coordinate.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
-   * @return a executable call to the Geocode service
+   * @return a list of proposed locations, an empty collections if no proposals were found
    */
-  @GET("/v1/geocode/reverse")
-  Call<Collection<GeocodeResponse>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude);
+  Collection<GeocodeResponse> reverse(Double latitude, Double longitude);
 }

@@ -2,9 +2,10 @@ package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.hbase.HBaseStore;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.GeocodeServiceFactory;
+import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -24,7 +25,7 @@ import retrofit2.Response;
 /** Factory of Geocode KV instances. */
 public class GeocodeKVStoreFactory {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GeocodeServiceFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GeocodeKVStoreFactory.class);
 
   // Used to store and retrieve JSON values stored in HBase
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -95,13 +96,27 @@ public class GeocodeKVStoreFactory {
    * returns the ISO country code of the resulting geocode lookup.
    *
    * @param configuration KV store configuration
+   * @param geocodeClientConfiguration Rest client configuration for the GeocodeService client
    * @return a new instance of Geocode KV store
    * @throws IOException if the Rest client can't be created
    */
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(
-      GeocodeKVStoreConfiguration configuration) throws IOException {
-    GeocodeService geocodeService =
-        GeocodeServiceFactory.createGeocodeServiceClient(configuration.getGeocodeClientConfiguration());
+  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
+                                                                   ClientConfiguration geocodeClientConfiguration) throws IOException {
+    return simpleGeocodeKVStore(configuration, new GeocodeServiceSyncClient(geocodeClientConfiguration));
+
+  }
+
+  /**
+   * Create a new instance of a Geocode KV store/cache backed by an HBase table. This instance only
+   * returns the ISO country code of the resulting geocode lookup.
+   *
+   * @param configuration KV store configuration
+   * @param geocodeService instance of the Rest GeocodeService client
+   * @return a new instance of Geocode KV store
+   * @throws IOException if the Rest client can't be created
+   */
+  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
+                                                                   GeocodeService geocodeService) throws IOException {
     return HBaseStore.<LatLng, String, Collection<GeocodeResponse>>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
@@ -117,17 +132,13 @@ public class GeocodeKVStoreFactory {
         .withLoader(
             latLng -> {
               try {
-                Response<Collection<GeocodeResponse>> response =
-                    geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()).execute();
-                if (response.isSuccessful() && Objects.nonNull(response.body()) && !response.body().isEmpty()) {
-                  return response.body();
-                }
-              } catch (IOException ex) {
+                return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
+              } catch (Exception ex) {
                 LOG.error("Error contacting geocode service", ex);
                 throw new IllegalStateException(ex);
               }
-              return null;
             })
         .build();
+
   }
 }

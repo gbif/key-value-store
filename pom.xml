@@ -374,14 +374,6 @@
                 <version>${okio.version}</version>
             </dependency>
 
-            <!-- Retrofit test -->
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>mockwebserver</artifactId>
-                <version>${mockwebserver.version}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- Json -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

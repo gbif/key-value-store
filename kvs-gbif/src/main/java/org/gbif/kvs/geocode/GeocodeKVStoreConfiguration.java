@@ -1,7 +1,6 @@
 package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
-import org.gbif.rest.client.configuration.ClientConfiguration;
 
 import java.io.Serializable;
 
@@ -17,8 +16,10 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   // Stores the entire JSON response of the Geocode service
   private final String jsonColumnQualifier;
 
-  // Rest Geocode client configuration
-  private final ClientConfiguration geocodeClientConfiguration;
+  /** @return HBase KV store configuration */
+  public HBaseKVStoreConfiguration getHBaseKVStoreConfiguration() {
+    return hBaseKVStoreConfiguration;
+  }
 
   /**
    * Creates an configuration instance using the HBase KV and Rest client configurations.
@@ -26,27 +27,13 @@ public class GeocodeKVStoreConfiguration implements Serializable {
    * @param hBaseKVStoreConfiguration HBase KV store configuration
    * @param countryCodeColumnQualifier ISO country code column qualifier
    * @param jsonColumnQualifier column qualifier to store the entire json response
-   * @param geocodeClientConfiguration Geocode REST client configuration
    */
-  public GeocodeKVStoreConfiguration(
-      HBaseKVStoreConfiguration hBaseKVStoreConfiguration,
-      String countryCodeColumnQualifier,
-      String jsonColumnQualifier,
-      ClientConfiguration geocodeClientConfiguration) {
+  public GeocodeKVStoreConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration,
+                                     String countryCodeColumnQualifier,
+                                     String jsonColumnQualifier) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
     this.countryCodeColumnQualifier = countryCodeColumnQualifier;
     this.jsonColumnQualifier = jsonColumnQualifier;
-    this.geocodeClientConfiguration = geocodeClientConfiguration;
-  }
-
-  /** @return HBase KV store configuration */
-  public HBaseKVStoreConfiguration getHBaseKVStoreConfiguration() {
-    return hBaseKVStoreConfiguration;
-  }
-
-  /** @return Geocode REST client configuration */
-  public ClientConfiguration getGeocodeClientConfiguration() {
-    return geocodeClientConfiguration;
   }
 
   /** @return ISO country code column qualifier */
@@ -76,7 +63,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
 
     private String jsonColumnQualifier;
 
-    private ClientConfiguration geocodeClientConfiguration;
 
     /**
      * Hidden constructor to force use the containing class builder() method.
@@ -101,15 +87,10 @@ public class GeocodeKVStoreConfiguration implements Serializable {
       return this;
     }
 
-    public Builder withGeocodeClientConfig(ClientConfiguration geocodeClientConfiguration) {
-      this.geocodeClientConfiguration = geocodeClientConfiguration;
-      return this;
-    }
 
     public GeocodeKVStoreConfiguration build() {
       return new GeocodeKVStoreConfiguration(
-          hBaseKVStoreConfiguration, countryCodeColumnQualifier,
-          jsonColumnQualifier, geocodeClientConfiguration);
+          hBaseKVStoreConfiguration, countryCodeColumnQualifier,jsonColumnQualifier);
     }
   }
 }

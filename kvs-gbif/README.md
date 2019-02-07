@@ -16,16 +16,15 @@ GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder()
                             .withCountryCodeColumnQualifier("c") //stores ISO country code
                             .withHBaseKVStoreConfiguration(HBaseKVStoreConfiguration.builder()
                                                             .withTableName("geocode_kv") //Geocode KV HBase table
-                                                            .withColumnFamily("v") //Columna in which qualifiers are stored
+                                                            .withColumnFamily("v") //Column in which qualifiers are stored
                                                             .withNumOfKeyBuckets(10) //Buckets for salted key generations
                                                             .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
-                                                            .build())
-                            .withGeocodeClientConfig(ClientConfiguration.builder()
-                                                      .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
-                                                      .withFileCacheMaxSizeMb(64L) //Max file cache size
-                                                      .withTimeOut(60L) //Geocode service connection time-out
-                                                      .build())
-        .build());
+                                                            .build()).build(),
+                            ClientConfiguration.builder()
+                             .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
+                             .withFileCacheMaxSizeMb(64L) //Max file cache size
+                             .withTimeOut(60L) //Geocode service connection time-out
+                             .build());
 ```
 
 ## Build

@@ -5,14 +5,12 @@ import org.gbif.kvs.geocode.GeocodeKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
 import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.GeocodeServiceFactory;
+import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.beam.runners.spark.SparkRunner;
@@ -32,7 +30,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Response;
 
 /** Apache Beam Pipeline that indexes Geocode country lookup responses in a HBase KV table. */
 public class ReverseGeocodeIndexer {
@@ -51,11 +48,9 @@ public class ReverseGeocodeIndexer {
    * @param options pipeline options
    * @return a new instance of GeocodeKVStoreConfiguration
    */
-  private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(
-      GeocodeIndexingOptions options) {
+  private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
     return GeocodeKVStoreConfiguration.builder()
             .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-            .withGeocodeClientConfig(ConfigurationMapper.clientConfiguration(options))
             .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
             .withJsonColumnQualifier(options.getJsonColumnQualifier())
             .build();
@@ -78,8 +73,8 @@ public class ReverseGeocodeIndexer {
 
     // Config
     GeocodeKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
-    Configuration hBaseConfiguration =
-        storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
+    ClientConfiguration geocodeClientConfiguration = ConfigurationMapper.clientConfiguration(options);
+    Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Reade the occurrence table
     PCollection<Result> inputRecords =
@@ -121,9 +116,7 @@ public class ReverseGeocodeIndexer {
 
                   @Setup
                   public void start() {
-                    geocodeService =
-                        GeocodeServiceFactory.createGeocodeServiceClient(
-                            storeConfiguration.getGeocodeClientConfiguration());
+                    geocodeService = new GeocodeServiceSyncClient(geocodeClientConfiguration);
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
@@ -131,44 +124,21 @@ public class ReverseGeocodeIndexer {
                             Bytes.toBytes(storeConfiguration.getJsonColumnQualifier()));
                   }
 
-                  /**
-                   * Performs the Geocode lookup.
-                   *
-                   * @param latLng to lookup
-                   * @return an Optional.of(countryCode), empty() otherwise
-                   * @throws IOException in case of communication error
-                   */
-                  private Optional<Collection<GeocodeResponse>> callGeocodeService(LatLng latLng)
-                      throws IOException {
-                    Response<Collection<GeocodeResponse>> response =
-                        geocodeService
-                            .reverse(latLng.getLatitude(), latLng.getLongitude())
-                            .execute();
-                    if (response.isSuccessful()
-                        && Objects.nonNull(response.body())
-                        && !response.body().isEmpty()) {
-                      return Optional.of(response.body());
-                    }
-                    return Optional.empty();
-                  }
-
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
                       LatLng latLng = context.element();
-                      callGeocodeService(latLng)
-                          .ifPresent(
-                              geocodeResponses -> {
-                                byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
-                                context.output(valueMutator.apply(saltedKey, geocodeResponses));
-                              });
-                    } catch (IOException ex) {
+                      Collection<GeocodeResponse>  geocodeResponses = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
+                      if (!geocodeResponses.isEmpty()) {
+                        byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
+                        context.output(valueMutator.apply(saltedKey, geocodeResponses));
+                      }
+                    } catch (Exception ex) {
                       LOG.error("Error performing Geocode lookup", ex);
                     }
                   }
-                  // Write to HBase
                 }))
-        .apply(
+        .apply(// Write to HBase
             HBaseIO.write()
                 .withConfiguration(hBaseConfiguration)
                 .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));

@@ -23,6 +23,16 @@ public class LatLng implements Serializable, Indexable {
     this.longitude = longitude;
   }
 
+  /**
+   * Facrtory method.
+   * @param latitude decimal latitude
+   * @param longitude decimal longitude
+   * @return a new instance of LatLng
+   */
+  public static LatLng create(Double latitude, Double longitude) {
+    return new LatLng(latitude,longitude);
+  }
+
   /** @return decimal latitude */
   public Double getLatitude() {
     return latitude;
