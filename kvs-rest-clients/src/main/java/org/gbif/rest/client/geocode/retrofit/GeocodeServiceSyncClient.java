@@ -1,16 +1,14 @@
 package org.gbif.rest.client.geocode.retrofit;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
 
-import retrofit2.HttpException;
-import retrofit2.Response;
+
+import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 
 /**
  * Represents an {@link GeocodeService} synchronous client.
@@ -26,7 +24,9 @@ public class GeocodeServiceSyncClient implements GeocodeService {
    * @param clientConfiguration Rest client configuration
    */
   public GeocodeServiceSyncClient(ClientConfiguration clientConfiguration) {
-     retrofitService = GeocodeServiceFactory.createGeocodeServiceClient(clientConfiguration);
+     retrofitService = RetrofitClientFactory.createRetrofitClient(clientConfiguration,
+                                                                  clientConfiguration.getBaseApiUrl(),
+                                                                  GeocodeRetrofitService.class);
   }
 
   /**
@@ -37,15 +37,6 @@ public class GeocodeServiceSyncClient implements GeocodeService {
    */
   @Override
   public Collection<GeocodeResponse> reverse(Double latitude, Double longitude) {
-    try {
-      Response<Collection<GeocodeResponse>> response = retrofitService.reverse(latitude, longitude).execute();
-      if (response.isSuccessful()) {
-        return Objects.nonNull(response.body()) && !response.body().isEmpty()? response.body() : Collections.emptyList();
-      }
-      throw new HttpException(response); // Propagates the failed response
-    } catch (IOException ex) {
-      throw new RuntimeException(ex);
-    }
-
+    return syncCall(retrofitService.reverse(latitude, longitude));
   }
 }

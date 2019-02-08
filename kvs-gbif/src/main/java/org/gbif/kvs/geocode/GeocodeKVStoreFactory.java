@@ -29,7 +29,7 @@ public class GeocodeKVStoreFactory {
   // Used to store and retrieve JSON values stored in HBase
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  {
+  static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
@@ -45,8 +45,7 @@ public class GeocodeKVStoreFactory {
    * @param columnQualifier HBase column qualifier in which values are stored
    * @return a Result to String mapping function
    */
-  public static Function<Result, String> simpleResultMapper(
-      byte[] columnFamily, byte[] columnQualifier) {
+  public static Function<Result, String> simpleResultMapper(byte[] columnFamily, byte[] columnQualifier) {
     return result -> Bytes.toString(result.getValue(columnFamily, columnQualifier));
   }
 

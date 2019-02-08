@@ -61,6 +61,7 @@
         <!-- GBIF libraries -->
         <gbif-api.version>0.77</gbif-api.version>
         <dwc-api.version>1.21</dwc-api.version>
+        <gbif-parsers.version>0.36</gbif-parsers.version>
 
         <!-- Common libraries -->
         <apache.beam.version>2.9.0</apache.beam.version>
@@ -195,6 +196,12 @@
                         <artifactId>dwc-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.gbif</groupId>
+                <artifactId>gbif-parsers</artifactId>
+                <version>${gbif-parsers.version}</version>
             </dependency>
 
             <!-- Beam -->

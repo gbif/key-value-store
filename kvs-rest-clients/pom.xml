@@ -32,6 +32,12 @@
 
     <dependencies>
 
+        <!-- GBIF -->
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>gbif-api</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

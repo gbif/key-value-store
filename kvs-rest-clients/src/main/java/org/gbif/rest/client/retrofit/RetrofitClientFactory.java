@@ -1,4 +1,6 @@
-package org.gbif.rest.client.configuration;
+package org.gbif.rest.client.retrofit;
+
+import org.gbif.rest.client.configuration.ClientConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,13 +11,15 @@ import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Retrofit;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
-/** Factory class for http client. */
-public final class HttpClientFactory {
+/** Factory class for okHttp and retrofit clients. */
+public final class RetrofitClientFactory {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HttpClientFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RetrofitClientFactory.class);
 
-  private HttpClientFactory() {}
+  private RetrofitClientFactory() {}
 
   /** Creates a {@link OkHttpClient} with a {@link Cache} from a specific {@link ClientConfiguration}. */
   public static OkHttpClient createClient(ClientConfiguration config) {
@@ -29,6 +33,27 @@ public final class HttpClientFactory {
 
     // create the client and return it
     return clientBuilder.build();
+  }
+
+  public static <S> S createRetrofitClient(OkHttpClient okHttpClient, String baseApiUrl, Class<S> serviceClass) {
+    // create service
+    return new Retrofit.Builder()
+            .client(okHttpClient)
+            .baseUrl(baseApiUrl)
+            .addConverterFactory(JacksonConverterFactory.create())
+            .validateEagerly(true)
+            .build().create(serviceClass);
+  }
+
+  public static <S> S createRetrofitClient(ClientConfiguration clientConfiguration, String baseApiUrl,
+                                           Class<S> serviceClass) {
+    // create service
+    return new Retrofit.Builder()
+        .client(createClient(clientConfiguration))
+        .baseUrl(baseApiUrl)
+        .addConverterFactory(JacksonConverterFactory.create())
+        .validateEagerly(true)
+        .build().create(serviceClass);
   }
 
   /**

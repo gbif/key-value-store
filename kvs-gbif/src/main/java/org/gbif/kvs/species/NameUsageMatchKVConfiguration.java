@@ -1,33 +1,25 @@
-package org.gbif.kvs.geocode;
+package org.gbif.kvs.species;
 
 import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
 
-import java.io.Serializable;
-
-/** Configuration settings to create a KV Store/Cache for the GBIF reverse geocode service. */
-public class GeocodeKVStoreConfiguration implements Serializable {
+/** Configuration settings to create a KV Store/Cache for the GBIF species name match. */
+public class NameUsageMatchKVConfiguration {
 
   // HBase KV store configuration
   private final HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
 
-  // Column qualifier to store the preferred country code
-  private final String countryCodeColumnQualifier;
-
   // Stores the entire JSON response of the Geocode service
   private final String jsonColumnQualifier;
+
 
   /**
    * Creates an configuration instance using the HBase KV and Rest client configurations.
    *
    * @param hBaseKVStoreConfiguration HBase KV store configuration
-   * @param countryCodeColumnQualifier ISO country code column qualifier
    * @param jsonColumnQualifier column qualifier to store the entire json response
    */
-  public GeocodeKVStoreConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration,
-                                     String countryCodeColumnQualifier,
-                                     String jsonColumnQualifier) {
+  public NameUsageMatchKVConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration, String jsonColumnQualifier) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
-    this.countryCodeColumnQualifier = countryCodeColumnQualifier;
     this.jsonColumnQualifier = jsonColumnQualifier;
   }
 
@@ -36,15 +28,12 @@ public class GeocodeKVStoreConfiguration implements Serializable {
     return hBaseKVStoreConfiguration;
   }
 
-  /** @return ISO country code column qualifier */
-  public String getCountryCodeColumnQualifier() {
-    return countryCodeColumnQualifier;
-  }
 
   /** @return JSON response column qualifier */
   public String getJsonColumnQualifier() {
     return jsonColumnQualifier;
   }
+
 
   /**
    * Creates a new {@link Builder} instance.
@@ -58,8 +47,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   public static class Builder {
 
     private HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
-
-    private String countryCodeColumnQualifier;
 
     private String jsonColumnQualifier;
 
@@ -77,20 +64,14 @@ public class GeocodeKVStoreConfiguration implements Serializable {
       return this;
     }
 
-    public Builder withCountryCodeColumnQualifier(String countryCodeColumnQualifier) {
-      this.countryCodeColumnQualifier = countryCodeColumnQualifier;
-      return this;
-    }
-
     public Builder withJsonColumnQualifier(String jsonColumnQualifier) {
       this.jsonColumnQualifier = jsonColumnQualifier;
       return this;
     }
 
-
-    public GeocodeKVStoreConfiguration build() {
-      return new GeocodeKVStoreConfiguration(
-          hBaseKVStoreConfiguration, countryCodeColumnQualifier,jsonColumnQualifier);
+    public NameUsageMatchKVConfiguration build() {
+      return new NameUsageMatchKVConfiguration(hBaseKVStoreConfiguration, jsonColumnQualifier);
     }
+
   }
 }

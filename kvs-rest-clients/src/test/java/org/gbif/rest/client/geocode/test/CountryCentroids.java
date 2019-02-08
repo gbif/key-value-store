@@ -2,6 +2,7 @@ package org.gbif.rest.client.geocode.test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +74,7 @@ public class CountryCentroids {
   private static List<Country> loadCountriesData(String dataFile) {
     try {
       List<Country> records = new ArrayList<>();
-      try (Scanner scanner = new Scanner(new File(dataFile))) {
+      try (Scanner scanner = new Scanner(new File(dataFile), StandardCharsets.UTF_8.name())) {
         while (scanner.hasNextLine()) {
           String line = scanner.nextLine();
           if(!line.startsWith(IGNORE_MARKER)) {

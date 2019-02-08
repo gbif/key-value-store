@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-/** Utility to convert HBase occurrence records into java objects. */
+/** Utility to convert HBase occurrence records into LatLng objects. */
 class OccurrenceHBaseBuilder {
 
   // Occurrence column family
