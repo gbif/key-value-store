@@ -27,6 +27,30 @@ GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder()
                              .build());
 ```
 
+## Taxonomic NameMatch KV store/cache
+
+[GeocodeKVStoreFactory](src/main/java/org/gbif/kvs/species/NameUsageMatchKVStoreFactory.java) provides instances of
+[HBaseStore](../kvs-core/src/main/java/org/gbif/kvs/hbase/HBaseStore.java) to access and store name usage match data.
+It uses the Rest [NameMatch service client](../key-value-store/kvs-rest-clients/src/main/java/org/gbif/rest/client/species/NameMatchService.java) to add data incrementally to the HBase store.
+
+To create an instance of KV store client use:
+
+```
+NameUsageMatchKVStoreFactory.nameUsageMatchKVStore(NameUsageMatchKVConfiguration.builder()
+            .withJsonColumnQualifier("j") //stores JSON data
+            .withHBaseKVStoreConfiguration(HBaseKVStoreConfiguration.builder()
+                .withTableName("name_usage_kv") //Geocode KV HBase table
+                .withColumnFamily("v") //Column in which qualifiers are stored
+                .withNumOfKeyBuckets(10) //Buckets for salted key generations
+                .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
+                .build()).build(),
+             new NameMatchServiceSyncClient(ClientConfiguration.builder()
+                                              .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
+                                              .withFileCacheMaxSizeMb(64L) //Max file cache size
+                                              .withTimeOut(60L) //Geocode service connection time-out
+                                              .build())
+```
+
 ## Build
 
 To build, install and run tests, execute the Maven command:

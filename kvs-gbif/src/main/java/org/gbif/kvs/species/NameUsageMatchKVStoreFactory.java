@@ -109,8 +109,8 @@ public class NameUsageMatchKVStoreFactory {
                     request.getOrder(),
                     request.getFamily(),
                     request.getGenus(),
-                    Optional.ofNullable(request.getRank()).map(Rank::name).orElse(null),
-                    request.getScientificName(),
+                    Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
+                    TaxonParsers.interpretScientificName(request),
                     false,
                     false);
               } catch (Exception ex) {

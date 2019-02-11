@@ -1,9 +1,10 @@
 package org.gbif.rest.client.species.retrofit;
 
+import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.species.NameMatchService;
 import org.gbif.rest.client.species.NameUsageMatch;
 
-import java.util.Map;
 
 import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 
@@ -24,6 +25,16 @@ public class NameMatchServiceSyncClient implements NameMatchService {
   }
 
   /**
+   * Creates an instance using the provided configuration settings.
+   * @param clientConfiguration Rest client configuration
+   */
+  public NameMatchServiceSyncClient(ClientConfiguration clientConfiguration) {
+    nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(clientConfiguration,
+                                                                          clientConfiguration.getBaseApiUrl(),
+                                                                          NameMatchRetrofitService.class);
+  }
+
+  /**
    * See {@link NameMatchService#match(String, String, String, String, String, String, String, String, boolean, boolean)}
    */
   @Override
@@ -33,11 +44,4 @@ public class NameMatchServiceSyncClient implements NameMatchService {
                                                    strict));
   }
 
-  /**
-   * See {@link NameMatchService#match(Map)}
-   */
-  @Override
-  public NameUsageMatch match(Map<String, String> params) {
-    return syncCall(nameMatchRetrofitService.match(params));
-  }
 }

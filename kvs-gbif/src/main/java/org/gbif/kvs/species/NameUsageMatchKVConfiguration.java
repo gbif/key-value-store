@@ -2,8 +2,10 @@ package org.gbif.kvs.species;
 
 import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
 
+import java.io.Serializable;
+
 /** Configuration settings to create a KV Store/Cache for the GBIF species name match. */
-public class NameUsageMatchKVConfiguration {
+public class NameUsageMatchKVConfiguration implements Serializable {
 
   // HBase KV store configuration
   private final HBaseKVStoreConfiguration hBaseKVStoreConfiguration;

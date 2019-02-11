@@ -1,6 +1,5 @@
 package org.gbif.rest.client.species;
 
-import java.util.Map;
 
 /**
  * GBIF Backbone name match service.
@@ -26,10 +25,4 @@ public interface NameMatchService {
   NameUsageMatch match(String kingdom,String phylum, String clazz, String order, String family, String genus,
                        String rank, String name, boolean verbose, boolean strict);
 
-  /**
-   * This is the Map version of the method above.
-   * @param params a Map with parameter and value, see method above for available parameters.
-   * @return a possible null name match
-   */
-  NameUsageMatch match(Map<String, String> params);
 }
