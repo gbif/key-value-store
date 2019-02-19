@@ -56,8 +56,8 @@ public class SaltedKeyGenerator implements Serializable {
    * @return a zeros left-padded string {0*}+bucketNumber+logicalKey
    */
   public byte[] computeKey(String logicalKey) {
-    return (String.format(paddingFormat, logicalKey.hashCode() % numOfBuckets) + logicalKey)
-        .getBytes(getCharset());
+    return (String.format(paddingFormat, Math.abs(logicalKey.hashCode() % numOfBuckets)) + logicalKey)
+            .getBytes(getCharset());
   }
 
   /**

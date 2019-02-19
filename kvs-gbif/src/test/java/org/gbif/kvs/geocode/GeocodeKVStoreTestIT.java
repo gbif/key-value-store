@@ -52,6 +52,7 @@ public class GeocodeKVStoreTestIT {
     return Arrays.asList(new Object[][] {
         { LatLng.create(48.019573, 66.923684), "KZ" },
         { LatLng.create(35.937496, 14.375416), "MT" },
+        { LatLng.create(-16.290154, -63.588653), "BO" },
         { LatLng.create(36.93, 13.37), null }
     });
   }
