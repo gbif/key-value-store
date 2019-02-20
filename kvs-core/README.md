@@ -15,9 +15,10 @@ In particular, a `loader' function has to be provided which is used internally t
 ## HBase table
 
 It is recommended to enable bloom filters, snappy compression and fast diff for data block enconding.
+The number of SPLITS must reflect the number of buckets used for the salted ket, for example if the number of bucket is 10, the HBase table must be created using the following command:
 
 ```
-create 'geocode_kv', {NAME => 'v', BLOOMFILTER => 'ROW', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY'}
+create 'geocode_kv', {NAME => 'v', BLOOMFILTER => 'ROW', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY'},{SPLITS => ['1','2','3','4','5','6','7','8','9']}
 ```
 
 ## Build
