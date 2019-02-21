@@ -2,6 +2,7 @@ package org.gbif.kvs.species;
 
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.species.NameMatchService;
 import org.gbif.rest.client.species.NameUsageMatch;
@@ -84,40 +85,44 @@ public class NameUsageMatchKVStoreFactory {
     };
   }
 
-  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(NameUsageMatchKVConfiguration nameUsageMatchKVConfiguration,
+  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(NameUsageMatchKVConfiguration configuration,
                                                                                          NameMatchService nameMatchService) throws IOException {
-    return HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
-        .withHBaseStoreConfiguration(nameUsageMatchKVConfiguration.getHBaseKVStoreConfiguration())
-        .withResultMapper(
-            resultMapper(
-                Bytes.toBytes(
-                    nameUsageMatchKVConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(nameUsageMatchKVConfiguration.getJsonColumnQualifier())))
-        .withValueMapper(Function.identity())
-        .withValueMutator(
-            valueMutator(
-                Bytes.toBytes(nameUsageMatchKVConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(nameUsageMatchKVConfiguration.getJsonColumnQualifier())
-                ))
-        .withLoader(
-            request -> {
-              try {
-                return nameMatchService.match(
-                    request.getKingdom(),
-                    request.getPhylum(),
-                    request.getClass_(),
-                    request.getOrder(),
-                    request.getFamily(),
-                    request.getGenus(),
-                    Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
-                    TaxonParsers.interpretScientificName(request),
-                    false,
-                    false);
-              } catch (Exception ex) {
-                LOG.error("Error contacting the species math service", ex);
-                throw new RuntimeException(ex);
-              }
-            })
-        .build();
+    KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
+                                                                          .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+                                                                          .withResultMapper(
+                                                                              resultMapper(
+                                                                                  Bytes.toBytes(
+                                                                                      configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                                                                                  Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                                                                          .withValueMapper(Function.identity())
+                                                                          .withValueMutator(
+                                                                              valueMutator(
+                                                                                  Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                                                                                  Bytes.toBytes(configuration.getJsonColumnQualifier())
+                                                                                  ))
+                                                                          .withLoader(
+                                                                              request -> {
+                                                                                try {
+                                                                                  return nameMatchService.match(
+                                                                                      request.getKingdom(),
+                                                                                      request.getPhylum(),
+                                                                                      request.getClass_(),
+                                                                                      request.getOrder(),
+                                                                                      request.getFamily(),
+                                                                                      request.getGenus(),
+                                                                                      Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
+                                                                                      TaxonParsers.interpretScientificName(request),
+                                                                                      false,
+                                                                                      false);
+                                                                                } catch (Exception ex) {
+                                                                                  LOG.error("Error contacting the species math service", ex);
+                                                                                  throw new RuntimeException(ex);
+                                                                                }
+                                                                              })
+                                                                          .build();
+    if (Objects.nonNull(configuration.getHBaseKVStoreConfiguration().getCacheCapacity())) {
+      return KeyValueCache.cache(keyValueStore, configuration.getHBaseKVStoreConfiguration().getCacheCapacity(), SpeciesMatchRequest.class, NameUsageMatch.class);
+    }
+    return keyValueStore;
   }
 }

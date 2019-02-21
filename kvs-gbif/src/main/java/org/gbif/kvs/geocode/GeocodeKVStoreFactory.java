@@ -1,6 +1,7 @@
 package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
@@ -120,28 +121,32 @@ public class GeocodeKVStoreFactory {
    */
   public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
                                                                    GeocodeService geocodeService) throws IOException {
-    return HBaseStore.<LatLng, String, Collection<GeocodeResponse>>builder()
-        .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
-        .withResultMapper(
-            simpleResultMapper(
-                Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getCountryCodeColumnQualifier())))
-        .withValueMapper(countryCodeMapper())
-        .withValueMutator(
-            valueMutator(
-                Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getCountryCodeColumnQualifier()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())))
-        .withLoader(
-            latLng -> {
-              try {
-                return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
-              } catch (Exception ex) {
-                LOG.error("Error contacting geocode service", ex);
-                throw new IllegalStateException(ex);
-              }
-            })
-        .build();
+    KeyValueStore<LatLng, String> keyValueStore=  HBaseStore.<LatLng, String, Collection<GeocodeResponse>>builder()
+                                                    .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+                                                    .withResultMapper(
+                                                        simpleResultMapper(
+                                                            Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                                                            Bytes.toBytes(configuration.getCountryCodeColumnQualifier())))
+                                                    .withValueMapper(countryCodeMapper())
+                                                    .withValueMutator(
+                                                        valueMutator(
+                                                            Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                                                            Bytes.toBytes(configuration.getCountryCodeColumnQualifier()),
+                                                            Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                                                    .withLoader(
+                                                        latLng -> {
+                                                          try {
+                                                            return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
+                                                          } catch (Exception ex) {
+                                                            LOG.error("Error contacting geocode service", ex);
+                                                            throw new IllegalStateException(ex);
+                                                          }
+                                                        })
+                                                    .build();
+    if (Objects.nonNull(configuration.getHBaseKVStoreConfiguration().getCacheCapacity())) {
+      return KeyValueCache.cache(keyValueStore, configuration.getHBaseKVStoreConfiguration().getCacheCapacity(), LatLng.class, String.class);
+    }
+    return keyValueStore;
 
   }
 }

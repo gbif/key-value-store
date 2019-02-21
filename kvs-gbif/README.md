@@ -19,6 +19,7 @@ GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder()
                                                             .withColumnFamily("v") //Column in which qualifiers are stored
                                                             .withNumOfKeyBuckets(10) //Buckets for salted key generations
                                                             .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
+                                                            .withCacheCapacity(10_000) //Use an in-memory cache with a maximum of 10K entries
                                                             .build()).build(),
                             ClientConfiguration.builder()
                              .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
@@ -43,6 +44,7 @@ NameUsageMatchKVStoreFactory.nameUsageMatchKVStore(NameUsageMatchKVConfiguration
                 .withColumnFamily("v") //Column in which qualifiers are stored
                 .withNumOfKeyBuckets(10) //Buckets for salted key generations
                 .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
+                .withCacheCapacity(10_000) //Use an in-memory cache with a maximum of 10K entries
                 .build()).build(),
              new NameMatchServiceSyncClient(ClientConfiguration.builder()
                                               .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
