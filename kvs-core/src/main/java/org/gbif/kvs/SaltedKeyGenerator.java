@@ -37,7 +37,7 @@ public class SaltedKeyGenerator implements Serializable {
     this.numOfBuckets = numOfBuckets;
     this.charset = charset.name();
     // Calculated format is stored to avoid subsequent calculations of it
-    paddingFormat = "%0" + Integer.toString(numOfBuckets).length() + 'd';
+    paddingFormat = "%0" + Integer.toString(numOfBuckets - 1).length() + 'd';
   }
 
   /**
@@ -78,7 +78,7 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the bucket prefix
    */
   public byte[] bucketOf(String saltedKey) {
-    return saltedKey.substring(0, Integer.toString(numOfBuckets).length()).getBytes(getCharset());
+    return saltedKey.substring(0, Integer.toString(numOfBuckets - 1).length()).getBytes(getCharset());
   }
 
   /**
@@ -88,6 +88,6 @@ public class SaltedKeyGenerator implements Serializable {
    * @return the bucket prefix
    */
   public byte[] bucketOf(byte[] saltedKey) {
-    return Arrays.copyOfRange(saltedKey, 0, Integer.toString(numOfBuckets).length());
+    return Arrays.copyOfRange(saltedKey, 0, Integer.toString(numOfBuckets - 1).length());
   }
 }

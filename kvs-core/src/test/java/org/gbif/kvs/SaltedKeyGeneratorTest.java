@@ -3,6 +3,7 @@ package org.gbif.kvs;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,11 +12,10 @@ import org.junit.Test;
 public class SaltedKeyGeneratorTest {
 
   // Number of buckets/splits
-  private static final int NUM_OF_BUCKETS = 4;
+  private static final int NUM_OF_BUCKETS = 10;
 
   // Salted key generator for 10 splits/buckets
-  private static final SaltedKeyGenerator SALT_KEY_GENERATOR =
-      new SaltedKeyGenerator(NUM_OF_BUCKETS);
+  private static final SaltedKeyGenerator SALT_KEY_GENERATOR = new SaltedKeyGenerator(NUM_OF_BUCKETS);
 
   // Logical test key
   private static final String TEST_LOGICAL_KEY = "abcd";
@@ -38,9 +38,9 @@ public class SaltedKeyGeneratorTest {
   /** Tests that salted key are evenly distributed in buckets. */
   @Test
   public void evenlyDistributedKeys() {
-
+    int numOfRecords = 20;
     Map<String, Long> counts =
-        IntStream.rangeClosed(1, 16)
+        IntStream.rangeClosed(1, numOfRecords)
             .mapToObj(key -> SALT_KEY_GENERATOR.computeKey(Integer.toString(key)))
             .collect(
                 Collectors.groupingBy(
@@ -53,6 +53,18 @@ public class SaltedKeyGeneratorTest {
     counts.values().stream()
         .mapToDouble(count -> count)
         .average()
-        .ifPresent(average -> Assert.assertEquals(NUM_OF_BUCKETS, average, 0.0001));
+        .ifPresent(average -> Assert.assertEquals(numOfRecords/NUM_OF_BUCKETS, average, 0.0001));
+  }
+
+  /**
+   * Tests that the prefix generated for the salted key corresponds to the expected value.
+   */
+  @Test
+  public void prefixLengthTest() {
+    Stream.of(1, 10, 10, 100, 127, 542, 1000).forEach(bucket -> {
+      SaltedKeyGenerator saltedKeyGenerator = new SaltedKeyGenerator(bucket);
+      Assert.assertEquals("Bucket prefix is not of expected size", Integer.toString(bucket - 1).length(),
+                          saltedKeyGenerator.bucketOf(saltedKeyGenerator.computeKey(TEST_LOGICAL_KEY)).length);
+    });
   }
 }
