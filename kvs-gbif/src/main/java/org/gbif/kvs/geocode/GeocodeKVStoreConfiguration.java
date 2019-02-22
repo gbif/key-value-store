@@ -16,19 +16,25 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   // Stores the entire JSON response of the Geocode service
   private final String jsonColumnQualifier;
 
+  //Cache capacity
+  private final Long cacheCapacity;
+
   /**
    * Creates an configuration instance using the HBase KV and Rest client configurations.
    *
    * @param hBaseKVStoreConfiguration HBase KV store configuration
    * @param countryCodeColumnQualifier ISO country code column qualifier
    * @param jsonColumnQualifier column qualifier to store the entire json response
+   * @param cacheCapacity maximum number of entries in the in-memory cache
    */
   public GeocodeKVStoreConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration,
                                      String countryCodeColumnQualifier,
-                                     String jsonColumnQualifier) {
+                                     String jsonColumnQualifier,
+                                     Long cacheCapacity) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
     this.countryCodeColumnQualifier = countryCodeColumnQualifier;
     this.jsonColumnQualifier = jsonColumnQualifier;
+    this.cacheCapacity = cacheCapacity;
   }
 
   /** @return HBase KV store configuration */
@@ -47,6 +53,14 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   }
 
   /**
+   * Maximum number of entries in the in-memory cache.
+   * @return the maximum cache capacity
+   */
+  public Long getCacheCapacity() {
+    return cacheCapacity;
+  }
+
+  /**
    * Creates a new {@link Builder} instance.
    * @return a new builder
    */
@@ -62,6 +76,8 @@ public class GeocodeKVStoreConfiguration implements Serializable {
     private String countryCodeColumnQualifier;
 
     private String jsonColumnQualifier;
+
+    private Long cacheCapacity;
 
 
     /**
@@ -87,10 +103,15 @@ public class GeocodeKVStoreConfiguration implements Serializable {
       return this;
     }
 
+    public Builder withCacheCapacity(Long cacheCapacity) {
+      this.cacheCapacity = cacheCapacity;
+      return this;
+    }
+
 
     public GeocodeKVStoreConfiguration build() {
       return new GeocodeKVStoreConfiguration(
-          hBaseKVStoreConfiguration, countryCodeColumnQualifier,jsonColumnQualifier);
+          hBaseKVStoreConfiguration, countryCodeColumnQualifier, jsonColumnQualifier, cacheCapacity);
     }
   }
 }

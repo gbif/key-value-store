@@ -19,8 +19,7 @@ class TestConfiguration {
   private final static HBaseKVStoreConfiguration.Builder HBASE_KV_STORE_CONFIGURATION = HBaseKVStoreConfiguration.builder()
       .withTableName("geocode_kv")
       .withNumOfKeyBuckets(4)
-      .withColumnFamily("v")
-      .withCacheCapacity(2L); //Cache size of 2
+      .withColumnFamily("v");
 
   /**
    * Creates a test configuration using default test value and the ZK port assign by the mini cluster.
@@ -34,6 +33,7 @@ class TestConfiguration {
                                     .withHBaseKVStoreConfiguration(HBASE_KV_STORE_CONFIGURATION
                                                                     .withHBaseZk("localhost:" + zkClientPort)
                                                                     .build())
+                                    .withCacheCapacity(2L) //Cache size of 2
                                     .build();
   }
 

@@ -5,7 +5,6 @@ import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -13,19 +12,16 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class GeocodeKVStoreTestIT {
+public class GeocodeKVHBaseStoreTestIT {
 
   //-- Static elements shared for all tests
 
@@ -49,12 +45,7 @@ public class GeocodeKVStoreTestIT {
 
   @Parameterized.Parameters(name = "{index}: Lookup({0})=Country({1})")
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {
-        { LatLng.create(48.019573, 66.923684), "KZ" },
-        { LatLng.create(35.937496, 14.375416), "MT" },
-        { LatLng.create(-16.290154, -63.588653), "BO" },
-        { LatLng.create(36.93, 13.37), null }
-    });
+    return TestCoordinates.COORDINATES;
   }
 
   /**
@@ -62,7 +53,7 @@ public class GeocodeKVStoreTestIT {
    * @param latLng coordinate to test
    * @param countryCode expected country code
    */
-  public GeocodeKVStoreTestIT(LatLng latLng, String countryCode) {
+  public GeocodeKVHBaseStoreTestIT(LatLng latLng, String countryCode) {
     this.latLng = latLng;
     this.countryCode = countryCode;
   }

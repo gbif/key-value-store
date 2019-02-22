@@ -14,14 +14,12 @@ public class HBaseKVStoreConfiguration implements Serializable {
   private final String tableName;
   private final String columnFamily;
   private final int numOfKeyBuckets;
-  private final Long cacheCapacity;
 
-  public HBaseKVStoreConfiguration(String hbaseZk, String tableName, String columnFamily, int numOfKeyBuckets, Long cacheCapacity) {
+  public HBaseKVStoreConfiguration(String hbaseZk, String tableName, String columnFamily, int numOfKeyBuckets) {
     this.hbaseZk = hbaseZk;
     this.tableName = tableName;
     this.columnFamily = columnFamily;
     this.numOfKeyBuckets = numOfKeyBuckets;
-    this.cacheCapacity = cacheCapacity;
   }
 
   /**
@@ -60,14 +58,6 @@ public class HBaseKVStoreConfiguration implements Serializable {
     return numOfKeyBuckets;
   }
 
-  /**
-   * Maximum number of entries in the in-memory cache.
-   * @return the maximum cache capacity
-   */
-  public Long getCacheCapacity() {
-    return cacheCapacity;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -78,7 +68,6 @@ public class HBaseKVStoreConfiguration implements Serializable {
     }
     HBaseKVStoreConfiguration that = (HBaseKVStoreConfiguration) o;
     return numOfKeyBuckets == that.numOfKeyBuckets
-        && Objects.equals(cacheCapacity, that.cacheCapacity)
         && Objects.equals(hbaseZk, that.hbaseZk)
         && Objects.equals(tableName, that.tableName)
         && Objects.equals(columnFamily, that.columnFamily);
@@ -86,7 +75,7 @@ public class HBaseKVStoreConfiguration implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(hbaseZk, tableName, columnFamily, numOfKeyBuckets, cacheCapacity);
+    return Objects.hash(hbaseZk, tableName, columnFamily, numOfKeyBuckets);
   }
 
   @Override
@@ -95,7 +84,6 @@ public class HBaseKVStoreConfiguration implements Serializable {
         .add("hbaseZk='" + hbaseZk + "'")
         .add("tableName='" + tableName + "'")
         .add("columnFamily='" + columnFamily + "'")
-        .add("cacheCapacity='" + cacheCapacity + "'")
         .add("numOfKeyBuckets=" + numOfKeyBuckets)
         .toString();
   }
@@ -127,7 +115,6 @@ public class HBaseKVStoreConfiguration implements Serializable {
     private String tableName;
     private String columnFamily;
     private int numOfKeyBuckets;
-    private Long cacheCapacity;
 
     /**
      * Hidden constructor to force use the containing class builder() method.
@@ -151,10 +138,6 @@ public class HBaseKVStoreConfiguration implements Serializable {
       return this;
     }
 
-    public Builder withCacheCapacity(Long cacheCapacity) {
-      this.cacheCapacity = cacheCapacity;
-      return this;
-    }
 
     public Builder withColumnFamily(String columnFamily) {
       this.columnFamily = columnFamily;
@@ -162,7 +145,7 @@ public class HBaseKVStoreConfiguration implements Serializable {
     }
 
     public HBaseKVStoreConfiguration build() {
-      return new HBaseKVStoreConfiguration(hbaseZk, tableName, columnFamily, numOfKeyBuckets, cacheCapacity);
+      return new HBaseKVStoreConfiguration(hbaseZk, tableName, columnFamily, numOfKeyBuckets);
     }
   }
 }

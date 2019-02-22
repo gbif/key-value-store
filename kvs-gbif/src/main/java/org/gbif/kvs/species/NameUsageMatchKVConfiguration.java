@@ -14,15 +14,20 @@ public class NameUsageMatchKVConfiguration implements Serializable {
   private final String jsonColumnQualifier;
 
 
+  private final Long cacheCapacity;
+
+
   /**
    * Creates an configuration instance using the HBase KV and Rest client configurations.
    *
    * @param hBaseKVStoreConfiguration HBase KV store configuration
    * @param jsonColumnQualifier column qualifier to store the entire json response
+   * @param cacheCapacity maximum number of entries in the in-memory cache
    */
-  public NameUsageMatchKVConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration, String jsonColumnQualifier) {
+  public NameUsageMatchKVConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration, String jsonColumnQualifier, Long cacheCapacity) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
     this.jsonColumnQualifier = jsonColumnQualifier;
+    this.cacheCapacity = cacheCapacity;
   }
 
   /** @return HBase KV store configuration */
@@ -38,6 +43,13 @@ public class NameUsageMatchKVConfiguration implements Serializable {
 
 
   /**
+   * Maximum number of entries in the in-memory cache.
+   * @return the maximum cache capacity
+   */
+  public Long getCacheCapacity() {
+    return cacheCapacity;
+  }
+  /**
    * Creates a new {@link Builder} instance.
    * @return a new builder
    */
@@ -51,6 +63,8 @@ public class NameUsageMatchKVConfiguration implements Serializable {
     private HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
 
     private String jsonColumnQualifier;
+
+    private Long cacheCapacity;
 
 
     /**
@@ -71,8 +85,13 @@ public class NameUsageMatchKVConfiguration implements Serializable {
       return this;
     }
 
+    public Builder withCacheCapacity(Long cacheCapacity) {
+      this.cacheCapacity = cacheCapacity;
+      return this;
+    }
+
     public NameUsageMatchKVConfiguration build() {
-      return new NameUsageMatchKVConfiguration(hBaseKVStoreConfiguration, jsonColumnQualifier);
+      return new NameUsageMatchKVConfiguration(hBaseKVStoreConfiguration, jsonColumnQualifier, cacheCapacity);
     }
 
   }
