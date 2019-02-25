@@ -106,28 +106,34 @@ public class GeocodeKVStoreFactory {
    */
   public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
                                                                    ClientConfiguration geocodeClientConfiguration) throws IOException {
-    return simpleGeocodeKVStore(configuration, new GeocodeServiceSyncClient(geocodeClientConfiguration));
+    GeocodeService geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
+    return simpleGeocodeKVStore(configuration, geocodeService);
 
   }
 
-  /**
-   * Create a new instance of a Geocode KV store/cache backed by an HBase table. This instance only
-   * returns the ISO country code of the resulting geocode lookup.
-   *
-   * @param configuration KV store configuration
-   * @param geocodeService instance of the Rest GeocodeService client
-   * @return a new instance of Geocode KV store
-   * @throws IOException if the Rest client can't be created
-   */
+
   public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
                                                                    GeocodeService geocodeService) throws IOException {
     KeyValueStore<LatLng, String> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
-                                                    hbaseKVStore(configuration, geocodeService) : restKVStore(geocodeService);
+        hbaseKVStore(configuration, geocodeService) : restKVStore(geocodeService);
+
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, String.class);
     }
     return keyValueStore;
+
   }
+
+  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) throws IOException {
+    GeocodeService geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
+    KeyValueStore<LatLng, String> keyValueStore = restKVStore(geocodeService);
+    if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), LatLng.class, String.class);
+    }
+    return keyValueStore;
+
+  }
+
 
   /**
    * Builds a KVStore backed by Hbase.

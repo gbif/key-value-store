@@ -1,12 +1,15 @@
 package org.gbif.kvs.species;
 
+import org.gbif.api.service.checklistbank.NameUsageService;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.hbase.HBaseStore;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameMatchService;
 import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.rest.client.species.retrofit.NameMatchServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -96,6 +99,16 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
+  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
+    KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = restKVStore(clientConfiguration);
+    if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), SpeciesMatchRequest.class, NameUsageMatch.class);
+    }
+    return keyValueStore;
+  }
+
+
+
   private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> hbaseKVStore(NameUsageMatchKVConfiguration configuration,
                                                                                  NameMatchService nameMatchService) throws IOException {
     return HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
@@ -132,6 +145,11 @@ public class NameUsageMatchKVStoreFactory {
             })
         .build();
   }
+
+  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(ClientConfiguration clientConfiguration) {
+    return restKVStore(new NameMatchServiceSyncClient(clientConfiguration));
+  }
+
   /**
   * Builds a KV Store backed by the rest client.
   */
