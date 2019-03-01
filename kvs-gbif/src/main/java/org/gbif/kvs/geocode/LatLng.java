@@ -65,7 +65,7 @@ public class LatLng implements Serializable, Indexable {
    */
   @Override
   public String getLogicalKey() {
-    return latitude.toString() + longitude.toString();
+    return latitude.toString() + '|' + longitude.toString();
   }
 
   @Override
