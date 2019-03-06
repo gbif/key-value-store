@@ -134,6 +134,19 @@ public class GeocodeKVStoreFactory {
 
   }
 
+  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration) throws IOException {
+    KeyValueStore<LatLng, String> keyValueStore = HBaseStore.<LatLng, String, Collection<String>>builder()
+        .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+        .withResultMapper(
+            simpleResultMapper(
+                Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
+                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+        .build();
+    if (Objects.nonNull(configuration.getCacheCapacity())) {
+      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, String.class);
+    }
+    return keyValueStore;
+  }
 
   /**
    * Builds a KVStore backed by Hbase.
