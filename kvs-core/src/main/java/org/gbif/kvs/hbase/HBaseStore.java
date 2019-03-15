@@ -2,6 +2,8 @@ package org.gbif.kvs.hbase;
 
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.kvs.metrics.CacheMetrics;
+import org.gbif.kvs.metrics.ElasticMetricsConfig;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -10,6 +12,10 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.elastic.ElasticMeterRegistry;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
@@ -60,9 +66,12 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   // Salted key generator for the specified number of buckets
   private final SaltedKeyGenerator saltedKeyGenerator;
 
+  private final CacheMetrics metrics;
+
   private HBaseStore(HBaseKVStoreConfiguration config, BiFunction<byte[], L, Put> valueMutator,
                      Function<Result, V> resultMapper, Function<L, V> valueMapper,
-                     Function<K, L> loader) throws IOException {
+                     Function<K, L> loader,
+                     MeterRegistry meterRegistry) throws IOException {
     connection = ConnectionFactory.createConnection(config.hbaseConfig());
     saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
     this.tableName = TableName.valueOf(config.getTableName());
@@ -70,6 +79,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     this.resultMapper = resultMapper;
     this.valueMapper = valueMapper;
     this.loader = loader;
+    this.metrics = CacheMetrics.create(meterRegistry, config.getTableName());
   }
 
   /**
@@ -83,6 +93,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       Put put = valueMutator.apply(key, value);
       if(Objects.nonNull(put)) {
         table.put(valueMutator.apply(key, value));
+        metrics.incInserts();
         return Optional.ofNullable(valueMapper.apply(value)).orElse(null);
       }
       return null;
@@ -112,6 +123,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
         }
         return null;
       }
+      metrics.incHits();
       return resultMapper.apply(result);
     } catch (IOException ex) {
       LOG.error("Error retrieving data", ex);
@@ -154,6 +166,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     private Function<Result, V> resultMapper;
     private Function<L, V> valueMapper;
     private Function<K, L> loader;
+    private ElasticMetricsConfig metricsConfig;
 
     public Builder<K, V, L> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
       this.configuration = configuration;
@@ -180,8 +193,14 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       return this;
     }
 
+    public Builder<K, V, L> withElasticMetricsConfig(ElasticMetricsConfig metricsConfig) {
+      this.metricsConfig = metricsConfig;
+      return this;
+    }
+
     public HBaseStore<K, V, L> build() throws IOException {
-      return new HBaseStore<K, V, L>(configuration, valueMutator, resultMapper, valueMapper, loader);
+      MeterRegistry metricsRegistry = Objects.nonNull(this.metricsConfig)? new ElasticMeterRegistry(this.metricsConfig, Clock.SYSTEM) : new SimpleMeterRegistry();
+      return new HBaseStore<>(configuration, valueMutator, resultMapper, valueMapper, loader, metricsRegistry);
     }
   }
 }
