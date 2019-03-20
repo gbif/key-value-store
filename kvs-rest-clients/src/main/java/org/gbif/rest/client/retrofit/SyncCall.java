@@ -35,12 +35,10 @@ public class SyncCall {
       if (response.isSuccessful() && response.body() != null) {
         return response.body();
       }
-      LOG.debug("Service responded with an error {}", response);
+      LOG.error("Service responded with an error {}", response);
       throw new HttpException(response); // Propagates the failed response
     } catch (IOException ex) {
-      String message = "Error executing call";
-      LOG.error(message, ex);
-      throw new RuntimeException(message, ex);
+      throw new RuntimeException("Error executing call", ex);
     }
   }
 }
