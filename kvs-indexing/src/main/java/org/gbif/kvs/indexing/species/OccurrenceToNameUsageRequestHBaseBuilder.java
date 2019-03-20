@@ -38,7 +38,7 @@ class OccurrenceToNameUsageRequestHBaseBuilder {
     // Interpret common
     putIfExists(result, DwcTerm.kingdom, builder::withKingdom);
     putIfExists(result, DwcTerm.phylum, builder::withPhylum);
-    putIfExists(result, DwcTerm.class_, builder::withClass_);
+    putIfExists(result, DwcTerm.class_, builder::withClazz);
     putIfExists(result, DwcTerm.order, builder::withOrder);
     putIfExists(result, DwcTerm.family, builder::withFamily);
     putIfExists(result, DwcTerm.genus, builder::withGenus);

@@ -83,6 +83,17 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   }
 
   /**
+   * Wraps an exception into a {@link IllegalArgumentException}.
+   * @param throwable to propagate
+   * @param message to log and use for the exception wrapper
+   * @return a new {@link IllegalArgumentException}
+   */
+  private static RuntimeException logAndThrow(Throwable throwable, String message) {
+    LOG.error(message, throwable);
+    return new IllegalStateException(throwable);
+  }
+
+  /**
    * Stores in HBase a value for using the key element.
    *
    * @param key HBase row key
@@ -98,8 +109,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       }
       return null;
     } catch (IOException ex) {
-      LOG.error("Appending data to store failed", ex);
-      throw new IllegalStateException(ex);
+      throw logAndThrow(ex, "Appending data to store failed");
     }
   }
 
@@ -126,8 +136,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       metrics.incHits();
       return resultMapper.apply(result);
     } catch (IOException ex) {
-      LOG.error("Error retrieving data", ex);
-      throw new IllegalStateException(ex);
+      throw logAndThrow(ex, "Error retrieving data");
     }
   }
 

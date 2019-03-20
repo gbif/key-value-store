@@ -110,9 +110,9 @@ public class ReverseGeocodeIndexer {
                       new SaltedKeyGenerator(
                           storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
-                  private GeocodeService geocodeService;
+                  private transient GeocodeService geocodeService;
 
-                  private BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator;
+                  private transient BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator;
 
                   @Setup
                   public void start() {

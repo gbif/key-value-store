@@ -40,6 +40,18 @@ public class GeocodeKVStoreFactory {
   }
 
   /**
+   * Wraps an exception into a {@link RuntimeException}.
+   * @param throwable to propagate
+   * @param message to log and use for the exception wrapper
+   * @return a new {@link RuntimeException}
+   */
+  private static RuntimeException logAndThrow(Throwable throwable, String message) {
+    LOG.error(message, throwable);
+    return new RuntimeException(throwable);
+  }
+
+
+  /**
    * Returns a function that maps HBase results into single String values.
    *
    * @param columnFamily HBase column in which values are stored
@@ -89,8 +101,7 @@ public class GeocodeKVStoreFactory {
         }
         return null;
       } catch (IOException ex) {
-        LOG.error("Error serializing response into bytes", ex);
-        throw new RuntimeException(ex);
+        throw logAndThrow(ex, "Error serializing response into bytes");
       }
     };
   }
@@ -124,7 +135,7 @@ public class GeocodeKVStoreFactory {
 
   }
 
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) throws IOException {
+  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) {
     GeocodeService geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
     KeyValueStore<LatLng, String> keyValueStore = restKVStore(geocodeService);
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
@@ -169,8 +180,7 @@ public class GeocodeKVStoreFactory {
               try {
                 return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
               } catch (Exception ex) {
-                LOG.error("Error contacting geocode service", ex);
-                throw new IllegalStateException(ex);
+                throw logAndThrow(ex, "Error contacting geocode service");
               }
             })
         .build();

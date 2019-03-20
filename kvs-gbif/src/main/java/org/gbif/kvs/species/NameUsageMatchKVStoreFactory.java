@@ -1,10 +1,8 @@
 package org.gbif.kvs.species;
 
-import org.gbif.api.service.checklistbank.NameUsageService;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
-import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameMatchService;
@@ -44,6 +42,17 @@ public class NameUsageMatchKVStoreFactory {
   }
 
   /**
+   * Wraps an exception into a {@link RuntimeException}.
+   * @param throwable to propagate
+   * @param message to log and use for the exception wrapper
+   * @return a new {@link RuntimeException}
+   */
+  private static RuntimeException logAndThrow(Throwable throwable, String message) {
+    LOG.error(message, throwable);
+    return new RuntimeException(throwable);
+  }
+
+  /**
    * Returns a function that maps HBase results into NameUsageMatch values.
    *
    * @param columnFamily HBase column in which values are stored
@@ -59,8 +68,7 @@ public class NameUsageMatchKVStoreFactory {
            }
            return null;
         } catch (Exception ex) {
-          LOG.error("Error reading value form HBase", ex);
-          throw new RuntimeException(ex);
+          throw logAndThrow(ex, "Error reading value form HBase");
         }
       };
   }
@@ -83,8 +91,7 @@ public class NameUsageMatchKVStoreFactory {
         }
         return null;
       } catch (IOException ex) {
-        LOG.error("Error serializing response into bytes", ex);
-        throw new RuntimeException(ex);
+        throw logAndThrow(ex, "Error serializing response into bytes");
       }
     };
   }
@@ -130,7 +137,7 @@ public class NameUsageMatchKVStoreFactory {
                 return nameMatchService.match(
                     request.getKingdom(),
                     request.getPhylum(),
-                    request.getClass_(),
+                    request.getClazz(),
                     request.getOrder(),
                     request.getFamily(),
                     request.getGenus(),
@@ -139,8 +146,7 @@ public class NameUsageMatchKVStoreFactory {
                     false,
                     false);
               } catch (Exception ex) {
-                LOG.error("Error contacting the species math service", ex);
-                throw new RuntimeException(ex);
+                throw logAndThrow(ex, "Error contacting the species math service");
               }
             })
         .build();
@@ -162,7 +168,7 @@ public class NameUsageMatchKVStoreFactory {
           return nameMatchService.match(
               key.getKingdom(),
               key.getPhylum(),
-              key.getClass_(),
+              key.getClazz(),
               key.getOrder(),
               key.getFamily(),
               key.getGenus(),
@@ -171,8 +177,7 @@ public class NameUsageMatchKVStoreFactory {
               false,
               false);
         } catch (Exception ex) {
-          LOG.error("Error contacting the species math service", ex);
-          throw new RuntimeException(ex);
+          throw logAndThrow(ex, "Error contacting the species math service");
         }
       }
 

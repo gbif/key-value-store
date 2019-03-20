@@ -113,9 +113,9 @@ public class NameUsageMatchIndexer {
                       new SaltedKeyGenerator(
                           storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
-                  private NameMatchService nameMatchService;
+                  private transient NameMatchService nameMatchService;
 
-                  private BiFunction<byte[], NameUsageMatch, Put> valueMutator;
+                  private transient BiFunction<byte[], NameUsageMatch, Put> valueMutator;
 
                   @Setup
                   public void start() {
@@ -132,7 +132,7 @@ public class NameUsageMatchIndexer {
                       SpeciesMatchRequest request = context.element();
                       NameUsageMatch nameUsageMatch = nameMatchService.match(request.getKingdom(),
                           request.getPhylum(),
-                          request.getClass_(),
+                          request.getClazz(),
                           request.getOrder(),
                           request.getFamily(),
                           request.getGenus(),

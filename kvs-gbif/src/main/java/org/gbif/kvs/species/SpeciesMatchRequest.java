@@ -21,8 +21,8 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
   private final String kingdom;
   private final String phylum;
-  private final String  class_;
-  private final String  order;
+  private final String clazz;
+  private final String order;
   private final String family;
   private final String genus;
   private final String specificEpithet;
@@ -36,12 +36,12 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   /**
    * Full constructor.
    */
-  private SpeciesMatchRequest(String kingdom, String phylum, String class_, String order, String family, String genus,
+  private SpeciesMatchRequest(String kingdom, String phylum, String clazz, String order, String family, String genus,
                               String specificEpithet, String infraspecificEpithet, String rank, String verbatimTaxonRank,
                               String scientificName, String genericName, String scientificNameAuthorship) {
     this.kingdom = kingdom;
     this.phylum = phylum;
-    this.class_ = class_;
+    this.clazz = clazz;
     this.order = order;
     this.family = family;
     this.genus = genus;
@@ -62,8 +62,8 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     return phylum;
   }
 
-  public String getClass_() {
-    return class_;
+  public String getClazz() {
+    return clazz;
   }
 
   public String getOrder() {
@@ -108,7 +108,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
   @Override
   public String getLogicalKey() {
-    return appendIgnoreNulls(kingdom, phylum, class_, order, family, genus, specificEpithet,
+    return appendIgnoreNulls(kingdom, phylum, clazz, order, family, genus, specificEpithet,
                             infraspecificEpithet, rank, verbatimTaxonRank, scientificName, genericName,
                             scientificNameAuthorship);
   }
@@ -132,7 +132,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     // Interpret common
     Optional.ofNullable(kingdom).ifPresent(v -> map.put(DwcTerm.kingdom.simpleName(), v));
     Optional.ofNullable(phylum).ifPresent(v -> map.put(DwcTerm.phylum.simpleName(), v));
-    Optional.ofNullable(class_).ifPresent(v -> map.put(DwcTerm.class_.simpleName(), v));
+    Optional.ofNullable(clazz).ifPresent(v -> map.put(DwcTerm.class_.simpleName(), v));
     Optional.ofNullable(order).ifPresent(v -> map.put(DwcTerm.order.simpleName(), v));
     Optional.ofNullable(family).ifPresent(v -> map.put(DwcTerm.family.simpleName(), v));
     Optional.ofNullable(genus).ifPresent(v -> map.put(DwcTerm.genus.simpleName(), v));
@@ -155,7 +155,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     SpeciesMatchRequest that = (SpeciesMatchRequest) o;
     return Objects.equals(kingdom, that.kingdom) &&
         Objects.equals(phylum, that.phylum) &&
-        Objects.equals(class_, that.class_) &&
+        Objects.equals(clazz, that.clazz) &&
         Objects.equals(order, that.order) &&
         Objects.equals(family, that.family) &&
         Objects.equals(genus, that.genus) &&
@@ -170,7 +170,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(kingdom, phylum, class_, order, family, genus, specificEpithet, infraspecificEpithet,
+    return Objects.hash(kingdom, phylum, clazz, order, family, genus, specificEpithet, infraspecificEpithet,
                         rank, verbatimTaxonRank, scientificName, genericName, scientificNameAuthorship);
   }
 
@@ -179,7 +179,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     return new StringJoiner(", ", SpeciesMatchRequest.class.getSimpleName() + "[", "]")
         .add("kingdom='" + kingdom + "'")
         .add("phylum='" + phylum + "'")
-        .add("class_='" + class_ + "'")
+        .add("clazz='" + clazz + "'")
         .add("order='" + order + "'")
         .add("family='" + family + "'")
         .add("genus='" + genus + "'")
@@ -203,7 +203,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   public static class Builder {
     private String kingdom;
     private String phylum;
-    private String class_;
+    private String clazz;
     private String order;
     private String family;
     private String genus;
@@ -225,8 +225,8 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
       return this;
     }
 
-    public Builder withClass_(String class_) {
-      this.class_ = ClassificationUtils.clean(class_);
+    public Builder withClazz(String clazz) {
+      this.clazz = ClassificationUtils.clean(clazz);
       return this;
     }
 
@@ -281,7 +281,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     }
 
     public SpeciesMatchRequest build() {
-      return new SpeciesMatchRequest(kingdom, phylum, class_, order, family, genus, specificEpithet,
+      return new SpeciesMatchRequest(kingdom, phylum, clazz, order, family, genus, specificEpithet,
                                      infraspecificEpithet, rank, verbatimRank, scientificName, genericName,
                                      scientificNameAuthorship);
     }
