@@ -38,7 +38,7 @@ public class SyncCall {
       LOG.error("Service responded with an error {}", response);
       throw new HttpException(response); // Propagates the failed response
     } catch (IOException ex) {
-      throw new RuntimeException("Error executing call", ex);
+      throw new RestClientException("Error executing call", ex);
     }
   }
 }
