@@ -4,7 +4,6 @@ import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.common.parsers.RankParser;
 import org.gbif.common.parsers.core.ParseResult;
-import org.gbif.common.parsers.utils.ClassificationUtils;
 
 import java.util.Optional;
 
@@ -41,14 +40,12 @@ public class TaxonParsers {
   }
 
   private static String fromScientificName(String scientificName, String authorship) {
-    String name = ClassificationUtils.clean(scientificName);
-
     boolean containsAuthorship =
-        name != null
+      scientificName != null
             && !Strings.isNullOrEmpty(authorship)
-            && !name.toLowerCase().contains(authorship.toLowerCase());
+            && !scientificName.toLowerCase().contains(authorship.toLowerCase());
 
-    return containsAuthorship ? name + " " + authorship : name;
+    return containsAuthorship ? scientificName + " " + authorship : scientificName;
   }
 
   /**
@@ -77,7 +74,6 @@ public class TaxonParsers {
 
     String authorship =
         Optional.ofNullable(speciesMatchRequest.getScientificNameAuthorship())
-            .map(ClassificationUtils::cleanAuthor)
             .orElse(null);
 
     return Optional.ofNullable(speciesMatchRequest.getScientificName())

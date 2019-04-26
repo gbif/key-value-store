@@ -246,17 +246,17 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     }
 
     public Builder withSpecificEpithet(String specificEpithet) {
-      this.specificEpithet = ClassificationUtils.clean(specificEpithet);
+      this.specificEpithet = ClassificationUtils.cleanAuthor(specificEpithet);
       return this;
     }
 
     public Builder withInfraspecificEpithet(String infraspecificEpithet) {
-      this.infraspecificEpithet = ClassificationUtils.clean(infraspecificEpithet);
+      this.infraspecificEpithet = ClassificationUtils.cleanAuthor(infraspecificEpithet);
       return this;
     }
 
     public Builder withRank(String rank) {
-      this.rank = ClassificationUtils.clean(rank);
+      this.rank = rank;
       return this;
     }
 
@@ -276,7 +276,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     }
 
     public Builder withScientificNameAuthorship(String scientificNameAuthorship) {
-      this.scientificNameAuthorship = ClassificationUtils.clean(scientificNameAuthorship);
+      this.scientificNameAuthorship = ClassificationUtils.cleanAuthor(scientificNameAuthorship);
       return this;
     }
 
