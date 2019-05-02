@@ -2,7 +2,7 @@ package org.gbif.rest.client.geocode.retrofit;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
-import org.gbif.rest.client.geocode.GeocodeResponse;
+import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.GeocodeService;
 
 import java.util.Collection;
@@ -36,7 +36,8 @@ public class GeocodeServiceSyncClient implements GeocodeService {
    * @return the collection of proposed locations, an empty collection otherwise
    */
   @Override
-  public Collection<GeocodeResponse> reverse(Double latitude, Double longitude) {
+  public Collection<Location> reverse(Double latitude, Double longitude) {
     return syncCall(retrofitService.reverse(latitude, longitude));
   }
+
 }

@@ -14,5 +14,5 @@ public interface GeocodeService {
    * @param longitude decimal longitude
    * @return a list of proposed locations, an empty collections if no proposals were found
    */
-  Collection<GeocodeResponse> reverse(Double latitude, Double longitude);
+  Collection<Location> reverse(Double latitude, Double longitude);
 }

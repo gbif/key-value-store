@@ -10,9 +10,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   // HBase KV store configuration
   private final HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
 
-  // Column qualifier to store the preferred country code
-  private final String countryCodeColumnQualifier;
-
   // Stores the entire JSON response of the Geocode service
   private final String jsonColumnQualifier;
 
@@ -23,16 +20,13 @@ public class GeocodeKVStoreConfiguration implements Serializable {
    * Creates an configuration instance using the HBase KV and Rest client configurations.
    *
    * @param hBaseKVStoreConfiguration HBase KV store configuration
-   * @param countryCodeColumnQualifier ISO country code column qualifier
    * @param jsonColumnQualifier column qualifier to store the entire json response
    * @param cacheCapacity maximum number of entries in the in-memory cache
    */
   public GeocodeKVStoreConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration,
-                                     String countryCodeColumnQualifier,
                                      String jsonColumnQualifier,
                                      Long cacheCapacity) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
-    this.countryCodeColumnQualifier = countryCodeColumnQualifier;
     this.jsonColumnQualifier = jsonColumnQualifier;
     this.cacheCapacity = cacheCapacity;
   }
@@ -40,11 +34,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
   /** @return HBase KV store configuration */
   public HBaseKVStoreConfiguration getHBaseKVStoreConfiguration() {
     return hBaseKVStoreConfiguration;
-  }
-
-  /** @return ISO country code column qualifier */
-  public String getCountryCodeColumnQualifier() {
-    return countryCodeColumnQualifier;
   }
 
   /** @return JSON response column qualifier */
@@ -73,8 +62,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
 
     private HBaseKVStoreConfiguration hBaseKVStoreConfiguration;
 
-    private String countryCodeColumnQualifier;
-
     private String jsonColumnQualifier;
 
     private Long cacheCapacity;
@@ -93,11 +80,6 @@ public class GeocodeKVStoreConfiguration implements Serializable {
       return this;
     }
 
-    public Builder withCountryCodeColumnQualifier(String countryCodeColumnQualifier) {
-      this.countryCodeColumnQualifier = countryCodeColumnQualifier;
-      return this;
-    }
-
     public Builder withJsonColumnQualifier(String jsonColumnQualifier) {
       this.jsonColumnQualifier = jsonColumnQualifier;
       return this;
@@ -110,8 +92,7 @@ public class GeocodeKVStoreConfiguration implements Serializable {
 
 
     public GeocodeKVStoreConfiguration build() {
-      return new GeocodeKVStoreConfiguration(
-          hBaseKVStoreConfiguration, countryCodeColumnQualifier, jsonColumnQualifier, cacheCapacity);
+      return new GeocodeKVStoreConfiguration(hBaseKVStoreConfiguration, jsonColumnQualifier, cacheCapacity);
     }
   }
 }

@@ -29,7 +29,6 @@ class TestConfiguration {
 
     geocodeKVStoreConfiguration = GeocodeKVStoreConfiguration.builder()
                                     .withJsonColumnQualifier("j") //stores JSON data
-                                    .withCountryCodeColumnQualifier("c") //stores ISO country code
                                     .withHBaseKVStoreConfiguration(HBASE_KV_STORE_CONFIGURATION
                                                                     .withHBaseZk("localhost:" + zkClientPort)
                                                                     .build())

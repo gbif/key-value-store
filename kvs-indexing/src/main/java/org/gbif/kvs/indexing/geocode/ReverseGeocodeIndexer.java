@@ -7,10 +7,13 @@ import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
+import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.beam.runners.spark.SparkRunner;
@@ -51,7 +54,6 @@ public class ReverseGeocodeIndexer {
   private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
     return GeocodeKVStoreConfiguration.builder()
             .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-            .withCountryCodeColumnQualifier(options.getCountryCodeColumnQualifier())
             .withJsonColumnQualifier(options.getJsonColumnQualifier())
             .build();
   }
@@ -112,7 +114,7 @@ public class ReverseGeocodeIndexer {
 
                   private transient GeocodeService geocodeService;
 
-                  private transient BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator;
+                  private transient BiFunction<byte[], GeocodeResponse, Put> valueMutator;
 
                   @Setup
                   public void start() {
@@ -120,7 +122,6 @@ public class ReverseGeocodeIndexer {
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                            Bytes.toBytes(storeConfiguration.getCountryCodeColumnQualifier()),
                             Bytes.toBytes(storeConfiguration.getJsonColumnQualifier()));
                   }
 
@@ -128,11 +129,12 @@ public class ReverseGeocodeIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       LatLng latLng = context.element();
-                      Collection<GeocodeResponse>  geocodeResponses = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
-                      if (!geocodeResponses.isEmpty()) {
-                        byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
-                        context.output(valueMutator.apply(saltedKey, geocodeResponses));
-                      }
+                      Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()))
+                              .ifPresent( locations -> {
+                                  GeocodeResponse response = new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()));
+                                  byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
+                                  context.output(valueMutator.apply(saltedKey, response));
+                              });
                     } catch (Exception ex) {
                       LOG.error("Error performing Geocode lookup", ex);
                     }

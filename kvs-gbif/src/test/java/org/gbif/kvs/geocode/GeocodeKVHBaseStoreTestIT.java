@@ -1,12 +1,19 @@
 package org.gbif.kvs.geocode;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.rest.client.geocode.GeocodeResponse;
+import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.Get;
@@ -31,14 +38,22 @@ public class GeocodeKVHBaseStoreTestIT {
 
   private static HTable geocodeKvTable;
 
-  private static KeyValueStore<LatLng,String> geocodeKeyValueStore;
+  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore;
+
+  // Used to store and retrieve JSON values stored in HBase
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  static {
+    MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    MAPPER.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  }
 
   //-- End of shared elements
 
   //--- Elements of parameterized tests
   private final LatLng latLng;
 
-  private final String countryCode;
+  private final GeocodeResponse geocodeResponse;
 
   //-- End of parameterized tests
 
@@ -55,7 +70,14 @@ public class GeocodeKVHBaseStoreTestIT {
    */
   public GeocodeKVHBaseStoreTestIT(LatLng latLng, String countryCode) {
     this.latLng = latLng;
-    this.countryCode = countryCode;
+    this.geocodeResponse = Optional.ofNullable(countryCode).map( isoCode -> {
+                              Location location = new Location();
+                              location.setIsoCountryCode2Digit(countryCode);
+                              GeocodeResponse geocodeResponse = new GeocodeResponse();
+                              geocodeResponse.setLocations(Collections.singletonList(location));
+                              return geocodeResponse;
+                            })
+            .orElse(null);
   }
 
 
@@ -74,7 +96,7 @@ public class GeocodeKVHBaseStoreTestIT {
    * @return a new Geocode KV store
    * @throws IOException if something went wrong creating the store
    */
-  private static KeyValueStore<LatLng,String> geocodeKeyValueStore() throws IOException {
+  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(testConfiguration.getGeocodeKVStoreConfiguration(),
                                                       new GeocodeTestService());
   }
@@ -109,10 +131,23 @@ public class GeocodeKVHBaseStoreTestIT {
     SaltedKeyGenerator saltedKeyGenerator = new SaltedKeyGenerator(testConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
     Get get = new Get(saltedKeyGenerator.computeKey(latLng.getLogicalKey()));
     Result result = geocodeKvTable.get(get);
-    Assert.assertEquals("Country stored is different",  Objects.isNull(countryCode), result.isEmpty());
-    String hCountryCode = Bytes.toString(result.getValue(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                                                         Bytes.toBytes(testConfiguration.getGeocodeKVStoreConfiguration().getCountryCodeColumnQualifier())));
-    Assert.assertEquals(countryCode, hCountryCode);
+    Assert.assertEquals("Country stored is different",  Objects.isNull(geocodeResponse), result.isEmpty());
+    GeocodeResponse hGeocodeResponse =
+    Optional.ofNullable(Bytes.toString(result.getValue(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
+            Bytes.toBytes(testConfiguration.getGeocodeKVStoreConfiguration().getJsonColumnQualifier())))).map(val -> {
+              try {
+                return MAPPER.readValue(val, GeocodeResponse.class);
+              } catch (IOException ex) {
+                throw new RuntimeException(ex);
+              }
+            }).orElse(null);
+    Assert.assertTrue(assertSameContent(geocodeResponse, hGeocodeResponse));
+  }
+
+  private boolean assertSameContent(GeocodeResponse response1, GeocodeResponse response2) {
+    return (Objects.isNull(response1) && Objects.isNull(response2)) ||
+            response1.getLocations().stream().allMatch(location -> response2.getLocations().stream()
+            .anyMatch( expectedLocation -> expectedLocation.getIsoCountryCode2Digit().equals(location.getIsoCountryCode2Digit())));
   }
 
   /**
@@ -120,8 +155,10 @@ public class GeocodeKVHBaseStoreTestIT {
    */
   @Test
   public void getAndInsertTest() throws IOException {
-    String storedCountryCode = geocodeKeyValueStore.get(latLng);
-    Assert.assertEquals(countryCode, storedCountryCode);
+    GeocodeResponse response = geocodeKeyValueStore.get(latLng);
+    Assert.assertTrue((Objects.isNull(response) && Objects.isNull(geocodeResponse)) ||
+                      response.getLocations().stream().anyMatch(location -> geocodeResponse.getLocations().stream()
+                              .anyMatch( expectedLocation -> expectedLocation.getIsoCountryCode2Digit().equals(location.getIsoCountryCode2Digit()))));
     assertIsInHBase();
   }
 

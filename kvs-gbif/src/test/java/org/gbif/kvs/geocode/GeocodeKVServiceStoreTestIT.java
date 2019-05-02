@@ -1,6 +1,7 @@
 package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class GeocodeKVServiceStoreTestIT {
 
   //-- Static elements shared for all tests
 
-  private static KeyValueStore<LatLng,String> geocodeKeyValueStore;
+  private static KeyValueStore<LatLng,GeocodeResponse> geocodeKeyValueStore;
 
   //-- End of shared elements
 
@@ -51,7 +52,7 @@ public class GeocodeKVServiceStoreTestIT {
    * @return a new Geocode KV store
    * @throws IOException if something went wrong creating the store
    */
-  private static KeyValueStore<LatLng,String> geocodeKeyValueStore() throws IOException {
+  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder().build(),
                                                       new GeocodeTestService());
   }
@@ -74,9 +75,9 @@ public class GeocodeKVServiceStoreTestIT {
    * Test that a coordinate exists and it can be later retrieved from the service.
    */
   @Test
-  public void getTest() throws IOException {
-    String storedCountryCode = geocodeKeyValueStore.get(latLng);
-    Assert.assertEquals(countryCode, storedCountryCode);
+  public void getTest() {
+    GeocodeResponse response = geocodeKeyValueStore.get(latLng);
+    Assert.assertTrue(response.getLocations().stream().anyMatch(location -> location.getIsoCountryCode2Digit().equals(countryCode)));
   }
 
 }

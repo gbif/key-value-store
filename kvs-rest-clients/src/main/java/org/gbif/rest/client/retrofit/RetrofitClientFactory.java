@@ -65,11 +65,9 @@ public final class RetrofitClientFactory {
   private static Cache createCache(long maxSize) {
 
     try {
-      // create cache file
-      File httpCacheDirectory;
       // use a new file cache for the current session
       String cacheName = System.currentTimeMillis() + "-wsCache";
-      httpCacheDirectory = Files.createTempDirectory(cacheName).toFile();
+      File httpCacheDirectory = Files.createTempDirectory(cacheName).toFile();
       httpCacheDirectory.deleteOnExit();
       LOG.info("Cache file created - {}", httpCacheDirectory.getAbsolutePath());
       // create cache

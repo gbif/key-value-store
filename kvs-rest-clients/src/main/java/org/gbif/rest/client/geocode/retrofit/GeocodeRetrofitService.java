@@ -1,6 +1,6 @@
 package org.gbif.rest.client.geocode.retrofit;
 
-import org.gbif.rest.client.geocode.GeocodeResponse;
+import org.gbif.rest.client.geocode.Location;
 
 import java.util.Collection;
 
@@ -21,5 +21,5 @@ interface GeocodeRetrofitService {
    * @return a executable call to the Geocode service
    */
   @GET("/v1/geocode/reverse")
-  Call<Collection<GeocodeResponse>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude);
+  Call<Collection<Location>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude);
 }

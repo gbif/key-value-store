@@ -5,11 +5,11 @@ import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
+import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -56,28 +56,25 @@ public class GeocodeKVStoreFactory {
    *
    * @param columnFamily HBase column in which values are stored
    * @param columnQualifier HBase column qualifier in which values are stored
-   * @return a Result to String mapping function
+   * @return a Result to GeocodeResponse mapping function
    */
-  public static Function<Result, String> simpleResultMapper(byte[] columnFamily, byte[] columnQualifier) {
-    return result -> Bytes.toString(result.getValue(columnFamily, columnQualifier));
-  }
-
-  /**
-   * Function that extracts the first country code of a list of {@link GeocodeResponse}.
-   *
-   * @return a function that extracts the first country code
-   */
-  public static Function<Collection<GeocodeResponse>, String> countryCodeMapper() {
-    return geocodeResponses -> {
-      if (Objects.nonNull(geocodeResponses) && geocodeResponses.iterator().hasNext()) {
-        return geocodeResponses.iterator().next().getIsoCountryCode2Digit();
+  public static Function<Result, GeocodeResponse> resultMapper(byte[] columnFamily, byte[] columnQualifier) {
+    return result ->  {
+      try {
+        byte[] value = result.getValue(columnFamily, columnQualifier);
+        if(Objects.nonNull(value)) {
+          return MAPPER.readValue(value, GeocodeResponse.class);
+        }
+        return null;
+      } catch (Exception ex) {
+        throw logAndThrow(ex, "Error reading value form HBase");
       }
-      return null;
     };
   }
 
+
   /**
-   * Creates a mutator function that maps a key and a list of {@link GeocodeResponse} into a {@link
+   * Creates a mutator function that maps a key and a list of {@link Location} into a {@link
    * Put}.
    *
    * @param columnFamily HBase column in which values are stored
@@ -85,18 +82,12 @@ public class GeocodeKVStoreFactory {
    * @param jsonColumnQualifier HBase column qualifier in which json responses are stored
    * @return a mapper from a key geocode responses into HBase Puts
    */
-  public static BiFunction<byte[], Collection<GeocodeResponse>, Put> valueMutator(
-      byte[] columnFamily, byte[] countryCodeColumnQualifier, byte[] jsonColumnQualifier) {
+  public static BiFunction<byte[], GeocodeResponse, Put> valueMutator(byte[] columnFamily, byte[] jsonColumnQualifier) {
     return (key, geocodeResponses) -> {
       try {
-        if (Objects.nonNull(geocodeResponses) && !geocodeResponses.isEmpty()) {
+        if (Objects.nonNull(geocodeResponses) && Objects.nonNull(geocodeResponses.getLocations()) && !geocodeResponses.getLocations().isEmpty()) {
           Put put = new Put(key);
-          put.addColumn(
-              columnFamily,
-              countryCodeColumnQualifier,
-              Bytes.toBytes(countryCodeMapper().apply(geocodeResponses)));
-          put.addColumn(
-              columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
+          put.addColumn(columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
           return put;
         }
         return null;
@@ -115,46 +106,46 @@ public class GeocodeKVStoreFactory {
    * @return a new instance of Geocode KV store
    * @throws IOException if the Rest client can't be created
    */
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
-                                                                   ClientConfiguration geocodeClientConfiguration) throws IOException {
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
+                                                                            ClientConfiguration geocodeClientConfiguration) throws IOException {
     GeocodeService geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
     return simpleGeocodeKVStore(configuration, geocodeService);
 
   }
 
 
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
-                                                                   GeocodeService geocodeService) throws IOException {
-    KeyValueStore<LatLng, String> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
+                                                                        GeocodeService geocodeService) throws IOException {
+    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
         hbaseKVStore(configuration, geocodeService) : restKVStore(geocodeService);
 
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, String.class);
+      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
     }
     return keyValueStore;
 
   }
 
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) {
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) {
     GeocodeService geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
-    KeyValueStore<LatLng, String> keyValueStore = restKVStore(geocodeService);
+    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = restKVStore(geocodeService);
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
-      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), LatLng.class, String.class);
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), LatLng.class, GeocodeResponse.class);
     }
     return keyValueStore;
 
   }
 
-  public static KeyValueStore<LatLng, String> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration) throws IOException {
-    KeyValueStore<LatLng, String> keyValueStore = HBaseStore.<LatLng, String, Collection<String>>builder()
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration) throws IOException {
+    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
-            simpleResultMapper(
+            resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
                 Bytes.toBytes(configuration.getJsonColumnQualifier())))
         .build();
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, String.class);
+      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
     }
     return keyValueStore;
   }
@@ -162,23 +153,22 @@ public class GeocodeKVStoreFactory {
   /**
    * Builds a KVStore backed by Hbase.
    */
-  private static KeyValueStore<LatLng, String> hbaseKVStore(GeocodeKVStoreConfiguration configuration, GeocodeService geocodeService) throws IOException {
-    return HBaseStore.<LatLng, String, Collection<GeocodeResponse>>builder()
+  private static KeyValueStore<LatLng, GeocodeResponse> hbaseKVStore(GeocodeKVStoreConfiguration configuration, GeocodeService geocodeService) throws IOException {
+    return HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
-            simpleResultMapper(
+            resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getCountryCodeColumnQualifier())))
-        .withValueMapper(countryCodeMapper())
+                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+        .withValueMapper(Function.identity())
         .withValueMutator(
             valueMutator(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getCountryCodeColumnQualifier()),
                 Bytes.toBytes(configuration.getJsonColumnQualifier())))
         .withLoader(
             latLng -> {
               try {
-                return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude());
+                return new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()));
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting geocode service");
               }
@@ -189,14 +179,13 @@ public class GeocodeKVStoreFactory {
   /**
    * Builds a KV Store backed by the rest client.
    */
-  private static KeyValueStore<LatLng, String> restKVStore(GeocodeService geocodeService) {
-    return new KeyValueStore<LatLng, String>() {
+  private static KeyValueStore<LatLng, GeocodeResponse> restKVStore(GeocodeService geocodeService) {
+    return new KeyValueStore<LatLng, GeocodeResponse>() {
 
-      private final Function<Collection<GeocodeResponse>,String> countryCodeMapper = countryCodeMapper();
 
       @Override
-      public String get(LatLng key) {
-        return countryCodeMapper.apply(geocodeService.reverse(key.getLatitude(), key.getLongitude()));
+      public GeocodeResponse get(LatLng key) {
+        return new GeocodeResponse(geocodeService.reverse(key.getLatitude(), key.getLongitude()));
       }
 
       @Override

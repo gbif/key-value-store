@@ -1,7 +1,7 @@
 package org.gbif.rest.client.geocode.test;
 
-import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
+import org.gbif.rest.client.geocode.Location;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,14 +21,14 @@ public class GeocodeTestService implements GeocodeService {
    * @return a List with a single Geocode response, and empty List if the coordinate do not resolve to a country
    */
   @Override
-  public Collection<GeocodeResponse> reverse(Double latitude, Double longitude) {
+  public Collection<Location> reverse(Double latitude, Double longitude) {
     return COUNTRY_CENTROIDS.findByCoordinate(latitude, longitude).map(country -> {
-              GeocodeResponse geocodeResponse = new GeocodeResponse();
-              geocodeResponse.setCountryName(country.getName());
-              geocodeResponse.setIsoCountryCode2Digit(country.getIsoCode());
-              geocodeResponse.setType("Political");
-              geocodeResponse.setSource("GBIF test data");
-              return Collections.singletonList(geocodeResponse);
+              Location location = new Location();
+                location.setCountryName(country.getName());
+                location.setIsoCountryCode2Digit(country.getIsoCode());
+                location.setType("Political");
+                location.setSource("GBIF test data");
+              return Collections.singletonList(location);
             }).orElse(Collections.emptyList());
   }
 }
