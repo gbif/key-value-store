@@ -1,5 +1,6 @@
 package org.gbif.kvs.geocode;
 
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
 
 /**
@@ -13,7 +14,7 @@ import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
 class TestConfiguration {
 
   //Generated configuration
-  private final GeocodeKVStoreConfiguration geocodeKVStoreConfiguration;
+  private final CachedHBaseKVStoreConfiguration geocodeKVStoreConfiguration;
 
   //Pre-built builder
   private final static HBaseKVStoreConfiguration.Builder HBASE_KV_STORE_CONFIGURATION = HBaseKVStoreConfiguration.builder()
@@ -27,8 +28,8 @@ class TestConfiguration {
    */
   TestConfiguration(int zkClientPort) {
 
-    geocodeKVStoreConfiguration = GeocodeKVStoreConfiguration.builder()
-                                    .withJsonColumnQualifier("j") //stores JSON data
+    geocodeKVStoreConfiguration = CachedHBaseKVStoreConfiguration.builder()
+                                    .withValueColumnQualifier("j") //stores JSON data
                                     .withHBaseKVStoreConfiguration(HBASE_KV_STORE_CONFIGURATION
                                                                     .withHBaseZk("localhost:" + zkClientPort)
                                                                     .build())
@@ -40,7 +41,7 @@ class TestConfiguration {
    *
    * @return test geocode KV store configuration
    */
-  GeocodeKVStoreConfiguration getGeocodeKVStoreConfiguration() {
+  CachedHBaseKVStoreConfiguration getGeocodeKVStoreConfiguration() {
     return geocodeKVStoreConfiguration;
   }
 

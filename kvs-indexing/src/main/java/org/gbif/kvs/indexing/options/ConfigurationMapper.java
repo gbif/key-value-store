@@ -15,7 +15,7 @@ public class ConfigurationMapper {
    * Creates a {@link HBaseKVStoreConfiguration} from a {@link HBaseIndexingOptions} instance.
    *
    * @param options pipeline options
-   * @return a new instance of HBaseKVStoreConfiguration
+   * @return a new instance of CachedHBaseKVStoreConfiguration
    */
   public static HBaseKVStoreConfiguration hbaseKVStoreConfiguration(HBaseIndexingOptions options) {
     return HBaseKVStoreConfiguration.builder()

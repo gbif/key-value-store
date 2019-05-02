@@ -134,7 +134,7 @@ public class GeocodeKVHBaseStoreTestIT {
     Assert.assertEquals("Country stored is different",  Objects.isNull(geocodeResponse), result.isEmpty());
     GeocodeResponse hGeocodeResponse =
     Optional.ofNullable(Bytes.toString(result.getValue(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-            Bytes.toBytes(testConfiguration.getGeocodeKVStoreConfiguration().getJsonColumnQualifier())))).map(val -> {
+            Bytes.toBytes(testConfiguration.getGeocodeKVStoreConfiguration().getValueColumnQualifier())))).map(val -> {
               try {
                 return MAPPER.readValue(val, GeocodeResponse.class);
               } catch (IOException ex) {

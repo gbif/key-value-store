@@ -2,8 +2,8 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
-import org.gbif.kvs.species.NameUsageMatchKVConfiguration;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.kvs.species.SpeciesMatchRequest;
 import org.gbif.kvs.species.TaxonParsers;
@@ -46,15 +46,15 @@ public class NameUsageMatchIndexer {
   }
 
   /**
-   * Creates a {@link NameUsageMatchKVConfiguration} from a {@link NameUsageMatchIndexingOptions} instance.
+   * Creates a {@link CachedHBaseKVStoreConfiguration} from a {@link NameUsageMatchIndexingOptions} instance.
    *
    * @param options pipeline options
-   * @return a new instance of NameUsageMatchKVConfiguration
+   * @return a new instance of CachedHBaseKVStoreConfiguration
    */
-  private static NameUsageMatchKVConfiguration nameUsageMatchKVConfiguration(NameUsageMatchIndexingOptions options) {
-    return NameUsageMatchKVConfiguration.builder()
+  private static CachedHBaseKVStoreConfiguration nameUsageMatchKVConfiguration(NameUsageMatchIndexingOptions options) {
+    return CachedHBaseKVStoreConfiguration.builder()
             .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-            .withJsonColumnQualifier(options.getJsonColumnQualifier())
+            .withValueColumnQualifier(options.getJsonColumnQualifier())
             .build();
   }
 
@@ -76,7 +76,7 @@ public class NameUsageMatchIndexer {
     String sourceTable = options.getSourceTable();
 
     // Config
-    NameUsageMatchKVConfiguration storeConfiguration = nameUsageMatchKVConfiguration(options);
+    CachedHBaseKVStoreConfiguration storeConfiguration = nameUsageMatchKVConfiguration(options);
     ClientConfiguration nameMatchClientConfiguration = ConfigurationMapper.clientConfiguration(options);
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
@@ -123,7 +123,7 @@ public class NameUsageMatchIndexer {
                     valueMutator =
                         NameUsageMatchKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                            Bytes.toBytes(storeConfiguration.getJsonColumnQualifier()));
+                            Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
                   }
 
                   @ProcessElement

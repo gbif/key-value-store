@@ -3,6 +3,7 @@ package org.gbif.kvs.species;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameMatchService;
@@ -96,7 +97,7 @@ public class NameUsageMatchKVStoreFactory {
     };
   }
 
-  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(NameUsageMatchKVConfiguration configuration,
+  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                                          NameMatchService nameMatchService) throws IOException {
     KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
                                                                         hbaseKVStore(configuration, nameMatchService) : restKVStore(nameMatchService);
@@ -116,7 +117,7 @@ public class NameUsageMatchKVStoreFactory {
 
 
 
-  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> hbaseKVStore(NameUsageMatchKVConfiguration configuration,
+  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                                  NameMatchService nameMatchService) throws IOException {
     return HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
@@ -124,12 +125,12 @@ public class NameUsageMatchKVStoreFactory {
             resultMapper(
                 Bytes.toBytes(
                     configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                Bytes.toBytes(configuration.getValueColumnQualifier())))
         .withValueMapper(Function.identity())
         .withValueMutator(
             valueMutator(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())
+                Bytes.toBytes(configuration.getValueColumnQualifier())
             ))
         .withLoader(
             request -> {

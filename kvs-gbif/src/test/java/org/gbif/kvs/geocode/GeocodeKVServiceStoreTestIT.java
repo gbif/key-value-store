@@ -1,6 +1,7 @@
 package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
@@ -53,7 +54,7 @@ public class GeocodeKVServiceStoreTestIT {
    * @throws IOException if something went wrong creating the store
    */
   private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
-    return GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder().build(),
+    return GeocodeKVStoreFactory.simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration.builder().build(),
                                                       new GeocodeTestService());
   }
 

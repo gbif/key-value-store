@@ -1,18 +1,15 @@
 package org.gbif.kvs.indexing.geocode;
 
 import org.gbif.kvs.SaltedKeyGenerator;
-import org.gbif.kvs.geocode.GeocodeKVStoreConfiguration;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
 import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
-import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -46,15 +43,15 @@ public class ReverseGeocodeIndexer {
   }
 
   /**
-   * Creates a {@link GeocodeKVStoreConfiguration} from a {@link GeocodeIndexingOptions} instance.
+   * Creates a {@link CachedHBaseKVStoreConfiguration} from a {@link GeocodeIndexingOptions} instance.
    *
    * @param options pipeline options
    * @return a new instance of GeocodeKVStoreConfiguration
    */
-  private static GeocodeKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
-    return GeocodeKVStoreConfiguration.builder()
+  private static CachedHBaseKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
+    return CachedHBaseKVStoreConfiguration.builder()
             .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-            .withJsonColumnQualifier(options.getJsonColumnQualifier())
+            .withValueColumnQualifier(options.getJsonColumnQualifier())
             .build();
   }
 
@@ -74,7 +71,7 @@ public class ReverseGeocodeIndexer {
     String sourceTable = options.getSourceTable();
 
     // Config
-    GeocodeKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
+    CachedHBaseKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
     ClientConfiguration geocodeClientConfiguration = ConfigurationMapper.clientConfiguration(options);
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
@@ -122,7 +119,7 @@ public class ReverseGeocodeIndexer {
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                            Bytes.toBytes(storeConfiguration.getJsonColumnQualifier()));
+                            Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
                   }
 
                   @ProcessElement

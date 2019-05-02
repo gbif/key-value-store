@@ -2,6 +2,7 @@ package org.gbif.kvs.geocode;
 
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
@@ -106,7 +107,7 @@ public class GeocodeKVStoreFactory {
    * @return a new instance of Geocode KV store
    * @throws IOException if the Rest client can't be created
    */
-  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             ClientConfiguration geocodeClientConfiguration) throws IOException {
     GeocodeService geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
     return simpleGeocodeKVStore(configuration, geocodeService);
@@ -114,8 +115,8 @@ public class GeocodeKVStoreFactory {
   }
 
 
-  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration,
-                                                                        GeocodeService geocodeService) throws IOException {
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration,
+                                                                            GeocodeService geocodeService) throws IOException {
     KeyValueStore<LatLng, GeocodeResponse> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
         hbaseKVStore(configuration, geocodeService) : restKVStore(geocodeService);
 
@@ -136,13 +137,13 @@ public class GeocodeKVStoreFactory {
 
   }
 
-  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(GeocodeKVStoreConfiguration configuration) throws IOException {
+  public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration) throws IOException {
     KeyValueStore<LatLng, GeocodeResponse> keyValueStore = HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                Bytes.toBytes(configuration.getValueColumnQualifier())))
         .build();
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
@@ -153,18 +154,18 @@ public class GeocodeKVStoreFactory {
   /**
    * Builds a KVStore backed by Hbase.
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> hbaseKVStore(GeocodeKVStoreConfiguration configuration, GeocodeService geocodeService) throws IOException {
+  private static KeyValueStore<LatLng, GeocodeResponse> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration, GeocodeService geocodeService) throws IOException {
     return HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                Bytes.toBytes(configuration.getValueColumnQualifier())))
         .withValueMapper(Function.identity())
         .withValueMutator(
             valueMutator(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getJsonColumnQualifier())))
+                Bytes.toBytes(configuration.getValueColumnQualifier())))
         .withLoader(
             latLng -> {
               try {
