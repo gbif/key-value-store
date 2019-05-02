@@ -1,12 +1,13 @@
 package org.gbif.rest.client.geocode;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
 /**
  * Holds the list of location returned from the Geocode service.
  */
-public class GeocodeResponse {
+public class GeocodeResponse implements Serializable {
 
 
     private Collection<Location> locations;
