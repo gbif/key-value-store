@@ -1,13 +1,11 @@
 package org.gbif.kvs.species;
 
+import com.google.common.base.Strings;
 import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.common.parsers.RankParser;
-import org.gbif.common.parsers.core.ParseResult;
 
 import java.util.Optional;
-
-import com.google.common.base.Strings;
 
 /** Converter to create queries for the name match service. */
 public class TaxonParsers {
@@ -17,20 +15,21 @@ public class TaxonParsers {
   private TaxonParsers() {}
 
   /** @return a type status parser. */
-  private static Optional<ParseResult<Rank>> parserRank(String taxonRank) {
-    return Optional.ofNullable(taxonRank).map(RANK_PARSER::parse);
-  }
-
-  private static Rank fromParseResult(SpeciesMatchRequest speciesMatchRequest, ParseResult<Rank> rank) {
-    if (rank.isSuccessful()) {
-      return rank.getPayload();
-    } else {
-      return parserRank(speciesMatchRequest.getVerbatimTaxonRank()).map(ParseResult::getPayload).orElse(null);
+  private static Optional<Rank> parserRank(SpeciesMatchRequest request) {
+    Rank rank = null;
+    if (!Strings.isNullOrEmpty(request.getRank())) {
+       rank = RANK_PARSER.parse(request.getRank()).getPayload();
     }
+
+    if (rank == null && !Strings.isNullOrEmpty(request.getVerbatimTaxonRank())) {
+      rank = RANK_PARSER.parse(request.getVerbatimTaxonRank()).getPayload();
+    }
+
+    return Optional.ofNullable(rank);
   }
 
   private static Rank fromFields(SpeciesMatchRequest speciesMatchRequest) {
-    if (speciesMatchRequest.getGenus() != null) {
+    if (speciesMatchRequest.getGenus() == null) {
       return null;
     }
     if (speciesMatchRequest.getSpecificEpithet() == null) {
@@ -63,8 +62,7 @@ public class TaxonParsers {
 
 
   public static Rank interpretRank(SpeciesMatchRequest speciesMatchRequest) {
-    return parserRank(speciesMatchRequest.getRank())
-            .map(parseResult -> fromParseResult(speciesMatchRequest, parseResult))
+    return parserRank(speciesMatchRequest)
             .orElseGet(() -> fromFields(speciesMatchRequest));
   }
 
