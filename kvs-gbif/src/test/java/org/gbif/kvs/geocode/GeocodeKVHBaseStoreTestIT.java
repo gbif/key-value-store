@@ -98,7 +98,7 @@ public class GeocodeKVHBaseStoreTestIT {
    */
   private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(testConfiguration.getGeocodeKVStoreConfiguration(),
-                                                      new GeocodeTestService());
+                                                      new GeocodeTestService(), () -> {});
   }
 
   @BeforeClass

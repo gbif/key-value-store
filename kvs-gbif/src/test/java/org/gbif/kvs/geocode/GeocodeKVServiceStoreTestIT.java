@@ -55,7 +55,7 @@ public class GeocodeKVServiceStoreTestIT {
    */
   private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration.builder().build(),
-                                                      new GeocodeTestService());
+                                                      new GeocodeTestService(), () -> {});
   }
 
   @BeforeClass

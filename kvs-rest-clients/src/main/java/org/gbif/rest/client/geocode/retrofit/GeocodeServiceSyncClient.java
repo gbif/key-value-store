@@ -1,11 +1,19 @@
 package org.gbif.rest.client.geocode.retrofit;
 
+import okhttp3.OkHttpClient;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.GeocodeService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
 
 
 import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
@@ -19,14 +27,17 @@ public class GeocodeServiceSyncClient implements GeocodeService {
   //Retrofit internal client
   private final GeocodeRetrofitService retrofitService;
 
+  private final OkHttpClient okHttpClient;
+
   /**
    * Creates an instance using the provided configuration settings.
    * @param clientConfiguration Rest client configuration
    */
   public GeocodeServiceSyncClient(ClientConfiguration clientConfiguration) {
-     retrofitService = RetrofitClientFactory.createRetrofitClient(clientConfiguration,
-                                                                  clientConfiguration.getBaseApiUrl(),
-                                                                  GeocodeRetrofitService.class);
+    okHttpClient = RetrofitClientFactory.createClient(clientConfiguration);
+    retrofitService = RetrofitClientFactory.createRetrofitClient(okHttpClient,
+                                                                clientConfiguration.getBaseApiUrl(),
+                                                                GeocodeRetrofitService.class);
   }
 
   /**
@@ -38,6 +49,20 @@ public class GeocodeServiceSyncClient implements GeocodeService {
   @Override
   public Collection<Location> reverse(Double latitude, Double longitude) {
     return syncCall(retrofitService.reverse(latitude, longitude));
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (Objects.nonNull(okHttpClient) && Objects.nonNull(okHttpClient.cache())
+            && Objects.nonNull(okHttpClient.cache().directory())) {
+        File cacheDirectory = okHttpClient.cache().directory();
+        if (cacheDirectory.exists()) {
+          Files.walk(cacheDirectory.toPath())
+                  .sorted(Comparator.reverseOrder())
+                  .map(Path::toFile)
+                  .forEach(File::delete);
+        }
+    }
   }
 
 }

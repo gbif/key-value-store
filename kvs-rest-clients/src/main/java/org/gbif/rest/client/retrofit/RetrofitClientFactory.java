@@ -49,11 +49,11 @@ public final class RetrofitClientFactory {
                                            Class<S> serviceClass) {
     // create service
     return new Retrofit.Builder()
-        .client(createClient(clientConfiguration))
-        .baseUrl(baseApiUrl)
-        .addConverterFactory(JacksonConverterFactory.create())
-        .validateEagerly(true)
-        .build().create(serviceClass);
+                .client(createClient(clientConfiguration))
+                .baseUrl(baseApiUrl)
+                .addConverterFactory(JacksonConverterFactory.create())
+                .validateEagerly(true)
+                .build().create(serviceClass);
   }
 
   /**

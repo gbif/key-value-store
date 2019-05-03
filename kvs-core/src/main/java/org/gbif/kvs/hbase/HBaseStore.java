@@ -66,12 +66,15 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   // Salted key generator for the specified number of buckets
   private final SaltedKeyGenerator saltedKeyGenerator;
 
+  private Command closeHandler;
+
   private final CacheMetrics metrics;
 
   private HBaseStore(HBaseKVStoreConfiguration config, BiFunction<byte[], L, Put> valueMutator,
                      Function<Result, V> resultMapper, Function<L, V> valueMapper,
                      Function<K, L> loader,
-                     MeterRegistry meterRegistry) throws IOException {
+                     MeterRegistry meterRegistry,
+                     Command closeHandler) throws IOException {
     connection = ConnectionFactory.createConnection(config.hbaseConfig());
     saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
     this.tableName = TableName.valueOf(config.getTableName());
@@ -80,6 +83,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     this.valueMapper = valueMapper;
     this.loader = loader;
     this.metrics = CacheMetrics.create(meterRegistry, config.getTableName());
+    this.closeHandler = closeHandler;
   }
 
   /**
@@ -150,6 +154,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     if (!connection.isClosed()) {
       connection.close();
     }
+    Optional.ofNullable(closeHandler).ifPresent(Command::execute);
   }
 
   /**
@@ -176,6 +181,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     private Function<L, V> valueMapper;
     private Function<K, L> loader;
     private ElasticMetricsConfig metricsConfig;
+    private Command closeHandler;
 
     public Builder<K, V, L> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
       this.configuration = configuration;
@@ -202,6 +208,12 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       return this;
     }
 
+    public Builder<K, V, L> withCloseHandler(Command closeHandler) {
+      this.closeHandler = closeHandler;
+      return this;
+    }
+
+
     public Builder<K, V, L> withElasticMetricsConfig(ElasticMetricsConfig metricsConfig) {
       this.metricsConfig = metricsConfig;
       return this;
@@ -209,7 +221,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
 
     public HBaseStore<K, V, L> build() throws IOException {
       MeterRegistry metricsRegistry = Objects.nonNull(this.metricsConfig)? new ElasticMeterRegistry(this.metricsConfig, Clock.SYSTEM) : new SimpleMeterRegistry();
-      return new HBaseStore<>(configuration, valueMutator, resultMapper, valueMapper, loader, metricsRegistry);
+      return new HBaseStore<>(configuration, valueMutator, resultMapper, valueMapper, loader, metricsRegistry, closeHandler);
     }
   }
 }

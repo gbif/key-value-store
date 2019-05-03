@@ -3,6 +3,7 @@ package org.gbif.kvs.geocode;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
+import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
@@ -109,16 +110,23 @@ public class GeocodeKVStoreFactory {
    */
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             ClientConfiguration geocodeClientConfiguration) throws IOException {
-    GeocodeService geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
-    return simpleGeocodeKVStore(configuration, geocodeService);
+    GeocodeServiceSyncClient geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
+    return simpleGeocodeKVStore(configuration, geocodeService, () -> {
+        try {
+          geocodeService.close();
+        } catch (IOException ex) {
+          throw logAndThrow(ex, "Error closing client");
+        }
+    });
 
   }
 
 
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                            GeocodeService geocodeService) throws IOException {
+                                                                            GeocodeService geocodeService,
+                                                                            Command closeHandler) throws IOException {
     KeyValueStore<LatLng, GeocodeResponse> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
-        hbaseKVStore(configuration, geocodeService) : restKVStore(geocodeService);
+        hbaseKVStore(configuration, geocodeService, closeHandler) : restKVStore(geocodeService, closeHandler);
 
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
@@ -128,8 +136,14 @@ public class GeocodeKVStoreFactory {
   }
 
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) {
-    GeocodeService geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
-    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = restKVStore(geocodeService);
+    GeocodeServiceSyncClient geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
+    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = restKVStore(geocodeService, () -> {
+      try {
+        geocodeService.close();
+      } catch (IOException ex) {
+        throw logAndThrow(ex, "Error closing client");
+      }
+    });
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
       return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), LatLng.class, GeocodeResponse.class);
     }
@@ -154,7 +168,8 @@ public class GeocodeKVStoreFactory {
   /**
    * Builds a KVStore backed by Hbase.
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration, GeocodeService geocodeService) throws IOException {
+  private static KeyValueStore<LatLng, GeocodeResponse> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration, GeocodeService geocodeService,
+                                                                     Command closeHandler) throws IOException {
     return HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withResultMapper(
@@ -174,13 +189,14 @@ public class GeocodeKVStoreFactory {
                 throw logAndThrow(ex, "Error contacting geocode service");
               }
             })
+        .withCloseHandler(closeHandler)
         .build();
   }
 
   /**
    * Builds a KV Store backed by the rest client.
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> restKVStore(GeocodeService geocodeService) {
+  private static KeyValueStore<LatLng, GeocodeResponse> restKVStore(GeocodeService geocodeService, Command closeHandler) {
     return new KeyValueStore<LatLng, GeocodeResponse>() {
 
 
@@ -191,7 +207,7 @@ public class GeocodeKVStoreFactory {
 
       @Override
       public void close() throws IOException {
-        //nothing to  close
+        closeHandler.execute();
       }
     };
   }

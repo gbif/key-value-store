@@ -1,10 +1,18 @@
 package org.gbif.rest.client.species.retrofit;
 
+import okhttp3.OkHttpClient;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.species.NameMatchService;
 import org.gbif.rest.client.species.NameUsageMatch;
 
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.Objects;
 
 import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 
@@ -16,20 +24,16 @@ public class NameMatchServiceSyncClient implements NameMatchService {
   //Wrapped service
   private final NameMatchRetrofitService nameMatchRetrofitService;
 
-  /**
-   * Creates synchronous client that wraps the Retrofit client.
-   * @param nameMatchRetrofitService retrofit service instance
-   */
-  public NameMatchServiceSyncClient(NameMatchRetrofitService nameMatchRetrofitService) {
-    this.nameMatchRetrofitService = nameMatchRetrofitService;
-  }
+  private final OkHttpClient okHttpClient;
+
 
   /**
    * Creates an instance using the provided configuration settings.
    * @param clientConfiguration Rest client configuration
    */
   public NameMatchServiceSyncClient(ClientConfiguration clientConfiguration) {
-    nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(clientConfiguration,
+    okHttpClient = RetrofitClientFactory.createClient(clientConfiguration);
+    nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(okHttpClient,
                                                                           clientConfiguration.getBaseApiUrl(),
                                                                           NameMatchRetrofitService.class);
   }
@@ -44,4 +48,17 @@ public class NameMatchServiceSyncClient implements NameMatchService {
                                                    strict));
   }
 
+  @Override
+  public void close() throws IOException {
+    if (Objects.nonNull(okHttpClient) && Objects.nonNull(okHttpClient.cache())
+            && Objects.nonNull(okHttpClient.cache().directory())) {
+      File cacheDirectory = okHttpClient.cache().directory();
+      if (cacheDirectory.exists()) {
+        Files.walk(cacheDirectory.toPath())
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+      }
+    }
+  }
 }

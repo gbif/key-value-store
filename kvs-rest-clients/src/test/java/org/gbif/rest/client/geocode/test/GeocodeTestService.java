@@ -31,4 +31,9 @@ public class GeocodeTestService implements GeocodeService {
               return Collections.singletonList(location);
             }).orElse(Collections.emptyList());
   }
+
+  @Override
+  public void close() {
+      //DO NOTHING
+  }
 }

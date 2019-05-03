@@ -50,14 +50,18 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
 
   private final CacheMetrics metrics;
 
+  private Command closeHandler;
+
   private ReadOnlyHBaseStore(HBaseKVStoreConfiguration config,
                              Function<Result, V> resultMapper,
-                             MeterRegistry meterRegistry) throws IOException {
+                             MeterRegistry meterRegistry,
+                             Command closeHandler) throws IOException {
     connection = ConnectionFactory.createConnection(config.hbaseConfig());
     saltedKeyGenerator = new SaltedKeyGenerator(config.getNumOfKeyBuckets());
     this.tableName = TableName.valueOf(config.getTableName());
     this.resultMapper = resultMapper;
     this.metrics = CacheMetrics.create(meterRegistry, config.getTableName());
+    this.closeHandler = closeHandler;
   }
 
   /**
@@ -105,6 +109,7 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
     if (!connection.isClosed()) {
       connection.close();
     }
+    Optional.ofNullable(closeHandler).ifPresent(Command::execute);
   }
 
   /**
@@ -128,6 +133,7 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
     private HBaseKVStoreConfiguration configuration;
     private Function<Result, V> resultMapper;
     private ElasticMetricsConfig metricsConfig;
+    private Command closeHandler;
 
     public Builder<K, V> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
       this.configuration = configuration;
@@ -144,9 +150,14 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
       return this;
     }
 
+    public Builder<K, V> withCloseHandler(Command closeHandler) {
+      this.closeHandler = closeHandler;
+      return this;
+    }
+
     public ReadOnlyHBaseStore<K, V> build() throws IOException {
       MeterRegistry metricsRegistry = Objects.nonNull(this.metricsConfig)? new ElasticMeterRegistry(this.metricsConfig, Clock.SYSTEM) : new SimpleMeterRegistry();
-      return new ReadOnlyHBaseStore<>(configuration, resultMapper, metricsRegistry);
+      return new ReadOnlyHBaseStore<>(configuration, resultMapper, metricsRegistry, closeHandler);
     }
   }
 }

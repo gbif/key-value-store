@@ -1,10 +1,12 @@
 package org.gbif.rest.client.species;
 
 
+import java.io.Closeable;
+
 /**
  * GBIF Backbone name match service.
  */
-public interface NameMatchService {
+public interface NameMatchService extends Closeable {
 
   /**
    * Fuzzy matches scientific names against the GBIF Backbone Taxonomy with the optional classification provided.
