@@ -4,12 +4,13 @@ import org.gbif.api.v2.RankedName;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.api.model.checklistbank.NameUsageMatch.MatchType;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
 import com.google.common.collect.Lists;
 
-public class NameUsageMatch {
+public class NameUsageMatch implements Serializable {
 
   private boolean synonym;
   private RankedName usage;
