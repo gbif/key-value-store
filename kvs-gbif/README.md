@@ -11,21 +11,19 @@ It uses the Rest [Geocode service client](../kvs-rest-clients/src/main/java/org/
 To create an instance of KV store client use:
 
 ```
-GeocodeKVStoreFactory.simpleGeocodeKVStore(GeocodeKVStoreConfiguration.builder()
-                            .withJsonColumnQualifier("j") //stores JSON data
-                            .withCountryCodeColumnQualifier("c") //stores ISO country code
-                            .withHBaseKVStoreConfiguration(HBaseKVStoreConfiguration.builder()
-                                                            .withTableName("geocode_kv") //Geocode KV HBase table
-                                                            .withColumnFamily("v") //Column in which qualifiers are stored
-                                                            .withNumOfKeyBuckets(10) //Buckets for salted key generations
-                                                            .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
-                                                            .withCacheCapacity(10_000) //Use an in-memory cache with a maximum of 10K entries
-                                                            .build()).build(),
-                            ClientConfiguration.builder()
-                             .withBaseApiUrl("https://api.gbif.org/v1/") //GBIF base API url
-                             .withFileCacheMaxSizeMb(64L) //Max file cache size
-                             .withTimeOut(60L) //Geocode service connection time-out
-                             .build());
+GeocodeKVStoreFactory.simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration.builder()
+                                                 .withValueColumnQualifier("c") //stores ISO country code
+                                                 .withHBaseKVStoreConfiguration(HBaseKVStoreConfiguration.builder()
+                                                                                  .withTableName("geocode_kv") //Geocode KV HBase table
+                                                                                  .withColumnFamily("v") //Column in which qualifiers are stored
+                                                                                  .withNumOfKeyBuckets(10) //Buckets for salted key generations
+                                                                                  .withHBaseZk("zk1.dev.org,zk2.dev.org,zk3.dev.org") //HBase Zookeeper ensemble
+                                                                                  .build()).build(),
+                                               ClientConfiguration.builder()
+                                                 .withBaseApiUrl("https://api.gbif-dev.org/v1/") //GBIF base API url
+                                                 .withFileCacheMaxSizeMb(64L) //Max file cache size
+                                                 .withTimeOut(60L) //Geocode service connection time-out
+                                                 .build());
 ```
 
 ## Taxonomic NameMatch KV store/cache
@@ -37,7 +35,7 @@ It uses the Rest [NameMatch service client](../key-value-store/kvs-rest-clients/
 To create an instance of KV store client use:
 
 ```
-NameUsageMatchKVStoreFactory.nameUsageMatchKVStore(NameUsageMatchKVConfiguration.builder()
+NameUsageMatchKVStoreFactory.nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration.builder()
             .withJsonColumnQualifier("j") //stores JSON data
             .withHBaseKVStoreConfiguration(HBaseKVStoreConfiguration.builder()
                 .withTableName("name_usage_kv") //Geocode KV HBase table

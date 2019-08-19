@@ -58,14 +58,15 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>0.77</gbif-api.version>
-        <dwc-api.version>1.21</dwc-api.version>
+        <gbif-api.version>0.81</gbif-api.version>
+        <dwc-api.version>1.22</dwc-api.version>
         <gbif-parsers.version>0.36</gbif-parsers.version>
 
         <!-- Common libraries -->
-        <apache.beam.version>2.9.0</apache.beam.version>
-        <hadoop-common.version>2.6.0-cdh5.12.1</hadoop-common.version>
-        <hadoop-core.version>2.6.0-mr1-cdh5.15.0</hadoop-core.version>
+        <apache.beam.version>2.14.0</apache.beam.version>
+        <hadoop-common.version>2.6.0-cdh5.12.0</hadoop-common.version>
+        <hadoop.version>2.6.0-cdh5.12.0</hadoop.version>
+        <hadoop-core.version>2.6.0-mr1-cdh5.12.0</hadoop-core.version>
         <hbase.version>1.2.0-cdh5.12.0</hbase.version>
         <hbase.shaded.client.version>1.2.6</hbase.shaded.client.version>
 
