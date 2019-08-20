@@ -13,8 +13,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
-
+import java.util.stream.Stream;
 
 import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 
@@ -57,10 +56,11 @@ public class GeocodeServiceSyncClient implements GeocodeService {
             && Objects.nonNull(okHttpClient.cache().directory())) {
         File cacheDirectory = okHttpClient.cache().directory();
         if (cacheDirectory.exists()) {
-          Files.walk(cacheDirectory.toPath())
-                  .sorted(Comparator.reverseOrder())
-                  .map(Path::toFile)
-                  .forEach(File::delete);
+          try(Stream<File> files = Files.walk(cacheDirectory.toPath())
+              .sorted(Comparator.reverseOrder())
+              .map(Path::toFile)) {
+            files.forEach(File::delete);
+          }
         }
     }
   }
