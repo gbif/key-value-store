@@ -87,7 +87,7 @@ public class GeocodeKVStoreFactory {
   public static BiFunction<byte[], GeocodeResponse, Put> valueMutator(byte[] columnFamily, byte[] jsonColumnQualifier) {
     return (key, geocodeResponses) -> {
       try {
-        if (Objects.nonNull(geocodeResponses) && Objects.nonNull(geocodeResponses.getLocations()) && !geocodeResponses.getLocations().isEmpty()) {
+        if (Objects.nonNull(geocodeResponses) && Objects.nonNull(geocodeResponses.getLocations())) {
           Put put = new Put(key);
           put.addColumn(columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
           return put;

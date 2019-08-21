@@ -77,7 +77,7 @@ public class GeocodeKVHBaseStoreTestIT {
                               geocodeResponse.setLocations(Collections.singletonList(location));
                               return geocodeResponse;
                             })
-            .orElse(null);
+            .orElse(new GeocodeResponse(Collections.EMPTY_LIST));
   }
 
 
@@ -157,6 +157,7 @@ public class GeocodeKVHBaseStoreTestIT {
   public void getAndInsertTest() throws IOException {
     GeocodeResponse response = geocodeKeyValueStore.get(latLng);
     Assert.assertTrue((Objects.isNull(response) && Objects.isNull(geocodeResponse)) ||
+                      (response.getLocations().isEmpty() && geocodeResponse.getLocations().isEmpty()) ||
                       response.getLocations().stream().anyMatch(location -> geocodeResponse.getLocations().stream()
                               .anyMatch( expectedLocation -> expectedLocation.getIsoCountryCode2Digit().equals(location.getIsoCountryCode2Digit()))));
     assertIsInHBase();
