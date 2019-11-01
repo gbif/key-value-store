@@ -75,7 +75,7 @@
         <logback.version>1.2.3</logback.version>
 
         <!-- JSON -->
-        <jackson.version>2.9.8</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
 
         <!-- Rest/HTPP-->
         <retrofit.version>2.5.0</retrofit.version>
