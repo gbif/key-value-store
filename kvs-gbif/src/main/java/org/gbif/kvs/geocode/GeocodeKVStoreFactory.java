@@ -154,6 +154,7 @@ public class GeocodeKVStoreFactory {
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration) throws IOException {
     KeyValueStore<LatLng, GeocodeResponse> keyValueStore = HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+      .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
@@ -172,6 +173,7 @@ public class GeocodeKVStoreFactory {
                                                                      Command closeHandler) throws IOException {
     return HBaseStore.<LatLng, GeocodeResponse, GeocodeResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+        .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),

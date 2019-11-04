@@ -131,6 +131,7 @@ public class NameUsageMatchKVStoreFactory {
                                                                                  Command closeHandler) throws IOException {
     return HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
+        .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(

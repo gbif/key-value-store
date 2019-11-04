@@ -129,6 +129,12 @@
             <classifier>tests</classifier>
             <type>test-jar</type>
         </dependency>
+
+        <!-- Fault tolerance -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

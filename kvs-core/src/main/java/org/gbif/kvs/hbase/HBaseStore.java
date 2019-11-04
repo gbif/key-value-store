@@ -12,6 +12,9 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import io.github.resilience4j.retry.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -70,7 +73,8 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
 
   private final CacheMetrics metrics;
 
-  private HBaseStore(HBaseKVStoreConfiguration config, BiFunction<byte[], L, Put> valueMutator,
+  private HBaseStore(HBaseKVStoreConfiguration config, LoaderRetryConfig loaderRetryConfig,
+                     BiFunction<byte[], L, Put> valueMutator,
                      Function<Result, V> resultMapper, Function<L, V> valueMapper,
                      Function<K, L> loader,
                      MeterRegistry meterRegistry,
@@ -81,9 +85,20 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
     this.valueMutator = valueMutator;
     this.resultMapper = resultMapper;
     this.valueMapper = valueMapper;
-    this.loader = loader;
+    this.loader = Retry.decorateFunction(retry(Objects.isNull(loaderRetryConfig)? LoaderRetryConfig.DEFAULT : loaderRetryConfig), loader);
     this.metrics = CacheMetrics.create(meterRegistry, config.getTableName());
     this.closeHandler = closeHandler;
+  }
+
+  private static Retry retry(LoaderRetryConfig loaderRetryConfig) {
+    IntervalFunction intervalFn = IntervalFunction.ofExponentialRandomBackoff(loaderRetryConfig.getInitialIntervalMillis(),
+                                                                              loaderRetryConfig.getMultiplier(),
+                                                                              loaderRetryConfig.getRandomizationFactor());
+    RetryConfig retryConfig = RetryConfig.custom()
+      .maxAttempts(loaderRetryConfig.getMaxAttempts())
+      .intervalFunction(intervalFn)
+      .build();
+    return Retry.of("wsCall", retryConfig);
   }
 
   /**
@@ -131,11 +146,8 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
       Get get = new Get(saltedKey);
       Result result = table.get(get);
       if (result.isEmpty()) { // the key does not exists, create a new entry
-        L newValue = loader.apply(key);
-        if (Objects.nonNull(newValue)) {
-          return store(saltedKey, newValue);
-        }
-        return null;
+        L newValue =  loader.apply(key);
+        return store(saltedKey, newValue);
       }
       metrics.incHits();
       return resultMapper.apply(result);
@@ -176,6 +188,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
    */
   public static class Builder<K extends Indexable, V, L> {
     private HBaseKVStoreConfiguration configuration;
+    private LoaderRetryConfig loaderRetryConfig;
     private BiFunction<byte[], L, Put> valueMutator;
     private Function<Result, V> resultMapper;
     private Function<L, V> valueMapper;
@@ -185,6 +198,11 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
 
     public Builder<K, V, L> withHBaseStoreConfiguration(HBaseKVStoreConfiguration configuration) {
       this.configuration = configuration;
+      return this;
+    }
+
+    public Builder<K, V, L> withLoaderRetryConfiguration(LoaderRetryConfig loaderRetryConfig) {
+      this.loaderRetryConfig = loaderRetryConfig;
       return this;
     }
 
@@ -221,7 +239,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
 
     public HBaseStore<K, V, L> build() throws IOException {
       MeterRegistry metricsRegistry = Objects.nonNull(this.metricsConfig)? new ElasticMeterRegistry(this.metricsConfig, Clock.SYSTEM) : new SimpleMeterRegistry();
-      return new HBaseStore<>(configuration, valueMutator, resultMapper, valueMapper, loader, metricsRegistry, closeHandler);
+      return new HBaseStore<>(configuration, loaderRetryConfig, valueMutator, resultMapper, valueMapper, loader, metricsRegistry, closeHandler);
     }
   }
 }

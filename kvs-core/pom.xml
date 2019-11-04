@@ -57,6 +57,12 @@
             <artifactId>cache2k-api</artifactId>
         </dependency>
 
+        <!-- Fault tolerance -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+        </dependency>
+
         <!-- Metrics -->
         <dependency>
             <groupId>io.micrometer</groupId>
