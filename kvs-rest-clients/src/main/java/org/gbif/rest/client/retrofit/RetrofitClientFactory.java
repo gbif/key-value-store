@@ -27,7 +27,8 @@ public final class RetrofitClientFactory {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
             .connectTimeout(config.getTimeOut(), TimeUnit.SECONDS)
-            .readTimeout(config.getTimeOut(), TimeUnit.SECONDS);
+            .readTimeout(config.getTimeOut(), TimeUnit.SECONDS)
+            .callTimeout(config.getTimeOut(), TimeUnit.SECONDS);
 
     clientBuilder.cache(createCache(config.getFileCacheMaxSizeMb()));
 
