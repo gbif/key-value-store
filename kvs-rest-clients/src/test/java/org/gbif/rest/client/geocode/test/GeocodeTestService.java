@@ -24,7 +24,7 @@ public class GeocodeTestService implements GeocodeService {
   public Collection<Location> reverse(Double latitude, Double longitude) {
     return COUNTRY_CENTROIDS.findByCoordinate(latitude, longitude).map(country -> {
               Location location = new Location();
-                location.setCountryName(country.getName());
+                location.setName(country.getName());
                 location.setIsoCountryCode2Digit(country.getIsoCode());
                 location.setType("Political");
                 location.setSource("GBIF test data");

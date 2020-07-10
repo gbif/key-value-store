@@ -18,7 +18,7 @@ public class Location implements Serializable {
   private String source;
 
   @JsonProperty("title")
-  private String countryName;
+  private String name;
 
   private String isoCountryCode2Digit;
 
@@ -46,12 +46,12 @@ public class Location implements Serializable {
     this.source = source;
   }
 
-  public String getCountryName() {
-    return countryName;
+  public String getName() {
+    return name;
   }
 
-  public void setCountryName(String countryName) {
-    this.countryName = countryName;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getIsoCountryCode2Digit() {
@@ -75,13 +75,13 @@ public class Location implements Serializable {
     return Objects.equals(id, that.id) &&
         Objects.equals(type, that.type) &&
         Objects.equals(source, that.source) &&
-        Objects.equals(countryName, that.countryName) &&
+        Objects.equals(name, that.name) &&
         Objects.equals(isoCountryCode2Digit, that.isoCountryCode2Digit);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, source, countryName, isoCountryCode2Digit);
+    return Objects.hash(id, type, source, name, isoCountryCode2Digit);
   }
 
   @Override
@@ -90,7 +90,7 @@ public class Location implements Serializable {
         .add("id='" + id + "'")
         .add("type='" + type + "'")
         .add("source='" + source + "'")
-        .add("countryName='" + countryName + "'")
+        .add("name='" + name + "'")
         .add("isoCountryCode2Digit='" + isoCountryCode2Digit + "'")
         .toString();
   }
