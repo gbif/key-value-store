@@ -1,7 +1,7 @@
 package org.gbif.rest.client.geocode;
 
 import java.io.Closeable;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * GBIF Geocode Service client.
@@ -13,7 +13,7 @@ public interface GeocodeService extends Closeable {
    * Gets the list of proposed geo-locations of coordinate.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
-   * @return a list of proposed locations, an empty collections if no proposals were found
+   * @return a list of proposed locations, an empty list if no proposals were found
    */
-  Collection<Location> reverse(Double latitude, Double longitude);
+  List<Location> reverse(Double latitude, Double longitude);
 }

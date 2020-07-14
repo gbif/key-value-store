@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.List;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -43,10 +43,10 @@ public class GeocodeServiceSyncClient implements GeocodeService {
    * Performs a synchronous call to the Geocode service.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
-   * @return the collection of proposed locations, an empty collection otherwise
+   * @return the List of proposed locations, an empty list otherwise
    */
   @Override
-  public Collection<Location> reverse(Double latitude, Double longitude) {
+  public List<Location> reverse(Double latitude, Double longitude) {
     return syncCall(retrofitService.reverse(latitude, longitude));
   }
 

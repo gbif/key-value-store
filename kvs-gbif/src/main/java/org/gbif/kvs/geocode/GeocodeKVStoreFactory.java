@@ -80,7 +80,6 @@ public class GeocodeKVStoreFactory {
    * Put}.
    *
    * @param columnFamily HBase column in which values are stored
-   * @param countryCodeColumnQualifier HBase column qualifier in which the country code is stored
    * @param jsonColumnQualifier HBase column qualifier in which json responses are stored
    * @return a mapper from a key geocode responses into HBase Puts
    */

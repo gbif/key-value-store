@@ -1,7 +1,7 @@
 package org.gbif.rest.client.geocode;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -10,20 +10,20 @@ import java.util.Objects;
 public class GeocodeResponse implements Serializable {
 
 
-    private Collection<Location> locations;
+    private List<Location> locations;
 
-    public Collection<Location> getLocations() {
+    public List<Location> getLocations() {
         return locations;
     }
 
-    public void setLocations(Collection<Location> locations) {
+    public void setLocations(List<Location> locations) {
         this.locations = locations;
     }
 
     public GeocodeResponse() {
     }
 
-    public GeocodeResponse(Collection<Location> locations) {
+    public GeocodeResponse(List<Location> locations) {
         this.locations = locations;
     }
 

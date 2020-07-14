@@ -3,8 +3,8 @@ package org.gbif.rest.client.geocode.test;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.geocode.Location;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Test service that uses a list of centroids of known countries.
@@ -21,7 +21,7 @@ public class GeocodeTestService implements GeocodeService {
    * @return a List with a single Geocode response, and empty List if the coordinate do not resolve to a country
    */
   @Override
-  public Collection<Location> reverse(Double latitude, Double longitude) {
+  public List<Location> reverse(Double latitude, Double longitude) {
     return COUNTRY_CENTROIDS.findByCoordinate(latitude, longitude).map(country -> {
               Location location = new Location();
                 location.setName(country.getName());
