@@ -16,11 +16,10 @@ public class Location implements Serializable {
   private String id;
   private String type;
   private String source;
-
   @JsonProperty("title")
   private String name;
-
   private String isoCountryCode2Digit;
+  private Double distance;
 
   public String getId() {
     return id;
@@ -62,6 +61,13 @@ public class Location implements Serializable {
     this.isoCountryCode2Digit = isoCountryCode2Digit;
   }
 
+  public Double getDistance() {
+    return distance;
+  }
+
+  public void setDistance(Double distance) {
+    this.distance = distance;
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -76,12 +82,13 @@ public class Location implements Serializable {
         Objects.equals(type, that.type) &&
         Objects.equals(source, that.source) &&
         Objects.equals(name, that.name) &&
-        Objects.equals(isoCountryCode2Digit, that.isoCountryCode2Digit);
+        Objects.equals(isoCountryCode2Digit, that.isoCountryCode2Digit) &&
+        Objects.equals(distance, that.distance);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, source, name, isoCountryCode2Digit);
+    return Objects.hash(id, type, source, name, isoCountryCode2Digit, distance);
   }
 
   @Override
@@ -92,6 +99,7 @@ public class Location implements Serializable {
         .add("source='" + source + "'")
         .add("name='" + name + "'")
         .add("isoCountryCode2Digit='" + isoCountryCode2Digit + "'")
+        .add("distance='" + distance + "'")
         .toString();
   }
 }
