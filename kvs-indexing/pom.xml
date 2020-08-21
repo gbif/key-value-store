@@ -115,6 +115,12 @@
             <version>${apache.beam.version}</version>
         </dependency>
 
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
+			<version>2.15.0</version>
+		</dependency>
+
         <!-- Hadoop  and HBase -->
         <dependency>
             <groupId>org.apache.hbase</groupId>

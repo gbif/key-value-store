@@ -1,5 +1,7 @@
 package org.gbif.kvs.indexing.species;
 
+import org.apache.beam.sdk.coders.AvroCoder;
+import org.apache.beam.sdk.io.AvroIO;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -29,12 +31,11 @@ import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Apache Beam Pipeline that indexes Taxonomic NameUsage matches in a HBase KV table. */
+/** Apache Beam Pipeline that indexes Taxonomic NameUsage matches into an HBase KV table. */
 public class NameUsageMatchIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageMatchIndexer.class);
@@ -73,38 +74,29 @@ public class NameUsageMatchIndexer {
     options.setRunner(SparkRunner.class);
 
     // Occurrence table to read
-    String sourceTable = options.getSourceTable();
+    String sourceGlob = options.getSourceGlob();
 
     // Config
     CachedHBaseKVStoreConfiguration storeConfiguration = nameUsageMatchKVConfiguration(options);
     ClientConfiguration nameMatchClientConfiguration = ConfigurationMapper.clientConfiguration(options);
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
-    // Reade the occurrence table
-    PCollection<Result> inputRecords =
-        pipeline.apply(
-            HBaseIO.read().withConfiguration(hBaseConfiguration).withTableId(sourceTable));
+    // Read the occurrence table
+    PCollection<SpeciesMatchRequest> inputRecords =
+      pipeline.apply(AvroIO.parseGenericRecords(new AvroOccurrenceRecordToNameUsageRequest())
+          .withCoder(AvroCoder.of(SpeciesMatchRequest.class))
+          .from(sourceGlob)
+      );
+
     // Select distinct coordinates
-    PCollection<SpeciesMatchRequest> distinctCoordinates =
+    PCollection<SpeciesMatchRequest> distinctNames =
         inputRecords
-            .apply(
-                ParDo.of(
-                    new DoFn<Result, SpeciesMatchRequest>() {
-
-                      @ProcessElement
-                      public void processElement(ProcessContext context) {
-                        SpeciesMatchRequest speciesMatchRequest = OccurrenceToNameUsageRequestHBaseBuilder.toSpeciesMatchRequest(context.element());
-                        context.output(speciesMatchRequest);
-
-                      }
-                      // Selects distinct values
-                    }))
             .apply(
                 Distinct.<SpeciesMatchRequest, String>withRepresentativeValueFn(SpeciesMatchRequest::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
-    distinctCoordinates
+    distinctNames
         .apply(
             ParDo.of(
                 new DoFn<SpeciesMatchRequest, Mutation>() {
@@ -145,7 +137,7 @@ public class NameUsageMatchIndexer {
                         context.output(valueMutator.apply(saltedKey, nameUsageMatch));
                       }
                     } catch (Exception ex) {
-                      LOG.error("Error performing Geocode lookup", ex);
+                      LOG.error("Error performing species match", ex);
                     }
                   }
                 }))

@@ -9,8 +9,18 @@ import java.util.StringJoiner;
 /** Geographic Coordinate: latitude and longitude. */
 public class LatLng implements Serializable, Indexable {
 
-  private final Double latitude;
-  private final Double longitude;
+  private Double latitude;
+  private Double longitude;
+
+  public LatLng() {}
+
+  public void setLatitude(Double latitude) {
+    this.latitude = latitude;
+  }
+
+  public void setLongitude(Double longitude) {
+    this.longitude = longitude;
+  }
 
   /**
    * Full constructor.

@@ -12,10 +12,10 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setHbaseZk(String hbaseZk);
 
-  @Description("HBase input table to be scan to extract values")
-  String getSourceTable();
+  @Description("Avro source glob to scan and extract values")
+  String getSourceGlob();
 
-  void setSourceTable(String sourceTable);
+  void setSourceGlob(String sourceGlob);
 
   @Description("HBase table to store key-value elements")
   String getTargetTable();
@@ -28,7 +28,7 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setKVColumnFamily(String kvColumnFamily);
 
-  @Description("GBIF base API url")
+  @Description("GBIF base API URL")
   String getBaseApiUrl();
 
   void setBaseApiUrl(String baseApiUrl);
@@ -43,7 +43,7 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setApiTimeOut(long apiTimeOut);
 
-  @Description("Rest/Http client file-cache max size")
+  @Description("Rest/HTTP client file-cache max size")
   long getRestClientCacheMaxSize();
 
   void setRestClientCacheMaxSize(long restClientCacheMaxSize);
