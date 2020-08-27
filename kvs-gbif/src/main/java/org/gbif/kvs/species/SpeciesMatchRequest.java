@@ -1,5 +1,6 @@
 package org.gbif.kvs.species;
 
+import org.apache.avro.reflect.Nullable;
 import org.gbif.common.parsers.utils.ClassificationUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -19,19 +20,19 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SpeciesMatchRequest implements Serializable, Indexable {
 
-  private String kingdom;
-  private String phylum;
-  private String clazz;
-  private String order;
-  private String family;
-  private String genus;
-  private String specificEpithet;
-  private String infraspecificEpithet;
-  private String rank;
-  private String verbatimTaxonRank;
-  private String scientificName;
-  private String genericName;
-  private String scientificNameAuthorship;
+  @Nullable private String kingdom;
+  @Nullable private String phylum;
+  @Nullable private String clazz;
+  @Nullable private String order;
+  @Nullable private String family;
+  @Nullable private String genus;
+  @Nullable private String specificEpithet;
+  @Nullable private String infraspecificEpithet;
+  @Nullable private String rank;
+  @Nullable private String verbatimTaxonRank;
+  @Nullable private String scientificName;
+  @Nullable private String genericName;
+  @Nullable private String scientificNameAuthorship;
 
   /**
    * Full constructor.
@@ -183,7 +184,6 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
     ImmutableMap.Builder<String, String> map = ImmutableMap.builder();
 
-    // Interpret common
     Optional.ofNullable(kingdom).ifPresent(v -> map.put(DwcTerm.kingdom.simpleName(), v));
     Optional.ofNullable(phylum).ifPresent(v -> map.put(DwcTerm.phylum.simpleName(), v));
     Optional.ofNullable(clazz).ifPresent(v -> map.put(DwcTerm.class_.simpleName(), v));
