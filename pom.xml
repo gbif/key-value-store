@@ -92,11 +92,12 @@
         <!-- Metrics -->
         <micrometer.version>1.1.3</micrometer.version>
 
+        <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
+        <lombok.version>1.18.12</lombok.version>
 
         <!-- Test -->
         <junit.version>4.12</junit.version>
-
 
         <!-- Plugins -->
         <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
@@ -106,7 +107,7 @@
 
         <!-- Checkstyle -->
         <plexus-compiler-javac-errorprone.version>2.8.3</plexus-compiler-javac-errorprone.version>
-        <error_prone_core.version>2.3.1</error_prone_core.version>
+        <error_prone_core.version>2.3.3</error_prone_core.version>
 
     </properties>
 
@@ -400,6 +401,12 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>${findbugs-jsr305.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Logging -->

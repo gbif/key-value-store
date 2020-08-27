@@ -10,6 +10,11 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.StringJoiner;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * Tests utility class that loads test data for Geocode reverse lookups.
  * Uses a file taken from: https://developers.google.com/public-data/docs/canonical/countries_csv.
@@ -102,66 +107,15 @@ public class CountryCentroids {
   /**
    * Class to abstract the content of the test data file.
    */
+  @Getter
+  @EqualsAndHashCode
+  @ToString
+  @AllArgsConstructor
   public static class Country {
-
     private final String isoCode;
     private final Double latitude;
     private final Double longitude;
     private final String name;
-
-    public Country(String isoCode, Double latitude, Double longitude, String name) {
-      this.isoCode = isoCode;
-      this.latitude = latitude;
-      this.longitude = longitude;
-      this.name = name;
-    }
-
-
-    public String getIsoCode() {
-      return isoCode;
-    }
-
-    public Double getLatitude() {
-      return latitude;
-    }
-
-    public Double getLongitude() {
-      return longitude;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      Country country = (Country) o;
-      return Objects.equals(isoCode, country.isoCode) &&
-          Objects.equals(latitude, country.latitude) &&
-          Objects.equals(longitude, country.longitude) &&
-          Objects.equals(name, country.name);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(isoCode, latitude, longitude, name);
-    }
-
-    @Override
-    public String toString() {
-      return new StringJoiner(", ", Country.class.getSimpleName() + "[", "]")
-          .add("isoCode='" + isoCode + "'")
-          .add("latitude=" + latitude)
-          .add("longitude=" + longitude)
-          .add("name='" + name + "'")
-          .toString();
-    }
   }
 
 }
