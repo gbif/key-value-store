@@ -41,8 +41,6 @@ import org.slf4j.LoggerFactory;
 public class ReverseGeocodeIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
-  private static final String DECIMAL_LATITUDE = DwcTerm.decimalLatitude.simpleName().toLowerCase();
-  private static final String DECIMAL_LONGITUDE = DwcTerm.decimalLongitude.simpleName().toLowerCase();
 
   public static void main(String[] args) {
     GeocodeIndexingOptions options =
