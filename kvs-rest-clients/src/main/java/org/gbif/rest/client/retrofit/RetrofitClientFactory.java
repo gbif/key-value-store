@@ -1,16 +1,18 @@
 package org.gbif.rest.client.retrofit;
 
-import org.gbif.rest.client.configuration.ClientConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Cache;
-import okhttp3.OkHttpClient;
+import org.gbif.rest.client.configuration.ClientConfiguration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -44,6 +46,20 @@ public final class RetrofitClientFactory {
             .addConverterFactory(JacksonConverterFactory.create())
             .validateEagerly(true)
             .build().create(serviceClass);
+  }
+
+  public static <S> S createRetrofitClient(
+      OkHttpClient okHttpClient,
+      String baseApiUrl,
+      Class<S> serviceClass,
+      ObjectMapper objectMapper) {
+    // create service
+    return new Retrofit.Builder()
+        .client(okHttpClient)
+        .baseUrl(baseApiUrl)
+        .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+        .validateEagerly(true)
+        .build().create(serviceClass);
   }
 
   public static <S> S createRetrofitClient(ClientConfiguration clientConfiguration, String baseApiUrl,
