@@ -1,5 +1,6 @@
 package org.gbif.kvs.species;
 
+import org.apache.avro.reflect.Nullable;
 import org.gbif.common.parsers.utils.ClassificationUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -19,19 +20,19 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SpeciesMatchRequest implements Serializable, Indexable {
 
-  private final String kingdom;
-  private final String phylum;
-  private final String clazz;
-  private final String order;
-  private final String family;
-  private final String genus;
-  private final String specificEpithet;
-  private final String infraspecificEpithet;
-  private final String rank;
-  private final String verbatimTaxonRank;
-  private final String scientificName;
-  private final String genericName;
-  private final String scientificNameAuthorship;
+  @Nullable private String kingdom;
+  @Nullable private String phylum;
+  @Nullable private String clazz;
+  @Nullable private String order;
+  @Nullable private String family;
+  @Nullable private String genus;
+  @Nullable private String specificEpithet;
+  @Nullable private String infraspecificEpithet;
+  @Nullable private String rank;
+  @Nullable private String verbatimTaxonRank;
+  @Nullable private String scientificName;
+  @Nullable private String genericName;
+  @Nullable private String scientificNameAuthorship;
 
   /**
    * Full constructor.
@@ -51,6 +52,60 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     this.verbatimTaxonRank = verbatimTaxonRank;
     this.scientificName = scientificName;
     this.genericName = genericName;
+    this.scientificNameAuthorship = scientificNameAuthorship;
+  }
+
+  public SpeciesMatchRequest() {}
+
+  public void setKingdom(String kingdom) {
+    this.kingdom = kingdom;
+  }
+
+  public void setPhylum(String phylum) {
+    this.phylum = phylum;
+  }
+
+  public void setClazz(String clazz) {
+    this.clazz = clazz;
+  }
+
+  public void setFamily(String family) {
+    this.family = family;
+  }
+
+  public void setOrder(String order) {
+    this.order = order;
+  }
+
+  public void setGenus(String genus) {
+    this.genus = genus;
+  }
+
+  public void setSpecificEpithet(String specificEpithet) {
+    this.specificEpithet = specificEpithet;
+  }
+
+  public void setInfraspecificEpithet(String infraspecificEpithet) {
+    this.infraspecificEpithet = infraspecificEpithet;
+  }
+
+  public void setRank(String rank) {
+    this.rank = rank;
+  }
+
+  public void setVerbatimTaxonRank(String verbatimTaxonRank) {
+    this.verbatimTaxonRank = verbatimTaxonRank;
+  }
+
+  public void setScientificName(String scientificName) {
+    this.scientificName = scientificName;
+  }
+
+  public void setGenericName(String genericName) {
+    this.genericName = genericName;
+  }
+
+  public void setScientificNameAuthorship(String scientificNameAuthorship) {
     this.scientificNameAuthorship = scientificNameAuthorship;
   }
 
@@ -115,7 +170,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
   private String appendIgnoreNulls(String... values) {
     StringBuilder stringBuilder = new StringBuilder();
-    for(String value : values) {
+    for (String value : values) {
       Optional.ofNullable(value).map(String::trim).ifPresent(stringBuilder::append);
     }
     return stringBuilder.toString();
@@ -129,7 +184,6 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
     ImmutableMap.Builder<String, String> map = ImmutableMap.builder();
 
-    // Interpret common
     Optional.ofNullable(kingdom).ifPresent(v -> map.put(DwcTerm.kingdom.simpleName(), v));
     Optional.ofNullable(phylum).ifPresent(v -> map.put(DwcTerm.phylum.simpleName(), v));
     Optional.ofNullable(clazz).ifPresent(v -> map.put(DwcTerm.class_.simpleName(), v));

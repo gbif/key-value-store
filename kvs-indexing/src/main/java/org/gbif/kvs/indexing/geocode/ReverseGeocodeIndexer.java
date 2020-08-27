@@ -1,5 +1,7 @@
 package org.gbif.kvs.indexing.geocode;
 
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
@@ -12,7 +14,12 @@ import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
+import org.apache.avro.generic.GenericRecord;
+import org.apache.beam.sdk.coders.AvroCoder;
+import org.apache.beam.sdk.io.AvroIO;
+import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
@@ -26,7 +33,6 @@ import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,34 +74,44 @@ public class ReverseGeocodeIndexer {
     options.setRunner(SparkRunner.class);
 
     // Occurrence table to read
-    String sourceTable = options.getSourceTable();
+    String sourceGlob = options.getSourceGlob();
 
     // Config
     CachedHBaseKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
     ClientConfiguration geocodeClientConfiguration = ConfigurationMapper.clientConfiguration(options);
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
-    // Reade the occurrence table
-    PCollection<Result> inputRecords =
-        pipeline.apply(
-            HBaseIO.read().withConfiguration(hBaseConfiguration).withTableId(sourceTable));
+    // Retrieve just the latitude and longitude from the Avro record
+    SerializableFunction<GenericRecord, LatLng> recordToLatLng = input -> {
+      LatLng.Builder builder = LatLng.builder();
+      putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
+      putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
+      return builder.build();
+    };
+
+    // Read the occurrence table
+    PCollection<LatLng> inputRecords =
+      pipeline.apply(AvroIO.parseGenericRecords(recordToLatLng)
+          .withCoder(AvroCoder.of(LatLng.class))
+          .from(sourceGlob)
+      );
+
     // Select distinct coordinates
     PCollection<LatLng> distinctCoordinates =
         inputRecords
             .apply(
                 ParDo.of(
-                    new DoFn<Result, LatLng>() {
-
+                    new DoFn<LatLng, LatLng>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        LatLng latLng = OccurrenceHBaseBuilder.toLatLng(context.element());
+                        LatLng latLng = context.element();
                         if (latLng.isValid()) {
                           context.output(latLng);
                         }
                       }
-                      // Selects distinct values
                     }))
             .apply(
+                // Selects distinct values
                 Distinct.<LatLng, String>withRepresentativeValueFn(LatLng::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
@@ -145,5 +161,18 @@ public class ReverseGeocodeIndexer {
     // Run and wait
     PipelineResult result = pipeline.run(options);
     result.waitUntilFinish();
+  }
+
+  /**
+   * Reads the double value associated to a term into the consumer 'with'.
+   * @param input Avro record
+   * @param term verbatim field/term
+   * @param with consumer
+   */
+  private static void putIfExists(GenericRecord input, Term term, Consumer<Double> with) {
+    Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
+      .map(Object::toString)
+      .map(Double::parseDouble)
+      .ifPresent(with);
   }
 }

@@ -114,6 +114,11 @@
             <artifactId>beam-sdks-java-io-hbase</artifactId>
             <version>${apache.beam.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.apache.beam</groupId>
+          <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
+          <version>${apache.beam.version}</version>
+        </dependency>
 
         <!-- Hadoop  and HBase -->
         <dependency>
