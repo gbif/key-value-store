@@ -12,7 +12,7 @@ import lombok.Data;
 
 /** Geographic Coordinate: latitude and longitude. */
 @Data
-@Builder(setterPrefix = "with")
+@Builder(setterPrefix = "with", builderClassName = "Builder")
 @AllArgsConstructor
 public class LatLng implements Serializable, Indexable {
 

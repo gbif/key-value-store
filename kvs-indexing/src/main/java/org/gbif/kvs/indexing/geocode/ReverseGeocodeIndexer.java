@@ -83,7 +83,7 @@ public class ReverseGeocodeIndexer {
 
     // Retrieve just the latitude and longitude from the Avro record
     SerializableFunction<GenericRecord, LatLng> recordToLatLng = input -> {
-      LatLng.LatLngBuilder builder = LatLng.builder();
+      LatLng.Builder builder = LatLng.builder();
       putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
       putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
       return builder.build();
