@@ -1,23 +1,28 @@
 package org.gbif.kvs.species;
 
-import org.apache.avro.reflect.Nullable;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Optional;
+
 import org.gbif.common.parsers.utils.ClassificationUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.kvs.hbase.Indexable;
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.StringJoiner;
+import org.apache.avro.reflect.Nullable;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Represents a request to the species name match service.
  * This class is used mostly to efficiently store it as a lookup mechanism for caching.
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SpeciesMatchRequest implements Serializable, Indexable {
 
   @Nullable private String kingdom;
@@ -33,133 +38,6 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   @Nullable private String scientificName;
   @Nullable private String genericName;
   @Nullable private String scientificNameAuthorship;
-
-  /**
-   * Full constructor.
-   */
-  private SpeciesMatchRequest(String kingdom, String phylum, String clazz, String order, String family, String genus,
-                              String specificEpithet, String infraspecificEpithet, String rank, String verbatimTaxonRank,
-                              String scientificName, String genericName, String scientificNameAuthorship) {
-    this.kingdom = kingdom;
-    this.phylum = phylum;
-    this.clazz = clazz;
-    this.order = order;
-    this.family = family;
-    this.genus = genus;
-    this.specificEpithet = specificEpithet;
-    this.infraspecificEpithet = infraspecificEpithet;
-    this.rank = rank;
-    this.verbatimTaxonRank = verbatimTaxonRank;
-    this.scientificName = scientificName;
-    this.genericName = genericName;
-    this.scientificNameAuthorship = scientificNameAuthorship;
-  }
-
-  public SpeciesMatchRequest() {}
-
-  public void setKingdom(String kingdom) {
-    this.kingdom = kingdom;
-  }
-
-  public void setPhylum(String phylum) {
-    this.phylum = phylum;
-  }
-
-  public void setClazz(String clazz) {
-    this.clazz = clazz;
-  }
-
-  public void setFamily(String family) {
-    this.family = family;
-  }
-
-  public void setOrder(String order) {
-    this.order = order;
-  }
-
-  public void setGenus(String genus) {
-    this.genus = genus;
-  }
-
-  public void setSpecificEpithet(String specificEpithet) {
-    this.specificEpithet = specificEpithet;
-  }
-
-  public void setInfraspecificEpithet(String infraspecificEpithet) {
-    this.infraspecificEpithet = infraspecificEpithet;
-  }
-
-  public void setRank(String rank) {
-    this.rank = rank;
-  }
-
-  public void setVerbatimTaxonRank(String verbatimTaxonRank) {
-    this.verbatimTaxonRank = verbatimTaxonRank;
-  }
-
-  public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
-  }
-
-  public void setGenericName(String genericName) {
-    this.genericName = genericName;
-  }
-
-  public void setScientificNameAuthorship(String scientificNameAuthorship) {
-    this.scientificNameAuthorship = scientificNameAuthorship;
-  }
-
-  public String getKingdom() {
-    return kingdom;
-  }
-
-  public String getPhylum() {
-    return phylum;
-  }
-
-  public String getClazz() {
-    return clazz;
-  }
-
-  public String getOrder() {
-    return order;
-  }
-
-  public String getFamily() {
-    return family;
-  }
-
-  public String getGenus() {
-    return genus;
-  }
-
-  public String getSpecificEpithet() {
-    return specificEpithet;
-  }
-
-  public String getInfraspecificEpithet() {
-    return infraspecificEpithet;
-  }
-
-  public String getRank() {
-    return rank;
-  }
-
-  public String getVerbatimTaxonRank() {
-    return verbatimTaxonRank;
-  }
-
-  public String getScientificName() {
-    return scientificName;
-  }
-
-  public String getGenericName() {
-    return genericName;
-  }
-
-  public String getScientificNameAuthorship() {
-    return scientificNameAuthorship;
-  }
 
   @Override
   public String getLogicalKey() {
@@ -200,51 +78,6 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     Optional.ofNullable(genericName).ifPresent(v -> map.put(GbifTerm.genericName.simpleName(), v));
 
     return map.build();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    SpeciesMatchRequest that = (SpeciesMatchRequest) o;
-    return Objects.equals(kingdom, that.kingdom) &&
-        Objects.equals(phylum, that.phylum) &&
-        Objects.equals(clazz, that.clazz) &&
-        Objects.equals(order, that.order) &&
-        Objects.equals(family, that.family) &&
-        Objects.equals(genus, that.genus) &&
-        Objects.equals(specificEpithet, that.specificEpithet) &&
-        Objects.equals(infraspecificEpithet, that.infraspecificEpithet) &&
-        Objects.equals(rank, that.rank) &&
-        Objects.equals(verbatimTaxonRank, that.verbatimTaxonRank) &&
-        Objects.equals(scientificName, that.scientificName) &&
-        Objects.equals(genericName, that.genericName) &&
-        Objects.equals(scientificNameAuthorship, that.scientificNameAuthorship);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(kingdom, phylum, clazz, order, family, genus, specificEpithet, infraspecificEpithet,
-                        rank, verbatimTaxonRank, scientificName, genericName, scientificNameAuthorship);
-  }
-
-  @Override
-  public String toString() {
-    return new StringJoiner(", ", SpeciesMatchRequest.class.getSimpleName() + "[", "]")
-        .add("kingdom='" + kingdom + "'")
-        .add("phylum='" + phylum + "'")
-        .add("clazz='" + clazz + "'")
-        .add("order='" + order + "'")
-        .add("family='" + family + "'")
-        .add("genus='" + genus + "'")
-        .add("specificEpithet='" + specificEpithet + "'")
-        .add("infraspecificEpithet='" + infraspecificEpithet + "'")
-        .add("rank=" + rank)
-        .add("verbatimTaxonRank=" + verbatimTaxonRank)
-        .add("scientificName='" + scientificName + "'")
-        .add("genericName='" + genericName + "'")
-        .add("scientificNameAuthorship='" + scientificNameAuthorship + "'")
-        .toString();
   }
 
   /**

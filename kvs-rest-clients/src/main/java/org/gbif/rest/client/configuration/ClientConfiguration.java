@@ -1,8 +1,12 @@
 package org.gbif.rest.client.configuration;
 
 import java.io.Serializable;
-import java.util.Objects;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+@Getter
+@EqualsAndHashCode
 public class ClientConfiguration implements Serializable {
 
   private final String baseApiUrl;
@@ -15,37 +19,6 @@ public class ClientConfiguration implements Serializable {
     this.baseApiUrl = baseApiUrl;
     this.timeOut = timeOut;
     this.fileCacheMaxSizeMb = fileCacheMaxSizeMb;
-  }
-
-  public String getBaseApiUrl() {
-    return baseApiUrl;
-  }
-
-  public Long getTimeOut() {
-    return timeOut;
-  }
-
-  public Long getFileCacheMaxSizeMb() {
-    return fileCacheMaxSizeMb;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    ClientConfiguration that = (ClientConfiguration) o;
-    return Objects.equals(timeOut, that.timeOut)
-        && Objects.equals(fileCacheMaxSizeMb, that.fileCacheMaxSizeMb)
-        && Objects.equals(baseApiUrl, that.baseApiUrl);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(baseApiUrl, timeOut, fileCacheMaxSizeMb);
   }
 
   /**

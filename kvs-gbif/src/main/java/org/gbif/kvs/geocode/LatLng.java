@@ -6,7 +6,14 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
 /** Geographic Coordinate: latitude and longitude. */
+@Data
+@Builder(setterPrefix = "with", builderClassName = "Builder")
+@AllArgsConstructor
 public class LatLng implements Serializable, Indexable {
 
   private Double latitude;
@@ -23,17 +30,6 @@ public class LatLng implements Serializable, Indexable {
   }
 
   /**
-   * Full constructor.
-   *
-   * @param latitude decimal latitude
-   * @param longitude decimal longitude
-   */
-  public LatLng(Double latitude, Double longitude) {
-    this.latitude = latitude;
-    this.longitude = longitude;
-  }
-
-  /**
    * Facrtory method.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
@@ -41,16 +37,6 @@ public class LatLng implements Serializable, Indexable {
    */
   public static LatLng create(Double latitude, Double longitude) {
     return new LatLng(latitude,longitude);
-  }
-
-  /** @return decimal latitude */
-  public Double getLatitude() {
-    return latitude;
-  }
-
-  /** @return decimal longitude */
-  public Double getLongitude() {
-    return longitude;
   }
 
   /**
@@ -76,65 +62,5 @@ public class LatLng implements Serializable, Indexable {
   @Override
   public String getLogicalKey() {
     return latitude.toString() + '|' + longitude.toString();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LatLng latLng = (LatLng) o;
-    return Objects.equals(latitude, latLng.latitude) && Objects.equals(longitude, latLng.longitude);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(latitude, longitude);
-  }
-
-  @Override
-  public String toString() {
-    return new StringJoiner(", ", LatLng.class.getSimpleName() + "[", "]")
-        .add("latitude=" + latitude)
-        .add("longitude=" + longitude)
-        .toString();
-  }
-
-  /**
-   * Creates a new {@link Builder} instance.
-   * @return a new builder
-   */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /** LatLng builder utility. */
-  public static class Builder {
-    private Double latitude;
-    private Double longitude;
-
-    /**
-     * Hidden constructor to force use the containing class builder() method.
-     */
-    private Builder() {
-      //DO NOTHING
-    }
-
-    public Builder withLatitude(Double latitude) {
-      this.latitude = latitude;
-      return this;
-    }
-
-    public Builder withLongitude(Double longitude) {
-      this.longitude = longitude;
-      return this;
-    }
-
-    public LatLng build() {
-      return new LatLng(latitude, longitude);
-    }
   }
 }
