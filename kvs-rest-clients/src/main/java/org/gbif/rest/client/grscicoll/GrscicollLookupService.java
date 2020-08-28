@@ -9,9 +9,9 @@ import org.gbif.api.vocabulary.Country;
  * GrSciColl lookup service. This class is used for creation of Sync and Async clients. It is not
  * exposed outside this package.
  */
-public interface LookupService extends Closeable {
+public interface GrscicollLookupService extends Closeable {
 
-  LookupResponse lookup(
+  GrscicollLookupResponse lookup(
       String institutionCode,
       String ownerInstitutionCode,
       String institutionId,

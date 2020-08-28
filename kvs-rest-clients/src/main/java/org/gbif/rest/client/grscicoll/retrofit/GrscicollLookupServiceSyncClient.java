@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 
 import org.gbif.api.vocabulary.Country;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.grscicoll.LookupResponse;
-import org.gbif.rest.client.grscicoll.LookupService;
+import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
+import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.retrofit.SyncCall;
 
@@ -20,25 +20,25 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 
-public class LookupServiceSyncClient implements LookupService {
+public class GrscicollLookupServiceSyncClient implements GrscicollLookupService {
 
   // retrofit client
-  private final LookupRetrofitService retrofitService;
+  private final GrscicollLookupRetrofitService retrofitService;
 
   private final OkHttpClient okHttpClient;
 
-  public LookupServiceSyncClient(ClientConfiguration clientConfiguration) {
+  public GrscicollLookupServiceSyncClient(ClientConfiguration clientConfiguration) {
     okHttpClient = RetrofitClientFactory.createClient(clientConfiguration);
     retrofitService =
         RetrofitClientFactory.createRetrofitClient(
             okHttpClient,
             clientConfiguration.getBaseApiUrl(),
-            LookupRetrofitService.class,
+            GrscicollLookupRetrofitService.class,
             new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES));
   }
 
   @Override
-  public LookupResponse lookup(
+  public GrscicollLookupResponse lookup(
       String institutionCode,
       String ownerInstitutionCode,
       String institutionId,

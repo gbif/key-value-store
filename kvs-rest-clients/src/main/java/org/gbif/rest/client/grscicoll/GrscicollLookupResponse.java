@@ -18,7 +18,7 @@ import lombok.Data;
 import static org.gbif.api.model.collections.lookup.Match.Status;
 
 @Data
-public class LookupResponse {
+public class GrscicollLookupResponse {
 
   private Match<InstitutionResponse> institutionMatch;
   private Match<CollectionResponse> collectionMatch;
@@ -36,8 +36,8 @@ public class LookupResponse {
     private UUID key;
     private String code;
     private String name;
-    private Map<String, String> alternativeCodes = new HashMap();
-    private List<Identifier> identifiers = new ArrayList();
+    private Map<String, String> alternativeCodes = new HashMap<>();
+    private List<Identifier> identifiers = new ArrayList<>();
     private Address mailingAddress;
     private Address address;
   }
@@ -48,8 +48,8 @@ public class LookupResponse {
     private String code;
     private String name;
     private UUID institutionKey;
-    private Map<String, String> alternativeCodes = new HashMap();
-    private List<Identifier> identifiers = new ArrayList();
+    private Map<String, String> alternativeCodes = new HashMap<>();
+    private List<Identifier> identifiers = new ArrayList<>();
     private Address mailingAddress;
     private Address address;
   }
