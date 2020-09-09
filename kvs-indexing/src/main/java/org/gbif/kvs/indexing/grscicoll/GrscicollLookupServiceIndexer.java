@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
@@ -135,8 +136,7 @@ public class GrscicollLookupServiceIndexer {
                               req.getCollectionCode(),
                               req.getCollectionId(),
                               req.getDatasetKey() != null ? UUID.fromString(req.getDatasetKey()) : null,
-                              // country is always null so we avoid parsing it
-                              null);
+                              req.getCountry() != null ? Country.fromIsoCode(req.getCountry()) : null);
                       if (Objects.nonNull(lookupResponse)) {
                         byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, lookupResponse));

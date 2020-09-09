@@ -1,8 +1,10 @@
 package org.gbif.kvs.indexing.grscicoll;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
+import org.gbif.api.vocabulary.Country;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -17,6 +19,7 @@ class AvroOccurrenceRecordToLookupRequest
 
   // each UnknownTerm is prefixed differently
   private static final String VERBATIM_TERM_PREFIX = "v_";
+  private static final UUID EBIRD_DATASET_KEY = UUID.fromString("4fa7b334-ce0d-4e88-aaae-2e0c138d049e");
 
   /** Private constructor of utility class. */
   AvroOccurrenceRecordToLookupRequest() {
@@ -33,10 +36,17 @@ class AvroOccurrenceRecordToLookupRequest
     putVerbatimIfExists(input, DwcTerm.institutionID, builder::withInstitutionId);
     putVerbatimIfExists(input, DwcTerm.collectionCode, builder::withCollectionCode);
     putVerbatimIfExists(input, DwcTerm.collectionID, builder::withCollectionId);
-    putIfExists(input, GbifTerm.datasetKey, builder::withDatasetKey);
 
-    // country is null for the moment. To fill it out we have to call the registry to take it
-    // from the publishing organization of the dataset
+    Optional<String> datasetKey = getValue(input, GbifTerm.datasetKey);
+    if (datasetKey.isPresent()) {
+      builder.withDatasetKey(datasetKey.get());
+
+      if (datasetKey.get().equals(EBIRD_DATASET_KEY.toString())) {
+        builder.withCountry(Country.UNITED_STATES.getIso2LetterCode());
+      } else {
+        getValue(input, GbifTerm.publishingCountry).ifPresent(builder::withCountry);
+      }
+    }
 
     return builder.build();
   }
@@ -54,9 +64,8 @@ class AvroOccurrenceRecordToLookupRequest
         .ifPresent(with);
   }
 
-  private static void putIfExists(GenericRecord input, Term term, Consumer<String> with) {
-    Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
-        .map(Object::toString)
-        .ifPresent(with);
+  private static Optional<String> getValue(GenericRecord input, Term term) {
+    return Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
+        .map(Object::toString);
   }
 }
