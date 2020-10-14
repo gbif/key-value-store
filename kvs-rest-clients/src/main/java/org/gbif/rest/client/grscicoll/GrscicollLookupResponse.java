@@ -14,14 +14,24 @@ import static org.gbif.api.model.collections.lookup.Match.Status;
 @Data
 public class GrscicollLookupResponse {
 
-  private Match institutionMatch;
-  private Match collectionMatch;
+  private Match<InstitutionResponse> institutionMatch;
+  private Match<CollectionResponse> collectionMatch;
 
   @Data
-  public static class Match implements Serializable {
+  public static class Match<T> implements Serializable {
     private MatchType matchType;
     private Status status;
     private Set<Reason> reasons;
+    private T entityMatched;
+  }
+
+  @Data
+  public static class InstitutionResponse implements Serializable {
+    private UUID key;
+  }
+
+  @Data
+  public static class CollectionResponse implements Serializable {
     private UUID key;
   }
 }
