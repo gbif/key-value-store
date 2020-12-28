@@ -69,7 +69,7 @@
         <hadoop-core.version>2.6.0-mr1-cdh5.16.2</hadoop-core.version>
         <hbase.version>1.2.0-cdh5.16.2</hbase.version>
         <hbase.shaded.client.version>1.2.6</hbase.shaded.client.version>
-        <hive.version>1.2.0</hive.version>
+        <hive.version>3.1.3000.7.2.6.1-1</hive.version>
 
         <!-- Logging -->
         <slf4j.version>1.7.5</slf4j.version>
