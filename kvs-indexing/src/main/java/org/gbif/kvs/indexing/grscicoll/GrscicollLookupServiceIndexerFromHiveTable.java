@@ -1,6 +1,8 @@
 package org.gbif.kvs.indexing.grscicoll;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -19,30 +21,34 @@ import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
-import org.apache.beam.sdk.coders.AvroCoder;
-import org.apache.beam.sdk.io.AvroIO;
 import org.apache.beam.sdk.io.hbase.HBaseIO;
+import org.apache.beam.sdk.io.hcatalog.HCatalogIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Distinct;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Apache Beam Pipeline that indexes GrSciColl lookup responses in a HBase KV table. */
-public class GrscicollLookupServiceIndexer {
+public class GrscicollLookupServiceIndexerFromHiveTable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GrscicollLookupServiceIndexer.class);
+  private static final Logger LOG =
+      LoggerFactory.getLogger(GrscicollLookupServiceIndexerFromHiveTable.class);
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     GrSciCollLookupIndexingOptions options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
@@ -73,12 +79,10 @@ public class GrscicollLookupServiceIndexer {
    *
    * @param options beam HBase indexing options
    */
-  private static void run(GrSciCollLookupIndexingOptions options) {
+  private static void run(GrSciCollLookupIndexingOptions options) throws Exception {
+
     Pipeline pipeline = Pipeline.create(options);
     options.setRunner(SparkRunner.class);
-
-    // Occurrence table to read
-    String sourceGlob = options.getSourceGlob();
 
     // Config
     CachedHBaseKVStoreConfiguration storeConfiguration = grSciCollKVStoreConfiguration(options);
@@ -87,29 +91,22 @@ public class GrscicollLookupServiceIndexer {
     Configuration hBaseConfiguration =
         storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
-    // create snapshot
-    String sourceDir = sourceGlob.substring(0, sourceGlob.lastIndexOf("/"));
-    createSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    final HCatSchema schema = readSchema(options);
 
-    // Read the occurrence table
-    PCollection<GrscicollLookupRequest> inputRecords =
+    PCollection<HCatRecord> records =
         pipeline.apply(
-            AvroIO.parseGenericRecords(new AvroOccurrenceRecordToLookupRequest())
-                .withCoder(AvroCoder.of(GrscicollLookupRequest.class))
-                .from(sourceGlob));
-
-    // Select distinct request
-    PCollection<GrscicollLookupRequest> distinctRequests =
-        inputRecords.apply(
-            Distinct.<GrscicollLookupRequest, String>withRepresentativeValueFn(
-                    GrscicollLookupRequest::getLogicalKey)
-                .withRepresentativeType(TypeDescriptor.of(String.class)));
+            HCatalogIO.read()
+                .withConfigProperties(
+                    Collections.singletonMap(
+                        HiveConf.ConfVars.METASTOREURIS.varname, options.getMetastoreUris()))
+                .withDatabase(options.getDatabase())
+                .withTable(options.getTable()));
 
     // Perform Geocode lookup
-    distinctRequests
+    records
         .apply(
             ParDo.of(
-                new DoFn<GrscicollLookupRequest, Mutation>() {
+                new DoFn<HCatRecord, Mutation>() {
 
                   private final SaltedKeyGenerator keyGenerator =
                       new SaltedKeyGenerator(
@@ -135,7 +132,20 @@ public class GrscicollLookupServiceIndexer {
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
-                      GrscicollLookupRequest req = context.element();
+                      HCatRecord record = context.element();
+
+                      GrscicollLookupRequest req =
+                          GrscicollLookupRequest.builder()
+                              .withOwnerInstitutionCode(
+                                  record.getString("ownerInstitutionCode", schema))
+                              .withInstitutionCode(record.getString("institutionCode", schema))
+                              .withInstitutionId(record.getString("institutionId", schema))
+                              .withCollectionCode(record.getString("collectionCode", schema))
+                              .withCollectionId(record.getString("collectionId", schema))
+                              .withDatasetKey(record.getString("datasetKey", schema))
+                              .withCountry(record.getString("country", schema))
+                              .build();
+
                       GrscicollLookupResponse lookupResponse =
                           lookupService.lookup(
                               req.getInstitutionCode(),
@@ -177,28 +187,15 @@ public class GrscicollLookupServiceIndexer {
     // Run and wait
     PipelineResult result = pipeline.run(options);
     result.waitUntilFinish();
-
-    // delete snapshot
-    deleteSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
   }
 
-  private static void createSnapshot(
-      Configuration configuration, String directory, String snapshotName) {
-    try (FileSystem fs = FileSystem.get(configuration)) {
-      LOG.info("Creating snapshot in dir {} with name {}", directory, snapshotName);
-      fs.createSnapshot(new Path(directory), snapshotName);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  private static void deleteSnapshot(
-      Configuration configuration, String directory, String snapshotName) {
-    try (FileSystem fs = FileSystem.get(configuration)) {
-      LOG.info("Deleting snapshot in dir {} with name {}", directory, snapshotName);
-      fs.deleteSnapshot(new Path(directory), snapshotName);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
+  private static HCatSchema readSchema(GrSciCollLookupIndexingOptions options)
+      throws HCatException, TException {
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, options.getMetastoreUris());
+    HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(hiveConf);
+    List<FieldSchema> fieldSchemaList =
+        metaStoreClient.getSchema(options.getDatabase(), options.getTable());
+    return HCatSchemaUtils.getHCatSchema(fieldSchemaList);
   }
 }

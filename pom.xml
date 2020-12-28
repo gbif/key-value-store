@@ -29,7 +29,7 @@
         <url>https://github.com/gbif/key-value-store</url>
         <developerConnection>scm:git:git@github.com:gbif/key-value-store.git</developerConnection>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <distributionManagement>
         <site>
@@ -69,6 +69,7 @@
         <hadoop-core.version>2.6.0-mr1-cdh5.16.2</hadoop-core.version>
         <hbase.version>1.2.0-cdh5.16.2</hbase.version>
         <hbase.shaded.client.version>1.2.6</hbase.shaded.client.version>
+        <hive.version>1.2.0</hive.version>
 
         <!-- Logging -->
         <slf4j.version>1.7.5</slf4j.version>
@@ -250,6 +251,51 @@
                 <groupId>org.apache.beam</groupId>
                 <artifactId>beam-sdks-java-io-hbase</artifactId>
                 <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-io-hcatalog</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-extensions-sql</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.beam</groupId>
+                <artifactId>beam-sdks-java-extensions-sql-hcatalog</artifactId>
+                <version>${apache.beam.version}</version>
+            </dependency>
+
+            <!-- hive -->
+            <dependency>
+                <groupId>org.apache.hive.hcatalog</groupId>
+                <artifactId>hive-hcatalog-core</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <!-- Excluded because it contains a shaded version of Avro -->
+                    <exclusion>
+                        <groupId>org.apache.hive</groupId>
+                        <artifactId>hive-exec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-metastore</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>${hive.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-common</artifactId>
+                <version>${hive.version}</version>
             </dependency>
 
             <!-- Metrics -->

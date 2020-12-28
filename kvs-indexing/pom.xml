@@ -53,6 +53,19 @@
                                     <pattern>okio</pattern>
                                     <shadedPattern>com.shaded.okio</shadedPattern>
                                 </relocation>
+                                <!-- Important: Do not relocate org.apache.hadoop.hive -->
+                                <relocation>
+                                    <pattern>org.apache.hadoop.hive.conf</pattern>
+                                    <shadedPattern>h12.org.apache.hadoop.hive.conf</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.hadoop.hive.ql</pattern>
+                                    <shadedPattern>h12.org.apache.hadoop.hive.ql</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.hadoop.hive.metastore</pattern>
+                                    <shadedPattern>h12.org.apache.hadoop.hive.metastore</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -112,12 +125,49 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-hbase</artifactId>
-            <version>${apache.beam.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.beam</groupId>
           <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
           <version>${apache.beam.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hcatalog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-sql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-sql-hcatalog</artifactId>
+        </dependency>
+
+        <!-- hive -->
+        <dependency>
+            <groupId>org.apache.hive.hcatalog</groupId>
+            <artifactId>hive-hcatalog-core</artifactId>
+            <exclusions>
+                <!-- Excluded because it contains a shaded version of Avro -->
+                <exclusion>
+                    <groupId>org.apache.hive</groupId>
+                    <artifactId>hive-exec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-metastore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-common</artifactId>
         </dependency>
 
         <!-- Hadoop  and HBase -->
