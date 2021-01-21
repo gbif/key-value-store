@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workflow-app xmlns="uri:oozie:workflow:0.4.5" name="grscicoll-cache-refresh">
+
+  <global>
+    <job-tracker>${wf:conf("hadoop.jobtracker")}</job-tracker>
+    <name-node>${wf:conf("hdfs.namenode")}</name-node>
+    <configuration>
+      <property>
+        <name>oozie.launcher.mapred.job.queue.name</name>
+        <value>${wf:conf("hadoop.queuename")}</value>
+      </property>
+      <property>
+        <name>oozie.action.sharelib.for.spark</name>
+        <value>spark2</value>
+      </property>
+    </configuration>
+  </global>
+
+  <start to="create-hive-table" />
+
+  <action name="create-hive-table">
+    <hive xmlns="uri:oozie:hive-action:0.4">
+      <job-xml>conf/hive-default.xml</job-xml>
+      <script>create-hive-table.q</script>
+      <param>hiveDB=${hive_db}</param>
+      <param>occurrenceTable=${occurrence_table_name}</param>
+    </hive>
+
+    <ok to="run-indexer"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="run-indexer">
+    <spark xmlns="uri:oozie:spark-action:0.1">
+      <job-tracker>${wf:conf("hadoop.jobtracker")}</job-tracker>
+      <name-node>${wf:conf("hdfs.namenode")}</name-node>
+      <master>yarn-cluster</master>
+      <name>GRSciColl Lookup Indexer</name>
+      <class>org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceIndexerFromHiveTable</class>
+      <jar>lib/kvs-indexing.jar</jar>
+      <!-- Following enabling static service pools (cgroups) we found the native libraries would not load. The only way we found to pass this through was using extraLibraryPath -->
+      <spark-opts>${wf:conf("gbif.grscicoll.spark.opts")} --conf spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native</spark-opts>
+      <arg>--runner=SparkRunner</arg>
+      <arg>--hbaseZk</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</arg>
+      <arg>--database</arg>
+      <arg>${wf:conf("hive_db")}</arg>
+      <arg>--table</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.targetTable")}</arg>
+      <arg>--metastoreUris</arg>
+      <arg>${wf:conf("hive.metastore.uris")}</arg>
+      <arg>--targetTable=</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</arg>
+      <arg>--baseApiUrl</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</arg>
+      <arg>--saltedKeyBuckets</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</arg>
+      <arg>--apiTimeOut</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</arg>
+      <arg>--restClientCacheMaxSize</arg>
+      <arg>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</arg>
+    </spark>
+    <ok to="end" />
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>GRSciColl cache refresh failed:[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+
+  <end name="end" />
+
+</workflow-app>
