@@ -18,7 +18,7 @@
       <fileMode>0644</fileMode>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <includes>
-        <include>org.gbif.kvs:kvs-indexing-shaded:jar</include>
+        <include>org.gbif.kvs:kvs-indexing:jar</include>
       </includes>
       <excludes>
         <exclude>*:tests</exclude>

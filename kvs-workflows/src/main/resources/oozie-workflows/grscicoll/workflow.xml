@@ -39,7 +39,7 @@
       <class>org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceIndexerFromHiveTable</class>
       <jar>lib/kvs-indexing.jar</jar>
       <!-- Following enabling static service pools (cgroups) we found the native libraries would not load. The only way we found to pass this through was using extraLibraryPath -->
-      <spark-opts>${wf:conf("gbif.grscicoll.spark.opts")} --conf spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native</spark-opts>
+      <spark-opts>${wf:conf("gbif.grscicoll.indexer.spark.opts")} --conf spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native</spark-opts>
       <arg>--runner=SparkRunner</arg>
       <arg>--hbaseZk</arg>
       <arg>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</arg>

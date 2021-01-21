@@ -25,6 +25,8 @@
         <filtering>true</filtering>
         <includes>
           <include>**/coordinator.xml</include>
+          <include>**/conf/hive-default.xml</include>
+          <include>**/workflow.xml</include>
         </includes>
       </resource>
       <resource>
