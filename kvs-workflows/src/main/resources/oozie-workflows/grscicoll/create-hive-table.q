@@ -1,6 +1,6 @@
 USE ${hiveDB};
 
--- TODO: delete table if exists
+DROP TABLE IF EXISTS occurrence_collections;
 
 -- creates a table with the unique combinations of collections data
 CREATE TABLE occurrence_collections STORED AS parquet AS

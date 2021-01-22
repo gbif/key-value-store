@@ -6,8 +6,16 @@
     <name-node>${wf:conf("hdfs.namenode")}</name-node>
     <configuration>
       <property>
-        <name>oozie.launcher.mapred.job.queue.name</name>
-        <value>${wf:conf("hadoop.queuename")}</value>
+        <name>oozie.launcher.mapreduce.task.classpath.user.precedence</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>oozie.launcher.mapreduce.user.classpath.first</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>oozie.use.system.libpath</name>
+        <value>true</value>
       </property>
       <property>
         <name>oozie.action.sharelib.for.spark</name>
@@ -41,24 +49,15 @@
       <!-- Following enabling static service pools (cgroups) we found the native libraries would not load. The only way we found to pass this through was using extraLibraryPath -->
       <spark-opts>${wf:conf("gbif.grscicoll.indexer.spark.opts")} --conf spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native</spark-opts>
       <arg>--runner=SparkRunner</arg>
-      <arg>--hbaseZk</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</arg>
-      <arg>--database</arg>
-      <arg>${wf:conf("hive_db")}</arg>
-      <arg>--table</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.targetTable")}</arg>
-      <arg>--metastoreUris</arg>
-      <arg>${wf:conf("hive.metastore.uris")}</arg>
-      <arg>--targetTable=</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</arg>
-      <arg>--baseApiUrl</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</arg>
-      <arg>--saltedKeyBuckets</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</arg>
-      <arg>--apiTimeOut</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</arg>
-      <arg>--restClientCacheMaxSize</arg>
-      <arg>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</arg>
+      <arg>--hbaseZk=${wf:conf("gbif.grscicoll.indexer.hbasezk")}</arg>
+      <arg>--database=${wf:conf("hive_db")}</arg>
+      <arg>--table=${wf:conf("gbif.grscicoll.indexer.targetTable")}</arg>
+      <arg>--metastoreUris=${wf:conf("hive.metastore.uris")}</arg>
+      <arg>--targetTable=${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</arg>
+      <arg>--baseApiUrl=${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</arg>
+      <arg>--saltedKeyBuckets=${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</arg>
+      <arg>--apiTimeOut=${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</arg>
+      <arg>--restClientCacheMaxSize=${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</arg>
     </spark>
     <ok to="end" />
     <error to="kill" />
