@@ -76,7 +76,8 @@
                 <exclude>**/org/apache/hadoop/mapreduce/**</exclude>
                 <exclude>**/org/apache/hadoop/mapred/**</exclude>
                 <exclude>**/org/apache/hadoop/yarn/**</exclude>
-                <exclude>**/org/apache/hadoop/hive/**</exclude>
+                <exclude>**/org/apache/hadoop/hive/shims/**</exclude>
+<!--                <exclude>**/org/apache/hadoop/hive/metastore/**</exclude>-->
               </excludes>
             </filter>
           </filters>
@@ -101,22 +102,22 @@
 <!--                  <pattern>org.apache.hadoop.hive.conf</pattern>-->
 <!--                  <shadedPattern>h122.org.apache.hadoop.hive.conf</shadedPattern>-->
 <!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.ql</pattern>-->
-<!--                  <shadedPattern>h122.org.apache.hadoop.hive.ql</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.metastore</pattern>-->
-<!--                  <shadedPattern>h122.org.apache.hadoop.hive.metastore</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.common</pattern>-->
-<!--                  <shadedPattern>h122.org.apache.hadoop.hive.common</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.shims</pattern>-->
-<!--                  <shadedPattern>h122.org.apache.hadoop.hive.shims</shadedPattern>-->
-<!--                </relocation>-->
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.ql</pattern>
+                  <shadedPattern>h122.org.apache.hadoop.hive.ql</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.metastore</pattern>
+                  <shadedPattern>h122.org.apache.hadoop.hive.metastore</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.common</pattern>
+                  <shadedPattern>h122.org.apache.hadoop.hive.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.thrift</pattern>
+                  <shadedPattern>h122.org.apache.hadoop.hive.thrift</shadedPattern>
+                </relocation>
                 <relocation>
                   <pattern>com.fasterxml.jackson</pattern>
                   <shadedPattern>com.shaded.fasterxml.jackson</shadedPattern>
