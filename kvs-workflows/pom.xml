@@ -16,6 +16,82 @@
     <dependency>
       <groupId>org.gbif.kvs</groupId>
       <artifactId>kvs-indexing</artifactId>
+      <exclusions>
+<!--        <exclusion>-->
+<!--          <groupId>org.apache.hive.hcatalog</groupId>-->
+<!--          <artifactId>hive-hcatalog-core</artifactId>-->
+<!--        </exclusion>-->
+<!--        <exclusion>-->
+<!--          <groupId>org.apache.hive</groupId>-->
+<!--          <artifactId>hive-metastore</artifactId>-->
+<!--        </exclusion>-->
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-exec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
+<!--        <exclusion>-->
+<!--          <groupId>org.apache.hive</groupId>-->
+<!--          <artifactId>hive-common</artifactId>-->
+<!--        </exclusion>-->
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-shaded-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-shims</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <exclusions>
+        <!--
+          This is excluded since it stops the MRAppMaster in Oozie from even starting (when in Oozie).
+        -->
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!--
+          Breaks spark2
+        -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-server</artifactId>
+      <!--
+        This is excluded since it stops the MRAppMaster in Oozie from even starting (when in Oozie).
+       -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!--
+          Breaks spark2
+        -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -55,150 +131,153 @@
           </execution>
         </executions>
       </plugin>
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-shade-plugin</artifactId>-->
-<!--        <version>${maven-shade-plugin.version}</version>-->
-<!--        <configuration>-->
-<!--          <createDependencyReducedPom>false</createDependencyReducedPom>-->
-<!--          <filters>-->
-<!--            <filter>-->
-<!--              <artifact>*:*</artifact>-->
-<!--              <excludes>-->
-<!--                <exclude>META-INF/*.SF</exclude>-->
-<!--                <exclude>META-INF/*.DSA</exclude>-->
-<!--                <exclude>META-INF/*.RSA</exclude>-->
-<!--                <exclude>core-site.xml</exclude>-->
-<!--                <exclude>hbase-site.xml</exclude>-->
-<!--                <exclude>mapred-site.xml</exclude>-->
-<!--                <exclude>yarn-site.xml</exclude>-->
-<!--                <exclude>**/hbase-default.xml</exclude>-->
-<!--                <exclude>org.apache.hbase:hbase-shaded-client</exclude>-->
-<!--&lt;!&ndash;                <exclude>**/org/apache/hadoop/mapreduce/**</exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;                <exclude>**/org/apache/hadoop/mapred/**</exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;                <exclude>**/org/apache/hadoop/yarn/**</exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;                <exclude>**/org/apache/hadoop/hive/shims/**</exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;                <exclude>**/org/apache/hadoop/hive/metastore/**</exclude>&ndash;&gt;-->
-<!--              </excludes>-->
-<!--            </filter>-->
-<!--          </filters>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <phase>package</phase>-->
-<!--            <goals>-->
-<!--              <goal>shade</goal>-->
-<!--            </goals>-->
-<!--            <configuration>-->
-<!--              <transformers>-->
-<!--                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />-->
-<!--              </transformers>-->
-<!--              <relocations>-->
-<!--                <relocation>-->
-<!--                  <pattern>okio</pattern>-->
-<!--                  <shadedPattern>com.shaded.okio</shadedPattern>-->
-<!--                </relocation>-->
-<!--                &lt;!&ndash; Important: Do not relocate org.apache.hadoop.hive &ndash;&gt;-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.conf</pattern>-->
-<!--                  <shadedPattern>shaded.org.apache.hadoop.hive.conf</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.ql</pattern>-->
-<!--                  <shadedPattern>shaded.org.apache.hadoop.hive.ql</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.metastore</pattern>-->
-<!--                  <shadedPattern>shaded.org.apache.hadoop.hive.metastore</shadedPattern>-->
-<!--                </relocation>-->
-<!--                <relocation>-->
-<!--                  <pattern>org.apache.hadoop.hive.shims</pattern>-->
-<!--                  <shadedPattern>shaded.org.apache.hadoop.hive.shims</shadedPattern>-->
-<!--                </relocation>-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.hive.common</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.hive.common</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.hive.thrift</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.hive.thrift</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.mapreduce</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.mapreduce</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.mapred</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.mapred</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.conf</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.conf</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.yarn</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.yarn</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.security</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.security</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.filecache</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.filecache</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.metrics2</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.metrics2</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.hive.serde2</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.hive.serde2</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.util</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.util</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.fs</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.fs</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.tracing</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.tracing</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.crypto</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.crypto</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.hbase</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.hbase</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                <relocation>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <pattern>org.apache.hadoop.ipc</pattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                  <shadedPattern>shaded.org.apache.hadoop.ipc</shadedPattern>&ndash;&gt;-->
-<!--&lt;!&ndash;                </relocation>&ndash;&gt;-->
-<!--                <relocation>-->
-<!--                  <pattern>com.fasterxml.jackson</pattern>-->
-<!--                  <shadedPattern>shaded.com.fasterxml.jackson</shadedPattern>-->
-<!--                </relocation>-->
-<!--              </relocations>-->
-<!--            </configuration>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
-    </plugins>
-  </build>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin.version}</version>
+        <configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>core-site.xml</exclude>
+                <exclude>hbase-site.xml</exclude>
+                <exclude>hbase-default.xml</exclude>
+                <exclude>mapred-site.xml</exclude>
+                <exclude>yarn-site.xml</exclude>
+                <exclude>yarn-default.xml</exclude>
+                <exclude>hive-site.xml</exclude>
+                <exclude>mapred-default.xml</exclude>
+                <exclude>core-default.xml</exclude>
+                <exclude>**/org/apache/hadoop/hive/metastore/DefaultMetaStoreFilterHookImpl.class</exclude>
+                <exclude>**/org/apache/hadoop/hive/metastore/MetaStoreFilterHook.class</exclude>
+              </excludes>
+            </filter>
+            <filter>
+              <artifact>org.gbif.kvs:kvs-indexing</artifact>
+              <excludes>
+                <exclude>**/org/apache/hadoop/mapreduce/**</exclude>
+                <exclude>**/org/apache/hadoop/mapred/**</exclude>
+<!--                <exclude>**/org/apache/hadoop/yarn/**</exclude>-->
+                <exclude>**/org/apache/hbase/**</exclude>
+                <exclude>**/org/apache/hadoop/hbase/**</exclude>
+                <exclude>**/org/apache/hadoop/hive/thrift/**</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <relocations>
+                <relocation>
+                  <pattern>okio</pattern>
+                  <shadedPattern>com.shaded.okio</shadedPattern>
+                </relocation>
 
-  <profiles>
-    <profile>
-      <id>dev</id>
-      <properties>
-        <hive.metastore.uris>thrift://c3hivemetastore.gbif-dev.org:9083</hive.metastore.uris>
-        <grscicoll.cache.hive.hdfs.out>/user/hive/warehouse/dev.db</grscicoll.cache.hive.hdfs.out>
-      </properties>
-    </profile>
-  </profiles>
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.hive.common</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.hive.common</shadedPattern>-->
+                <!--                </relocation>-->
+<!--                                <relocation>-->
+<!--                                  <pattern>org.apache.hadoop.hive.thrift</pattern>-->
+<!--                                  <shadedPattern>shaded.org.apache.hadoop.hive.thrift</shadedPattern>-->
+<!--                                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.mapreduce</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.mapreduce</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.mapred</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.mapred</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.conf</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.conf</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.yarn</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.yarn</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.security</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.security</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.filecache</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.filecache</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.metrics2</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.metrics2</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.hive.serde2</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.hive.serde2</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.util</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.util</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.fs</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.fs</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.tracing</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.tracing</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.crypto</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.crypto</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.hbase</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.hbase</shadedPattern>-->
+                <!--                </relocation>-->
+                <!--                <relocation>-->
+                <!--                  <pattern>org.apache.hadoop.ipc</pattern>-->
+                <!--                  <shadedPattern>shaded.org.apache.hadoop.ipc</shadedPattern>-->
+                <!--                </relocation>-->
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.common</pattern>-->
+                  <shadedPattern>shaded.org.apache.hadoop.hive.common</shadedPattern>-->
+                  </relocation>
+                <relocation>
+                  <pattern>org.apache.hadoop.hive.metastore</pattern>-->
+                  <shadedPattern>shaded.org.apache.hadoop.hive.metastore</shadedPattern>-->
+                </relocation>
+                  <relocation>
+                    <pattern>com.fasterxml.jackson</pattern>
+                    <shadedPattern>shaded.com.fasterxml.jackson</shadedPattern>
+                  </relocation>
+                </relocations>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
 
-</project>
+    <profiles>
+      <profile>
+        <id>dev</id>
+        <properties>
+          <hive.metastore.uris>thrift://c3hivemetastore.gbif-dev.org:9083</hive.metastore.uris>
+          <grscicoll.cache.hive.hdfs.out>/user/hive/warehouse/dev.db</grscicoll.cache.hive.hdfs.out>
+        </properties>
+      </profile>
+    </profiles>
+
+  </project>
