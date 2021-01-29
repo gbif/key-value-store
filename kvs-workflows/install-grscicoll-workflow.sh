@@ -13,7 +13,7 @@ curl -Ss -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.
 echo "Get latest maven profiles from github"
 curl -s -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/gbif/gbif-configuration/contents/grscicoll-cache-refresh/profiles.xml
 
-START=$(date +%Y-%m-%d)T$(grep '^startHour=' gridded.properties | cut -d= -f 2)Z
+START=$(date +%Y-%m-%d)T$(grep '^startHour=' job.properties | cut -d= -f 2)Z
 OOZIE=$(grep '^oozie.url=' job.properties | cut -d= -f 2)
 
 # Gets the Oozie id of the current coordinator job if it exists
