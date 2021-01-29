@@ -2,7 +2,7 @@
   Rebuilds grscicoll cache hbase table on a schedule.
 -->
 <coordinator-app name="Grscicoll-cache" frequency="${coordinator-frequency}"
-                 start="${coordinator-start}" end="2050-05-28T00:00Z" timezone="UTC" xmlns="uri:oozie:coordinator:0.4">
+                 start="${coordinator-start}" end="2050-05-28T00:00Z" timezone="UTC" xmlns="uri:oozie:coordinator:0.2">
   <action>
     <workflow>
       <app-path>hdfs://ha-nn/grscicoll-cache-workflow</app-path>
