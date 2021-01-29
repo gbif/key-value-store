@@ -29,7 +29,6 @@ mvn --settings profiles.xml -U -P$ENV -DskipTests -Duser.timezone=UTC clean inst
 echo "Copy to Hadoop"
 sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/
 sudo -u hdfs hdfs dfs -copyFromLocal target/grscicoll-cache-workflow /
-sudo -u hdfs hdfs dfs -copyFromLocal /etc/hive/conf/hive-site.xml /gridded-datasets-workflow/lib/
 
 echo "Start Oozie gridded datasets job"
 sudo -u hdfs oozie job --oozie $OOZIE -config gridded.properties -run
