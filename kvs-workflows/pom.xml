@@ -58,14 +58,4 @@
       </plugins>
     </build>
 
-    <profiles>
-      <profile>
-        <id>dev</id>
-        <properties>
-          <hive.metastore.uris>thrift://c3hivemetastore.gbif-dev.org:9083</hive.metastore.uris>
-          <grscicoll.cache.hive.hdfs.out>/user/hive/warehouse/dev.db</grscicoll.cache.hive.hdfs.out>
-        </properties>
-      </profile>
-    </profiles>
-
 </project>
