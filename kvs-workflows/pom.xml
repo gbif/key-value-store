@@ -11,89 +11,11 @@
 
   <artifactId>kvs-workflows</artifactId>
   <packaging>jar</packaging>
-  <properties>
-    <!-- fixed to the version coming with Spark -->
-    <jackson.spark.version>2.9.10</jackson.spark.version>
-  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
-      <!-- Important: Dropwizard conflicts with this, so be explicit -->
-      <version>${jackson.spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <!-- Important: Dropwizard conflicts with this, so be explicit -->
-      <version>${jackson.spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <!-- Important: Dropwizard conflicts with this, so be explicit -->
-      <version>${jackson.spark.version}</version>
-    </dependency>
-  <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <!-- Important: Dropwizard conflicts with this, so be explicit -->
-    <version>${jackson.spark.version}</version>
-  </dependency>
-    <dependency>
       <groupId>org.gbif.kvs</groupId>
       <artifactId>kvs-indexing</artifactId>
-      <exclusions>
-<!--        <exclusion>-->
-<!--          <groupId>org.apache.hive.hcatalog</groupId>-->
-<!--          <artifactId>hive-hcatalog-core</artifactId>-->
-<!--        </exclusion>-->
-<!--        <exclusion>-->
-<!--          <groupId>org.apache.hive</groupId>-->
-<!--          <artifactId>hive-metastore</artifactId>-->
-<!--        </exclusion>-->
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-exec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-cli</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-shaded-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-shims</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 
@@ -133,79 +55,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven-shade-plugin.version}</version>
-        <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-                <exclude>core-site.xml</exclude>
-                <exclude>hbase-site.xml</exclude>
-                <exclude>hbase-default.xml</exclude>
-                <exclude>mapred-site.xml</exclude>
-                <exclude>yarn-site.xml</exclude>
-                <exclude>yarn-default.xml</exclude>
-                <exclude>hive-site.xml</exclude>
-                <exclude>mapred-default.xml</exclude>
-                <exclude>core-default.xml</exclude>
-              </excludes>
-            </filter>
-            <filter>
-              <artifact>org.gbif.kvs:kvs-indexing</artifact>
-              <excludes>
-                <exclude>**/org/apache/hadoop/mapreduce/**</exclude>
-                <exclude>**/org/apache/hadoop/mapred/**</exclude>
-                <exclude>**/org/apache/hadoop/yarn/**</exclude>
-                <exclude>**/org/apache/hbase/**</exclude>
-                <exclude>**/org/apache/hadoop/hbase/**</exclude>
-                <exclude>**/org/apache/hadoop/hive/thrift/**</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-              </transformers>
-              <relocations>
-                <relocation>
-                  <pattern>okio</pattern>
-                  <shadedPattern>com.shaded.okio</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.fasterxml.jackson.core</pattern>
-                  <shadedPattern>shaded.com.fasterxml.jackson.core</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.fasterxml.jackson.dataformat</pattern>
-                  <shadedPattern>shaded.com.fasterxml.jackson.dataformat</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.fasterxml.jackson.annotation</pattern>
-                  <shadedPattern>shaded.com.fasterxml.jackson.annotation</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.fasterxml.jackson.databind</pattern>
-                  <shadedPattern>shaded.com.fasterxml.jackson.databind</shadedPattern>
-                </relocation>
-                </relocations>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
       </plugins>
     </build>
 
@@ -219,4 +68,4 @@
       </profile>
     </profiles>
 
-  </project>
+</project>

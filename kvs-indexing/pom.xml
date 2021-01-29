@@ -20,8 +20,6 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>${maven-shade-plugin.version}</version>
                 <configuration>
-                    <shadedArtifactAttached>true</shadedArtifactAttached>
-                    <shadedClassifierName>shaded</shadedClassifierName>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <filters>
                         <filter>
@@ -34,7 +32,6 @@
                                 <exclude>hbase-site.xml</exclude>
                                 <exclude>mapred-site.xml</exclude>
                                 <exclude>yarn-site.xml</exclude>
-                                <exclude>hbase-default.xml</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -66,10 +63,6 @@
                                 <relocation>
                                     <pattern>org.apache.hadoop.hive.metastore</pattern>
                                     <shadedPattern>h12.org.apache.hadoop.hive.metastore</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.fasterxml.jackson</pattern>
-                                    <shadedPattern>shaded.com.fasterxml.jackson</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -108,12 +101,6 @@
         <dependency>
             <groupId>org.gbif.kvs</groupId>
             <artifactId>kvs-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-common</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.gbif.kvs</groupId>
@@ -122,28 +109,6 @@
         <dependency>
             <groupId>org.gbif.kvs</groupId>
             <artifactId>kvs-gbif</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-server</artifactId>
-                </exclusion>
-               <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-server</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Beam -->
@@ -158,17 +123,11 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-hbase</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-shaded-client</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
-          <groupId>org.apache.beam</groupId>
-          <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
-          <version>${apache.beam.version}</version>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
+            <version>${apache.beam.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -181,12 +140,6 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-extensions-sql-hcatalog</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!-- hive -->
@@ -204,12 +157,6 @@
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-metastore</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
@@ -225,60 +172,13 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <exclusions>
-                <!-- Stops the MRAppMaster in Oozie from even starting (when in Oozie) -->
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <!-- Breaks spark2 -->
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Apache Beam transitive dependency -->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.hbase</groupId>-->
-<!--            <artifactId>hbase-shaded-client</artifactId>-->
-<!--            <exclusions>-->
-<!--                &lt;!&ndash; Stops the MRAppMaster in Oozie from even starting (when in Oozie) &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.apache.hadoop</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
-<!--                &lt;!&ndash; Breaks spark2 &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>io.netty</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.hbase</groupId>-->
-<!--            <artifactId>hbase-server</artifactId>-->
-
-<!--            <exclusions>-->
-<!--                &lt;!&ndash; stops the MRAppMaster in Oozie from even starting (when in Oozie) &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.apache.hadoop</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
-<!--                &lt;!&ndash; unnecessary bloat &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.mortbay.jetty</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
-<!--                &lt;!&ndash; Breaks spark2 &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>io.netty</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
-
-<!--            </exclusions>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-shaded-client</artifactId>
+        </dependency>
 
         <!-- Rest client responses handling-->
         <dependency>
@@ -292,7 +192,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
     </dependencies>
 
 </project>

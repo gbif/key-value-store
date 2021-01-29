@@ -9,34 +9,10 @@
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
 
-  <!--
-    Dependencies here are references to POM dependencies.
-  -->
-  <dependencySets>
-    <dependencySet>
-      <outputDirectory>lib</outputDirectory>
-      <fileMode>0644</fileMode>
-      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-      <includes>
-        <include>org.gbif.kvs:kvs-indexing:jar</include>
-      </includes>
-      <excludes>
-        <exclude>*:tests</exclude>
-      </excludes>
-    </dependencySet>
-  </dependencySets>
   <fileSets>
-    <fileSet>
-      <directory>${project.build.outputDirectory}/oozie-workflows/grscicoll</directory>
-      <outputDirectory>/grscicoll-cache-workflow/</outputDirectory>
-    </fileSet>
     <fileSet>
       <directory>${project.build.outputDirectory}</directory>
       <outputDirectory>/</outputDirectory>
-      <fileMode>0755</fileMode>
-      <includes>
-        <include>**/*.sh</include>
-      </includes>
     </fileSet>
   </fileSets>
 

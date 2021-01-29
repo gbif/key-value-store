@@ -17,10 +17,6 @@
         <name>oozie.use.system.libpath</name>
         <value>true</value>
       </property>
-      <property>
-        <name>oozie.action.sharelib.for.spark</name>
-        <value>spark2</value>
-      </property>
     </configuration>
   </global>
 
@@ -32,6 +28,7 @@
       <script>create-hive-table.q</script>
       <param>hiveDB=${hive_db}</param>
       <param>occurrenceTable=${occurrence_table_name}</param>
+      <param>targetTable=${occurrence_collections_table}</param>
     </hive>
 
     <ok to="run-indexer"/>
@@ -39,26 +36,47 @@
   </action>
 
   <action name="run-indexer">
-    <spark xmlns="uri:oozie:spark-action:0.1">
-      <job-tracker>${wf:conf("hadoop.jobtracker")}</job-tracker>
-      <name-node>${wf:conf("hdfs.namenode")}</name-node>
-      <master>yarn-cluster</master>
-      <name>GRSciColl Lookup Indexer</name>
-      <class>org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceIndexerFromHiveTable</class>
-      <jar>lib/kvs-indexing.jar</jar>
-      <!-- Following enabling static service pools (cgroups) we found the native libraries would not load. The only way we found to pass this through was using extraLibraryPath -->
-      <spark-opts>${wf:conf("gbif.grscicoll.indexer.spark.opts")} --conf spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native</spark-opts>
-      <arg>--runner=SparkRunner</arg>
-      <arg>--hbaseZk=${wf:conf("gbif.grscicoll.indexer.hbasezk")}</arg>
-      <arg>--database=${wf:conf("hive_db")}</arg>
-      <arg>--table=${wf:conf("gbif.grscicoll.indexer.targetTable")}</arg>
-      <arg>--metastoreUris=${wf:conf("hive.metastore.uris")}</arg>
-      <arg>--targetTable=${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</arg>
-      <arg>--baseApiUrl=${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</arg>
-      <arg>--saltedKeyBuckets=${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</arg>
-      <arg>--apiTimeOut=${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</arg>
-      <arg>--restClientCacheMaxSize=${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</arg>
-    </spark>
+    <shell xmlns="uri:oozie:shell-action:0.3">
+      <exec>scripts/run_indexer.sh</exec>
+      <argument>${wf:conf("gbif.grscicoll.indexer.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
+      <argument>${wf:conf("hive_db")}</argument>
+      <argument>${wf:conf("occurrence_collections_table")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.metastoreUris")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <file>scripts/run_indexer.sh</file>
+    </shell>
+
+    <ok to="run-cleaner" />
+    <error to="kill" />
+  </action>
+
+  <action name="run-cleaner">
+    <shell xmlns="uri:oozie:shell-action:0.3">
+      <exec>scripts/run_cleaner.sh</exec>
+      <argument>${wf:conf("gbif.grscicoll.indexer.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
+      <argument>${wf:conf("hive_db")}</argument>
+      <argument>${wf:conf("occurrence_collections_table")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.metastoreUris")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <file>scripts/run_cleaner.sh</file>
+    </shell>
+
     <ok to="end" />
     <error to="kill" />
   </action>
