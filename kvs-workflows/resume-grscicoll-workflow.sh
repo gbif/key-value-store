@@ -13,7 +13,7 @@ curl -Ss -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.
 OOZIE=$(grep '^oozie.url=' job.properties | cut -d= -f 2)
 
 # Gets the Oozie id of the current coordinator job if it exists
-WID=$(oozie jobs -oozie $OOZIE -jobtype coordinator -filter name=grscicoll-cache-refresh-coord | awk 'NR==3 {print $1}')
+WID=$(oozie jobs -oozie $OOZIE -jobtype coordinator -filter name=Grscicoll-cache | awk 'NR==3 {print $1}')
 if [ -n "$WID" ]; then
   echo "Resuming current coordinator job" $WID
   sudo -u hdfs oozie job -oozie $OOZIE -resume $WID
