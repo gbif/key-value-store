@@ -30,5 +30,5 @@ echo "Copy to Hadoop"
 sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/
 sudo -u hdfs hdfs dfs -copyFromLocal target/grscicoll-cache-workflow /
 
-echo "Start Oozie gridded datasets job"
-sudo -u hdfs oozie job --oozie $OOZIE -config gridded.properties -run
+echo "Start Oozie grscicoll cache job"
+sudo -u hdfs oozie job --oozie $OOZIE -config job.properties -run
