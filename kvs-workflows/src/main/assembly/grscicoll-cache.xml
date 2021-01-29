@@ -11,7 +11,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>${project.build.outputDirectory}</directory>
+      <directory>${project.build.outputDirectory}/oozie-workflows/grscicoll</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
