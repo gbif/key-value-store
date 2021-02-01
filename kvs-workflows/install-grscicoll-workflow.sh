@@ -15,6 +15,9 @@ curl -s -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.r
 
 OOZIE=$(grep '^oozie.url=' job.properties | cut -d= -f 2)
 START=$(date +%Y-%m-%d)T$(grep '^startHour=' job.properties | cut -d= -f 2)Z
+FREQUENCY=$(grep '^frequency=' job.properties | cut -d= -f 2)
+METASTORE_URIS=$(grep '^hive.metastore.uris=' job.properties | cut -d= -f 2)
+HIVE_HDFS_OUT=$(grep '^hive.hdfs.out=' job.properties | cut -d= -f 2)
 
 # Gets the Oozie id of the current coordinator job if it exists
 WID=$(oozie jobs -oozie $OOZIE -jobtype coordinator -filter name=Grscicoll-cache | awk 'NR==3 {print $1}')
@@ -25,7 +28,7 @@ fi
 
 echo "Assembling jar for $ENV"
 # Oozie uses timezone UTC
-mvn --settings profiles.xml -U -P$ENV -Dcoordinator-start="$START" -DskipTests -Duser.timezone=UTC clean install package
+mvn --settings profiles.xml -U -P$ENV -Dstart="$START" -Dfrequency=$FREQUENCY -Dhive.metastore.uris=$METASTORE_URIS -Dhive.hdfs.out=$HIVE_HDFS_OUT -DskipTests -Duser.timezone=UTC clean install package
 
 echo "Copy to Hadoop"
 sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/

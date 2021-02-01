@@ -29,7 +29,7 @@
   -->
   <property>
     <name>hive.metastore.warehouse.dir</name>
-    <value>${grscicoll.cache.hive.hdfs.out}</value>
+    <value>${hive.hdfs.out}</value>
   </property>
   <property>
     <name>hive.warehouse.subdir.inherit.perms</name>

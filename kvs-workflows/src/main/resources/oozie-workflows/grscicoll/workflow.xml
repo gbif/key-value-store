@@ -68,7 +68,7 @@
       <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
       <argument>${wf:conf("hive_db")}</argument>
       <argument>${wf:conf("occurrence_collections_table")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.metastoreUris")}</argument>
+      <argument>${wf:conf("hive.metastore.uris")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
