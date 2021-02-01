@@ -7,11 +7,8 @@ TOKEN=$2
 
 echo "Installing grscicoll cache refresh workflow for $ENV"
 
-echo "Get latest grscicoll cache refresh config profiles from GitHub"
+echo "Get latest grscicoll cache refresh job properties from GitHub"
 curl -Ss -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/gbif/gbif-configuration/contents/grscicoll-cache-refresh/$ENV/job.properties
-
-echo "Get latest maven profiles from github"
-curl -s -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/gbif/gbif-configuration/contents/grscicoll-cache-refresh/profiles.xml
 
 OOZIE=$(grep '^oozie.url=' job.properties | cut -d= -f 2)
 START=$(date +%Y-%m-%d)T$(grep '^startHour=' job.properties | cut -d= -f 2)Z
@@ -28,7 +25,7 @@ fi
 
 echo "Assembling jar for $ENV"
 # Oozie uses timezone UTC
-mvn --settings profiles.xml -U -P$ENV -Dstart="$START" -Dfrequency=$FREQUENCY -Dhive.metastore.uris=$METASTORE_URIS -Dhive.hdfs.out=$HIVE_HDFS_OUT -DskipTests -Duser.timezone=UTC clean install package
+mvn -U -Dstart="$START" -Dfrequency=$FREQUENCY -Dhive.metastore.uris=$METASTORE_URIS -Dhive.hdfs.out=$HIVE_HDFS_OUT -DskipTests -Duser.timezone=UTC clean install package
 
 echo "Copy to Hadoop"
 sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/
