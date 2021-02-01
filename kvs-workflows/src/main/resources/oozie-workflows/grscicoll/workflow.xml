@@ -51,6 +51,7 @@
       <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.sparkOpts")}</argument>
       <file>scripts/run_indexer.sh</file>
     </shell>
 
@@ -74,6 +75,7 @@
       <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.sparkOpts")}</argument>
       <file>scripts/run_cleaner.sh</file>
     </shell>
 

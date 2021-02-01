@@ -11,6 +11,7 @@ BASE_API_URL=${10}
 SALTED_KEY_BUCKETS=${11}
 API_TIMEOUT=${12}
 REST_CLIENT_CACHE_MAX_SIZE=${13}
+SPARK_OPTS=${14}
 
 REPO_URL="https://repository.gbif.org/service/rest/v1/search/assets/download?repository="${REPO}
 REPO_URL+="&group=org.gbif.kvs&name=kvs-indexing&sort=version&direction=desc&maven.classifier=shaded&maven.extension=jar"
@@ -21,7 +22,7 @@ curl ${REPO_URL} -L -o kvs-indexing.jar
 echo "Running the indexer"
 spark2-submit --class org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceIndexerFromHiveTable \
   --master yarn --executor-memory ${EXECUTOR_MEMORY} --executor-cores ${EXECUTOR_CORES} --num-executors ${NUM_EXECUTORS} \
-  --conf spark.dynamicAllocation.enabled=false kvs-indexing.jar  \
+  --conf spark.dynamicAllocation.enabled=false ${SPARK_OPTS} kvs-indexing.jar  \
   --runner=SparkRunner \
   --hbaseZk=${ZK} \
   --database=${DATABASE} \
