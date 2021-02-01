@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
@@ -119,11 +119,16 @@ public class GrscicollLookupCleaner {
             .apply(View.asMap());
 
     // read records from HBase
+    Scan scan = new Scan();
+    scan.setBatch(10000); // for safety
+    scan.addFamily(options.getKVColumnFamily().getBytes());
+
     PCollection<Result> rows =
         pipeline.apply(
             "Read HBase",
             HBaseIO.read()
                 .withConfiguration(hBaseConfiguration)
+                .withScan(scan)
                 .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));
 
     // delete from HBase the records that are not in the map view
@@ -138,12 +143,6 @@ public class GrscicollLookupCleaner {
                         Result hbaseRecord = context.element();
                         if (!hiveRecords.containsKey(new String(hbaseRecord.getRow()))) {
                           Delete delete = new Delete(hbaseRecord.getRow());
-                          delete.addColumn(
-                              Bytes.toBytes(
-                                  storeConfiguration
-                                      .getHBaseKVStoreConfiguration()
-                                      .getColumnFamily()),
-                              Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
                           context.output(delete);
                         }
                       }
