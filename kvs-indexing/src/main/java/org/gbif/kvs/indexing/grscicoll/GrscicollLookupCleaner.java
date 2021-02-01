@@ -64,10 +64,8 @@ public class GrscicollLookupCleaner {
   }
 
   /**
-   * Runs the indexing beam pipeline. 1. Reads all collection and institution related fields from
-   * the avro files. 2. Call the lookup WS using the fields previously read. 3. Store the WS
-   * response in a HBase table with the KV format: {@link GrscicollLookupRequest#getLogicalKey()} ->
-   * JSON response.
+   * Removes from the HBase table the entries that are not present in the Hive table that contains
+   * all the unique requests present in the occurrence data.
    *
    * @param options beam HBase indexing options
    */
