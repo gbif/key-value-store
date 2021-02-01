@@ -2,7 +2,6 @@ package org.gbif.kvs.indexing.grscicoll;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -32,15 +31,12 @@ import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.gbif.kvs.indexing.grscicoll.HiveUtils.readSchema;
 
 /** Apache Beam Pipeline that indexes GrSciColl lookup responses in a HBase KV table. */
 public class GrscicollLookupServiceIndexerFromHiveTable {
@@ -102,7 +98,7 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                 .withDatabase(options.getDatabase())
                 .withTable(options.getTable()));
 
-    // Perform Geocode lookup
+    // Perform GRSciColl lookup
     records
         .apply(
             ParDo.of(
@@ -135,16 +131,7 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                       HCatRecord record = context.element();
 
                       GrscicollLookupRequest req =
-                          GrscicollLookupRequest.builder()
-                              .withOwnerInstitutionCode(
-                                  record.getString("ownerInstitutionCode", schema))
-                              .withInstitutionCode(record.getString("institutionCode", schema))
-                              .withInstitutionId(record.getString("institutionId", schema))
-                              .withCollectionCode(record.getString("collectionCode", schema))
-                              .withCollectionId(record.getString("collectionId", schema))
-                              .withDatasetKey(record.getString("datasetKey", schema))
-                              .withCountry(record.getString("country", schema))
-                              .build();
+                          HiveUtils.convertToGrSciCollRequest(record, schema);
 
                       GrscicollLookupResponse lookupResponse =
                           lookupService.lookup(
@@ -187,15 +174,5 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
     // Run and wait
     PipelineResult result = pipeline.run(options);
     result.waitUntilFinish();
-  }
-
-  private static HCatSchema readSchema(GrSciCollLookupIndexingOptions options)
-      throws HCatException, TException {
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, options.getMetastoreUris());
-    HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(hiveConf);
-    List<FieldSchema> fieldSchemaList =
-        metaStoreClient.getSchema(options.getDatabase(), options.getTable());
-    return HCatSchemaUtils.getHCatSchema(fieldSchemaList);
   }
 }

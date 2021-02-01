@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>1.15-SNAPSHOT</version>
+        <version>1.15.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,6 +20,8 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>${maven-shade-plugin.version}</version>
                 <configuration>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>shaded</shadedClassifierName>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <filters>
                         <filter>
@@ -125,9 +127,9 @@
             <artifactId>beam-sdks-java-io-hbase</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.apache.beam</groupId>
-          <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
-          <version>${apache.beam.version}</version>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hadoop-file-system</artifactId>
+            <version>${apache.beam.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -192,7 +194,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
     </dependencies>
 
 </project>

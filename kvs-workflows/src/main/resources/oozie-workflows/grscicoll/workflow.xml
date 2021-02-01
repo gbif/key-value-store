@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workflow-app xmlns="uri:oozie:workflow:0.4.5" name="grscicoll-cache-refresh">
+
+  <global>
+    <job-tracker>${wf:conf("hadoop.jobtracker")}</job-tracker>
+    <name-node>${wf:conf("hdfs.namenode")}</name-node>
+    <configuration>
+      <property>
+        <name>oozie.launcher.mapreduce.task.classpath.user.precedence</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>oozie.launcher.mapreduce.user.classpath.first</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>oozie.use.system.libpath</name>
+        <value>true</value>
+      </property>
+    </configuration>
+  </global>
+
+  <start to="create-hive-table" />
+
+  <action name="create-hive-table">
+    <hive xmlns="uri:oozie:hive-action:0.4">
+      <job-xml>conf/hive-default.xml</job-xml>
+      <script>create-hive-table.q</script>
+      <param>hiveDB=${hive_db}</param>
+      <param>occurrenceTable=${occurrence_table_name}</param>
+      <param>targetTable=${occurrence_collections_table}</param>
+    </hive>
+
+    <ok to="run-indexer"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="run-indexer">
+    <shell xmlns="uri:oozie:shell-action:0.3">
+      <exec>scripts/run_indexer.sh</exec>
+      <argument>${wf:conf("gbif.grscicoll.indexer.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
+      <argument>${wf:conf("hive_db")}</argument>
+      <argument>${wf:conf("occurrence_collections_table")}</argument>
+      <argument>${wf:conf("hive.metastore.uris")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <file>scripts/run_indexer.sh</file>
+    </shell>
+
+    <ok to="run-cleaner" />
+    <error to="kill" />
+  </action>
+
+  <action name="run-cleaner">
+    <shell xmlns="uri:oozie:shell-action:0.3">
+      <exec>scripts/run_cleaner.sh</exec>
+      <argument>${wf:conf("gbif.grscicoll.indexer.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
+      <argument>${wf:conf("hive_db")}</argument>
+      <argument>${wf:conf("occurrence_collections_table")}</argument>
+      <argument>${wf:conf("hive.metastore.uris")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <file>scripts/run_cleaner.sh</file>
+    </shell>
+
+    <ok to="end" />
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>GRSciColl cache refresh failed:[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+
+  <end name="end" />
+
+</workflow-app>
