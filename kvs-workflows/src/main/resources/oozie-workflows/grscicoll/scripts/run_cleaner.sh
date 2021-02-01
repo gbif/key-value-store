@@ -7,11 +7,8 @@ DATABASE=$6
 TABLE=$7
 METASTORE_URIS=$8
 TARGET_TABLE=$9
-BASE_API_URL=${10}
-SALTED_KEY_BUCKETS=${11}
-API_TIMEOUT=${12}
-REST_CLIENT_CACHE_MAX_SIZE=${13}
-SPARK_OPTS=${14}
+SALTED_KEY_BUCKETS=${10}
+SPARK_OPTS=${11}
 
 REPO_URL="https://repository.gbif.org/service/rest/v1/search/assets/download?repository="${REPO}
 REPO_URL+="&group=org.gbif.kvs&name=kvs-indexing&sort=version&direction=desc&maven.classifier=shaded&maven.extension=jar"
@@ -29,7 +26,4 @@ spark2-submit --class org.gbif.kvs.indexing.grscicoll.GrscicollLookupCleaner \
   --table=${TABLE} \
   --metastoreUris=${METASTORE_URIS} \
   --targetTable=${TARGET_TABLE} \
-  --baseApiUrl=${BASE_API_URL} \
-  --saltedKeyBuckets=${SALTED_KEY_BUCKETS} \
-  --apiTimeOut=${API_TIMEOUT} \
-  --restClientCacheMaxSize=${REST_CLIENT_CACHE_MAX_SIZE}
+  --saltedKeyBuckets=${SALTED_KEY_BUCKETS}
