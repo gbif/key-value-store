@@ -52,6 +52,7 @@
       <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.sparkOpts")}</argument>
+      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
       <file>scripts/run_indexer.sh</file>
     </shell>
 
@@ -73,6 +74,7 @@
       <argument>${wf:conf("hbaseTable")}</argument>
       <argument>${wf:conf("saltedKeyBuckets")}</argument>
       <argument>${wf:conf("gbif.grscicoll.cleaner.sparkOpts")}</argument>
+      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
       <file>scripts/run_cleaner.sh</file>
     </shell>
 
