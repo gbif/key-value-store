@@ -85,7 +85,7 @@ public class GrscicollLookupCleaner {
 
     final HCatSchema schema = readSchema(options);
 
-    PCollection<GrscicollLookupRequest> hiveRequests =
+    PCollection<String> hiveRequests =
         pipeline
             .apply(
                 HCatalogIO.read()
@@ -96,7 +96,7 @@ public class GrscicollLookupCleaner {
                     .withTable(options.getTable()))
             .apply(
                 ParDo.of(
-                    new DoFn<HCatRecord, GrscicollLookupRequest>() {
+                    new DoFn<HCatRecord, String>() {
 
                       @ProcessElement
                       public void processElement(ProcessContext context) {
@@ -104,7 +104,8 @@ public class GrscicollLookupCleaner {
                           HCatRecord record = context.element();
                           GrscicollLookupRequest req =
                               HiveUtils.convertToGrSciCollRequest(record, schema);
-                          context.output(req);
+                          String key = new String(keyGenerator.computeKey(req.getLogicalKey()));
+                          context.output(key);
                         } catch (Exception ex) {
                           LOG.error("Error creating grscicoll request", ex);
                         }
@@ -112,9 +113,9 @@ public class GrscicollLookupCleaner {
                     }));
 
     // read records from Hive and create a map view indexed by the salted keys used in HBase
-    PCollectionView<Map<String, GrscicollLookupRequest>> hiveRecordsView =
+    PCollectionView<Map<String, String>> hiveRecordsView =
         hiveRequests
-            .apply(WithKeys.of(input -> new String(keyGenerator.computeKey(input.getLogicalKey()))))
+            .apply(WithKeys.of(input -> input))
             .setCoder(KvCoder.of(StringUtf8Coder.of(), hiveRequests.getCoder()))
             .apply(View.asMap());
 
@@ -137,7 +138,7 @@ public class GrscicollLookupCleaner {
                     new DoFn<Result, Mutation>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        Map<String, GrscicollLookupRequest> hiveRecords =
+                        Map<String, String> hiveRecords =
                             context.sideInput(hiveRecordsView);
 
                         Result hbaseRecord = context.element();

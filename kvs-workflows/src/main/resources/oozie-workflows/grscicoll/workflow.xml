@@ -46,11 +46,13 @@
       <argument>${wf:conf("hive_db")}</argument>
       <argument>${wf:conf("occurrence_collections_table")}</argument>
       <argument>${wf:conf("hive.metastore.uris")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
+      <argument>${wf:conf("hbaseTable")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("saltedKeyBuckets")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
       <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.indexer.sparkOpts")}</argument>
+      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
       <file>scripts/run_indexer.sh</file>
     </shell>
 
@@ -61,19 +63,18 @@
   <action name="run-cleaner">
     <shell xmlns="uri:oozie:shell-action:0.3">
       <exec>scripts/run_cleaner.sh</exec>
-      <argument>${wf:conf("gbif.grscicoll.indexer.repo")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.executorMemory")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.executorCores")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.numExecutors")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.hbasezk")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.hbasezk")}</argument>
       <argument>${wf:conf("hive_db")}</argument>
       <argument>${wf:conf("occurrence_collections_table")}</argument>
       <argument>${wf:conf("hive.metastore.uris")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.hbaseTable")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.baseApiUrl")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.saltedKeyBuckets")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.apiTimeOut")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.indexer.restClientCacheMaxSize")}</argument>
+      <argument>${wf:conf("hbaseTable")}</argument>
+      <argument>${wf:conf("saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.sparkOpts")}</argument>
+      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
       <file>scripts/run_cleaner.sh</file>
     </shell>
 
