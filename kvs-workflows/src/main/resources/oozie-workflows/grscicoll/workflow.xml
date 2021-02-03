@@ -17,6 +17,14 @@
         <name>oozie.use.system.libpath</name>
         <value>true</value>
       </property>
+      <property>
+        <name>oozie.launcher.mapreduce.map.memory.mb</name>
+        <value>${wf:conf("oozie.memory")}</value>
+      </property>
+      <property>
+        <name>oozie.launcher.mapreduce.map.java.opts</name>
+        <value>${wf:conf("oozie.java.opts")}</value>
+      </property>
     </configuration>
   </global>
 
@@ -31,8 +39,30 @@
       <param>targetTable=${occurrence_collections_table}</param>
     </hive>
 
-    <ok to="run-indexer"/>
+    <ok to="run-cleaner"/>
     <error to="kill"/>
+  </action>
+
+  <action name="run-cleaner">
+    <shell xmlns="uri:oozie:shell-action:0.3">
+      <exec>scripts/run_cleaner.sh</exec>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.repo")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.executorMemory")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.executorCores")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.numExecutors")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.hbasezk")}</argument>
+      <argument>${wf:conf("hive_db")}</argument>
+      <argument>${wf:conf("occurrence_collections_table")}</argument>
+      <argument>${wf:conf("hive.metastore.uris")}</argument>
+      <argument>${wf:conf("hbaseTable")}</argument>
+      <argument>${wf:conf("saltedKeyBuckets")}</argument>
+      <argument>${wf:conf("gbif.grscicoll.cleaner.sparkOpts")}</argument>
+      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
+      <file>scripts/run_cleaner.sh</file>
+    </shell>
+
+    <ok to="run-indexer" />
+    <error to="kill" />
   </action>
 
   <action name="run-indexer">
@@ -54,28 +84,6 @@
       <argument>${wf:conf("gbif.grscicoll.indexer.sparkOpts")}</argument>
       <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
       <file>scripts/run_indexer.sh</file>
-    </shell>
-
-    <ok to="run-cleaner" />
-    <error to="kill" />
-  </action>
-
-  <action name="run-cleaner">
-    <shell xmlns="uri:oozie:shell-action:0.3">
-      <exec>scripts/run_cleaner.sh</exec>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.repo")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.executorMemory")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.executorCores")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.numExecutors")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.hbasezk")}</argument>
-      <argument>${wf:conf("hive_db")}</argument>
-      <argument>${wf:conf("occurrence_collections_table")}</argument>
-      <argument>${wf:conf("hive.metastore.uris")}</argument>
-      <argument>${wf:conf("hbaseTable")}</argument>
-      <argument>${wf:conf("saltedKeyBuckets")}</argument>
-      <argument>${wf:conf("gbif.grscicoll.cleaner.sparkOpts")}</argument>
-      <env-var>HADOOP_USER_NAME=${wf:user()}</env-var>
-      <file>scripts/run_cleaner.sh</file>
     </shell>
 
     <ok to="end" />
