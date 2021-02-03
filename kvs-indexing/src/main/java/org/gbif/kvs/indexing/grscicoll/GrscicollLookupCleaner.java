@@ -11,15 +11,16 @@ import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
-import org.apache.beam.sdk.coders.KvCoder;
-import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.io.hbase.HBaseIO;
 import org.apache.beam.sdk.io.hcatalog.HCatalogIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.GroupByKey;
+import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.transforms.View;
-import org.apache.beam.sdk.transforms.WithKeys;
+import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionView;
 import org.apache.hadoop.conf.Configuration;
@@ -113,10 +114,17 @@ public class GrscicollLookupCleaner {
                     }));
 
     // read records from Hive and create a map view indexed by the salted keys used in HBase
-    PCollectionView<Map<String, String>> hiveRecordsView =
+    PCollectionView<Map<String, Iterable<String>>> hiveRecordsView =
         hiveRequests
-            .apply(WithKeys.of(input -> input))
-            .setCoder(KvCoder.of(StringUtf8Coder.of(), hiveRequests.getCoder()))
+            .apply(
+                MapElements.via(
+                    new SimpleFunction<String, KV<String, String>>() {
+                      @Override
+                      public KV<String, String> apply(String input) {
+                        return KV.of(input, input);
+                      }
+                    }))
+            .apply(GroupByKey.create())
             .apply(View.asMap());
 
     // read records from HBase
@@ -138,7 +146,7 @@ public class GrscicollLookupCleaner {
                     new DoFn<Result, Mutation>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        Map<String, String> hiveRecords =
+                        Map<String, Iterable<String>> hiveRecords =
                             context.sideInput(hiveRecordsView);
 
                         Result hbaseRecord = context.element();
