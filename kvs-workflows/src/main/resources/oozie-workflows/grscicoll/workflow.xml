@@ -19,11 +19,11 @@
       </property>
       <property>
         <name>oozie.launcher.mapreduce.map.memory.mb</name>
-        <value>${wf:conf("oozie.memory")}</value>
+        <value>${wf:conf("oozie.launcher.mapreduce.map.memory.mb")}</value>
       </property>
       <property>
         <name>oozie.launcher.mapreduce.map.java.opts</name>
-        <value>${wf:conf("oozie.java.opts")}</value>
+        <value>${wf:conf("oozie.launcher.mapreduce.map.java.opts")}</value>
       </property>
     </configuration>
   </global>
