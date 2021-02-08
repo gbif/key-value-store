@@ -28,8 +28,8 @@ echo "Assembling jar for $ENV"
 mvn -U -Dstart="$START" -Dfrequency=$FREQUENCY -Dhive.metastore.uris=$METASTORE_URIS -Dhive.hdfs.out=$HIVE_HDFS_OUT -DskipTests -Duser.timezone=UTC clean install package
 
 echo "Copy to Hadoop"
-sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/
-sudo -u hdfs hdfs dfs -copyFromLocal target/grscicoll-cache-workflow /
+sudo -u hdfs hdfs dfs -rm -r /grscicoll-cache-workflow/ || echo "No old workflow to remove"
+sudo -u hdfs hdfs dfs -copyFromLocal target/grscicoll-cache-workflow/ /
 
 echo "Start Oozie grscicoll cache job"
 sudo -u hdfs oozie job --oozie $OOZIE -config job.properties -run
