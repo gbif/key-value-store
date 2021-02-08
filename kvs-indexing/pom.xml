@@ -42,6 +42,8 @@
                             <exclude>commons-logging:commons-logging:*</exclude>
                             <exclude>org.slf4j:slf4j-log4j12:*</exclude>
                             <exclude>log4j:*</exclude>
+                            <exclude>log4j:*</exclude>
+                            <exclude>org.apache.hbase:hbase-shaded-client:*</exclude>
                         </excludes>
                     </artifactSet>
                 </configuration>
