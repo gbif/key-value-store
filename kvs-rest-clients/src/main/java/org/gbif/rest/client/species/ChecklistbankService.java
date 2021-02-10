@@ -2,11 +2,12 @@ package org.gbif.rest.client.species;
 
 
 import java.io.Closeable;
+import java.util.Map;
 
 /**
- * GBIF Backbone name match service.
+ * GBIF Backbone name match and IUCN RedList services.
  */
-public interface NameMatchService extends Closeable {
+public interface ChecklistbankService extends Closeable {
 
   /**
    * Fuzzy matches scientific names against the GBIF Backbone Taxonomy with the optional classification provided.
@@ -26,5 +27,12 @@ public interface NameMatchService extends Closeable {
    */
   NameUsageMatch match(String kingdom,String phylum, String clazz, String order, String family, String genus,
                        String rank, String name, boolean verbose, boolean strict);
+
+  /**
+   * Gets the IUCN RedList Category of a nubKey.
+   * @param nubKey GBIF backbone key.
+   * @return a possible null map containing the IUCN RedList Category
+   */
+  Map<String,String> getIucnRedListCategory(Integer nubKey);
 
 }

@@ -3,7 +3,7 @@ package org.gbif.rest.client.species.retrofit;
 import okhttp3.OkHttpClient;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
-import org.gbif.rest.client.species.NameMatchService;
+import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
 
 
@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -20,33 +21,40 @@ import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 /**
  * Synchronous Retrofit service client for the NameMatch GBIF service.
  */
-public class NameMatchServiceSyncClient implements NameMatchService {
+public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
-  //Wrapped service
-  private final NameMatchRetrofitService nameMatchRetrofitService;
+  //Wrapped services
+  private final ChecklistbankRetrofitService checklistbankRetrofitService;
 
   private final OkHttpClient okHttpClient;
-
 
   /**
    * Creates an instance using the provided configuration settings.
    * @param clientConfiguration Rest client configuration
    */
-  public NameMatchServiceSyncClient(ClientConfiguration clientConfiguration) {
+  public ChecklistbankServiceSyncClient(ClientConfiguration clientConfiguration) {
     okHttpClient = RetrofitClientFactory.createClient(clientConfiguration);
-    nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(okHttpClient,
-                                                                          clientConfiguration.getBaseApiUrl(),
-                                                                          NameMatchRetrofitService.class);
+    checklistbankRetrofitService = RetrofitClientFactory.createRetrofitClient(okHttpClient,
+                                                                              clientConfiguration.getBaseApiUrl(),
+                                                                              ChecklistbankRetrofitService.class);
   }
 
   /**
-   * See {@link NameMatchService#match(String, String, String, String, String, String, String, String, boolean, boolean)}
+   * See {@link ChecklistbankService#match(String, String, String, String, String, String, String, String, boolean, boolean)}
    */
   @Override
   public NameUsageMatch match(String kingdom, String phylum, String clazz, String order, String family, String genus,
                               String rank, String name, boolean verbose, boolean strict) {
-    return syncCall(nameMatchRetrofitService.match(kingdom, phylum, clazz, order, family, genus, rank, name, verbose,
-                                                   strict));
+    return syncCall(checklistbankRetrofitService.match(kingdom, phylum, clazz, order, family, genus, rank, name, verbose,
+                                                       strict));
+  }
+
+  /**
+   * See {@link ChecklistbankService#getIucnRedListCategory(Integer)}
+   */
+  @Override
+  public Map<String, String> getIucnRedListCategory(Integer nubKey) {
+    return syncCall(checklistbankRetrofitService.getIucnRedListCategory(nubKey));
   }
 
   @Override

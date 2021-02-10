@@ -3,6 +3,7 @@ package org.gbif.kvs.indexing.species;
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.io.AvroIO;
 import org.gbif.api.vocabulary.Rank;
+import org.gbif.api.vocabulary.ThreatStatus;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
@@ -10,10 +11,11 @@ import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.kvs.species.SpeciesMatchRequest;
 import org.gbif.kvs.species.TaxonParsers;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.species.NameMatchService;
+import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.retrofit.NameMatchServiceSyncClient;
+import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -105,34 +107,47 @@ public class NameUsageMatchIndexer {
                       new SaltedKeyGenerator(
                           storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
-                  private transient NameMatchService nameMatchService;
+                  private transient ChecklistbankService checklistbankService;
 
                   private transient BiFunction<byte[], NameUsageMatch, Put> valueMutator;
 
                   @Setup
                   public void start() {
-                    nameMatchService = new NameMatchServiceSyncClient(nameMatchClientConfiguration);
+                    checklistbankService = new ChecklistbankServiceSyncClient(nameMatchClientConfiguration);
                     valueMutator =
                         NameUsageMatchKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
                             Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
                   }
 
+                  /**
+                   * Retrieves the IUCN Red List category from the name usage match response.
+                   */
+                  private ThreatStatus getIucnRedListCategory(NameUsageMatch nameUsageMatch) {
+                    Integer usageKey = Objects.nonNull(nameUsageMatch.getAcceptedUsage()) ? nameUsageMatch.getAcceptedUsage().getKey() : nameUsageMatch.getUsage().getKey();
+                    Map<String,String> category = checklistbankService.getIucnRedListCategory(usageKey);
+                    if (Objects.nonNull(category)) {
+                      return ThreatStatus.valueOf(category.get("category"));
+                    }
+                    return null;
+                  }
+
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
                       SpeciesMatchRequest request = context.element();
-                      NameUsageMatch nameUsageMatch = nameMatchService.match(request.getKingdom(),
-                          request.getPhylum(),
-                          request.getClazz(),
-                          request.getOrder(),
-                          request.getFamily(),
-                          request.getGenus(),
-                          Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
-                          TaxonParsers.interpretScientificName(request),
-                          false,
-                          false);
+                      NameUsageMatch nameUsageMatch = checklistbankService.match(request.getKingdom(),
+                                                                                 request.getPhylum(),
+                                                                                 request.getClazz(),
+                                                                                 request.getOrder(),
+                                                                                 request.getFamily(),
+                                                                                 request.getGenus(),
+                                                                                 Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
+                                                                                 TaxonParsers.interpretScientificName(request),
+                                                                                 false,
+                                                                                 false);
                       if (Objects.nonNull(nameUsageMatch)) {
+                        Optional.ofNullable(getIucnRedListCategory(nameUsageMatch)).ifPresent(nameUsageMatch::setIucnRedListCategory);
                         byte[] saltedKey = keyGenerator.computeKey(request.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, nameUsageMatch));
                       }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.gbif.api.v2.RankedName;
 import org.gbif.api.vocabulary.TaxonomicStatus;
+import org.gbif.api.vocabulary.ThreatStatus;
 
 import lombok.Data;
 
@@ -18,6 +19,9 @@ public class NameUsageMatch implements Serializable {
   private NameUsageMatch.Nomenclature nomenclature;
   private List<RankedName> classification = new ArrayList<>();
   private NameUsageMatch.Diagnostics diagnostics = new NameUsageMatch.Diagnostics();
+
+  //This is not part of the NameUsageMatch response, but it is stored in the same record in the Cache
+  private ThreatStatus iucnRedListCategory;
 
   @Data
   public static class Diagnostics {
