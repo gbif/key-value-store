@@ -1,7 +1,6 @@
 package org.gbif.kvs.indexing.grscicoll;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -12,16 +11,15 @@ import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.KvCoder;
-import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.extensions.joinlibrary.Join;
 import org.apache.beam.sdk.io.hbase.HBaseIO;
 import org.apache.beam.sdk.io.hcatalog.HCatalogIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.View;
 import org.apache.beam.sdk.transforms.WithKeys;
+import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.PCollectionView;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Mutation;
@@ -39,6 +37,8 @@ import static org.gbif.kvs.indexing.grscicoll.HiveUtils.readSchema;
 public class GrscicollLookupCleaner {
 
   private static final Logger LOG = LoggerFactory.getLogger(GrscicollLookupCleaner.class);
+
+  private static final String NULL_VALUE_IN_JOIN = "NO_JOIN";
 
   public static void main(String[] args) throws Exception {
     GrSciCollLookupIndexingOptions options =
@@ -85,7 +85,8 @@ public class GrscicollLookupCleaner {
 
     final HCatSchema schema = readSchema(options);
 
-    PCollection<String> hiveRequests =
+    // read records from Hive
+    PCollection<String> hiveKeys =
         pipeline
             .apply(
                 HCatalogIO.read()
@@ -104,7 +105,10 @@ public class GrscicollLookupCleaner {
                           HCatRecord record = context.element();
                           GrscicollLookupRequest req =
                               HiveUtils.convertToGrSciCollRequest(record, schema);
-                          String key = new String(keyGenerator.computeKey(req.getLogicalKey()));
+                          String key =
+                              new String(
+                                  keyGenerator.computeKey(req.getLogicalKey()),
+                                  keyGenerator.getCharset());
                           context.output(key);
                         } catch (Exception ex) {
                           LOG.error("Error creating grscicoll request", ex);
@@ -112,43 +116,61 @@ public class GrscicollLookupCleaner {
                       }
                     }));
 
-    // read records from Hive and create a map view indexed by the salted keys used in HBase
-    PCollectionView<Map<String, Iterable<String>>> hiveRecordsView =
-        hiveRequests
+    // convert hive keys them to KVs
+    PCollection<KV<String, String>> hiveKVs =
+        hiveKeys
             .apply(WithKeys.of(input -> input))
-            .setCoder(KvCoder.of(StringUtf8Coder.of(), hiveRequests.getCoder()))
-            .apply(View.asMultimap());
+            .setCoder(KvCoder.of(hiveKeys.getCoder(), hiveKeys.getCoder()));
 
     // read records from HBase
     Scan scan = new Scan();
     scan.setBatch(10000); // for safety
     scan.addFamily(options.getKVColumnFamily().getBytes());
 
-    PCollection<Result> rows =
-        pipeline.apply(
-            "Read HBase",
-            HBaseIO.read()
-                .withConfiguration(hBaseConfiguration)
-                .withScan(scan)
-                .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));
-
-    // delete from HBase the records that are not in the map view
-    rows.apply(
-            ParDo.of(
-                    new DoFn<Result, Mutation>() {
+    PCollection<String> hbaseKeys =
+        pipeline
+            .apply(
+                "Read HBase",
+                HBaseIO.read()
+                    .withConfiguration(hBaseConfiguration)
+                    .withScan(scan)
+                    .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()))
+            .apply(
+                ParDo.of(
+                    new DoFn<Result, String>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        Map<String, Iterable<String>> hiveRecords =
-                            context.sideInput(hiveRecordsView);
-
                         Result hbaseRecord = context.element();
-                        if (!hiveRecords.containsKey(new String(hbaseRecord.getRow()))) {
-                          Delete delete = new Delete(hbaseRecord.getRow());
-                          context.output(delete);
-                        }
+                        String key = new String(hbaseRecord.getRow(), keyGenerator.getCharset());
+                        context.output(key);
                       }
-                    })
-                .withSideInputs(hiveRecordsView))
+                    }));
+
+    // convert hbase keys them to KVs
+    PCollection<KV<String, String>> hbaseKVs =
+        hbaseKeys
+            .apply(WithKeys.of(input -> input))
+            .setCoder(KvCoder.of(hbaseKeys.getCoder(), hbaseKeys.getCoder()));
+
+    // do a left join being the hbase keys on the left side
+    PCollection<KV<String, KV<String, String>>> join =
+        Join.leftOuterJoin(hbaseKVs, hiveKVs, NULL_VALUE_IN_JOIN);
+
+    // delete from hbase the records that don't have a match in the hive keys (right side of the
+    // join)
+    join.apply(
+            ParDo.of(
+                new DoFn<KV<String, KV<String, String>>, Mutation>() {
+                  @ProcessElement
+                  public void processElement(ProcessContext context) {
+                    KV<String, KV<String, String>> joinRecord = context.element();
+                    if (joinRecord.getValue().getValue().equals(NULL_VALUE_IN_JOIN)) {
+                      Delete delete =
+                          new Delete(joinRecord.getKey().getBytes(keyGenerator.getCharset()));
+                      context.output(delete);
+                    }
+                  }
+                }))
         .apply( // Write to HBase
             HBaseIO.write()
                 .withConfiguration(hBaseConfiguration)

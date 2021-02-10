@@ -11,7 +11,7 @@
     <groupId>org.gbif.kvs</groupId>
     <artifactId>key-value-store</artifactId>
     <packaging>pom</packaging>
-    <version>1.16-SNAPSHOT</version>
+    <version>1.17-SNAPSHOT</version>
 
     <modules>
         <module>kvs-core</module>
