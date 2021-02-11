@@ -7,9 +7,9 @@ import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.species.NameMatchService;
+import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.retrofit.NameMatchServiceSyncClient;
+import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -100,16 +100,19 @@ public class NameUsageMatchKVStoreFactory {
 
   public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                                          ClientConfiguration clientConfiguration) throws IOException {
-    NameMatchServiceSyncClient nameMatchServiceSyncClient = new NameMatchServiceSyncClient(clientConfiguration);
+    ChecklistbankServiceSyncClient
+      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfiguration);
     Command closeHandler = () -> {
       try {
-        nameMatchServiceSyncClient.close();
+        checklistbankServiceSyncClient.close();
       } catch (IOException ex) {
         throw logAndThrow(ex, "Error closing client");
       }
     };
     KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
-                                                                        hbaseKVStore(configuration, nameMatchServiceSyncClient, closeHandler) : restKVStore(nameMatchServiceSyncClient, closeHandler);
+                                                                        hbaseKVStore(configuration,
+                                                                                     checklistbankServiceSyncClient, closeHandler) : restKVStore(
+      checklistbankServiceSyncClient, closeHandler);
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), SpeciesMatchRequest.class, NameUsageMatch.class);
     }
@@ -127,7 +130,7 @@ public class NameUsageMatchKVStoreFactory {
 
 
   private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                 NameMatchService nameMatchService,
+                                                                                 ChecklistbankService checklistbankService,
                                                                                  Command closeHandler) throws IOException {
     return HBaseStore.<SpeciesMatchRequest, NameUsageMatch, NameUsageMatch>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
@@ -146,7 +149,7 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             request -> {
               try {
-                return nameMatchService.match(
+                return checklistbankService.match(
                     request.getKingdom(),
                     request.getPhylum(),
                     request.getClazz(),
@@ -166,10 +169,11 @@ public class NameUsageMatchKVStoreFactory {
   }
 
   private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(ClientConfiguration clientConfiguration) {
-    NameMatchServiceSyncClient nameMatchServiceSyncClient = new NameMatchServiceSyncClient(clientConfiguration);
-    return restKVStore(nameMatchServiceSyncClient, () -> {
+    ChecklistbankServiceSyncClient
+      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfiguration);
+    return restKVStore(checklistbankServiceSyncClient, () -> {
       try {
-        nameMatchServiceSyncClient.close();
+        checklistbankServiceSyncClient.close();
       } catch (IOException ex) {
         throw logAndThrow(ex, "Error closing client");
       }
@@ -179,13 +183,13 @@ public class NameUsageMatchKVStoreFactory {
   /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(NameMatchService nameMatchService, Command closeHandler) {
+  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(ChecklistbankService checklistbankService, Command closeHandler) {
     return new KeyValueStore<SpeciesMatchRequest, NameUsageMatch>() {
 
       @Override
       public NameUsageMatch get(SpeciesMatchRequest key) {
         try {
-          return nameMatchService.match(
+          return checklistbankService.match(
               key.getKingdom(),
               key.getPhylum(),
               key.getClazz(),
