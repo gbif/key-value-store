@@ -2,6 +2,8 @@ package org.gbif.kvs.indexing.species;
 
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.io.AvroIO;
+
+import org.gbif.api.util.VocabularyUtils;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.api.vocabulary.ThreatStatus;
 import org.gbif.kvs.SaltedKeyGenerator;
@@ -121,13 +123,29 @@ public class NameUsageMatchIndexer {
                   }
 
                   /**
+                   * Gets the first non-null value between the accepted usage and the usage of a NameUsageMatch.
+                   */
+                  private Integer getAcceptedUsageOrUsage(NameUsageMatch nameUsageMatch) {
+                    if (Objects.nonNull(nameUsageMatch.getAcceptedUsage())) {
+                      return nameUsageMatch.getAcceptedUsage().getKey();
+                    } else if (Objects.nonNull(nameUsageMatch.getUsage())) {
+                      return nameUsageMatch.getUsage().getKey();
+                    }
+                    return null;
+                  }
+
+                  /**
                    * Retrieves the IUCN Red List category from the name usage match response.
                    */
                   private ThreatStatus getIucnRedListCategory(NameUsageMatch nameUsageMatch) {
-                    Integer usageKey = Objects.nonNull(nameUsageMatch.getAcceptedUsage()) ? nameUsageMatch.getAcceptedUsage().getKey() : nameUsageMatch.getUsage().getKey();
-                    Map<String,String> category = checklistbankService.getIucnRedListCategory(usageKey);
-                    if (Objects.nonNull(category)) {
-                      return ThreatStatus.valueOf(category.get("category"));
+                    Integer usageKey = getAcceptedUsageOrUsage(nameUsageMatch);
+                    if (Objects.nonNull(usageKey)) {
+                      Map<String, String> response = checklistbankService.getIucnRedListCategory(usageKey);
+                      if (Objects.nonNull(response)) {
+                        Optional<ThreatStatus> threatStatus =
+                          VocabularyUtils.lookup(response.get("category"), ThreatStatus.class);
+                        return threatStatus.orElse(null);
+                      }
                     }
                     return null;
                   }
