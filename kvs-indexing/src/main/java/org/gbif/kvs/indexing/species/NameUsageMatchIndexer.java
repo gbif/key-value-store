@@ -126,12 +126,7 @@ public class NameUsageMatchIndexer {
                    * Gets the first non-null value between the accepted usage and the usage of a NameUsageMatch.
                    */
                   private Integer getAcceptedUsageOrUsage(NameUsageMatch nameUsageMatch) {
-                    if (Objects.nonNull(nameUsageMatch.getAcceptedUsage())) {
-                      return nameUsageMatch.getAcceptedUsage().getKey();
-                    } else if (Objects.nonNull(nameUsageMatch.getUsage())) {
-                      return nameUsageMatch.getUsage().getKey();
-                    }
-                    return null;
+                   return Objects.nonNull(nameUsageMatch.getUsage())? nameUsageMatch.getUsage().getKey(): null;
                   }
 
                   /**
