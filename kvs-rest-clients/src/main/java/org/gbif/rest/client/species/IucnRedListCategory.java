@@ -24,6 +24,6 @@ public class IucnRedListCategory implements Serializable {
 
   private String acceptedName;
 
-  private String acceptedUsageKey;
+  private Integer acceptedUsageKey;
 
 }
