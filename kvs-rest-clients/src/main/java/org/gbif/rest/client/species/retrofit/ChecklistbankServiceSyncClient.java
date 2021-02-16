@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.species.ChecklistbankService;
+import org.gbif.rest.client.species.IucnRedListCategory;
 import org.gbif.rest.client.species.NameUsageMatch;
 
 
@@ -53,7 +54,7 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
    * See {@link ChecklistbankService#getIucnRedListCategory(Integer)}
    */
   @Override
-  public Map<String, String> getIucnRedListCategory(Integer nubKey) {
+  public IucnRedListCategory getIucnRedListCategory(Integer nubKey) {
     return syncCall(checklistbankRetrofitService.getIucnRedListCategory(nubKey));
   }
 

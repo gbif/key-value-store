@@ -21,7 +21,7 @@ public class NameUsageMatch implements Serializable {
   private NameUsageMatch.Diagnostics diagnostics = new NameUsageMatch.Diagnostics();
 
   //This is not part of the NameUsageMatch response, but it is stored in the same record in the Cache
-  private ThreatStatus iucnRedListCategory;
+  private IucnRedListCategory iucnRedListCategory;
 
   @Data
   public static class Diagnostics {

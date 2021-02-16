@@ -3,9 +3,7 @@ package org.gbif.kvs.indexing.species;
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.io.AvroIO;
 
-import org.gbif.api.util.VocabularyUtils;
 import org.gbif.api.vocabulary.Rank;
-import org.gbif.api.vocabulary.ThreatStatus;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
@@ -14,10 +12,10 @@ import org.gbif.kvs.species.SpeciesMatchRequest;
 import org.gbif.kvs.species.TaxonParsers;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.ChecklistbankService;
+import org.gbif.rest.client.species.IucnRedListCategory;
 import org.gbif.rest.client.species.NameUsageMatch;
 import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -125,22 +123,17 @@ public class NameUsageMatchIndexer {
                   /**
                    * Gets the first non-null value between the accepted usage and the usage of a NameUsageMatch.
                    */
-                  private Integer getAcceptedUsageOrUsage(NameUsageMatch nameUsageMatch) {
+                  private Integer getUsage(NameUsageMatch nameUsageMatch) {
                    return Objects.nonNull(nameUsageMatch.getUsage())? nameUsageMatch.getUsage().getKey(): null;
                   }
 
                   /**
                    * Retrieves the IUCN Red List category from the name usage match response.
                    */
-                  private ThreatStatus getIucnRedListCategory(NameUsageMatch nameUsageMatch) {
-                    Integer usageKey = getAcceptedUsageOrUsage(nameUsageMatch);
+                  private IucnRedListCategory getIucnRedListCategory(NameUsageMatch nameUsageMatch) {
+                    Integer usageKey = getUsage(nameUsageMatch);
                     if (Objects.nonNull(usageKey)) {
-                      Map<String, String> response = checklistbankService.getIucnRedListCategory(usageKey);
-                      if (Objects.nonNull(response)) {
-                        Optional<ThreatStatus> threatStatus =
-                          VocabularyUtils.lookup(response.get("category"), ThreatStatus.class);
-                        return threatStatus.orElse(null);
-                      }
+                      return checklistbankService.getIucnRedListCategory(usageKey);
                     }
                     return null;
                   }

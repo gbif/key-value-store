@@ -2,7 +2,6 @@ package org.gbif.rest.client.species;
 
 
 import java.io.Closeable;
-import java.util.Map;
 
 /**
  * GBIF Backbone name match and IUCN RedList services.
@@ -33,6 +32,6 @@ public interface ChecklistbankService extends Closeable {
    * @param nubKey GBIF backbone key.
    * @return a possible null map containing the IUCN RedList Category
    */
-  Map<String,String> getIucnRedListCategory(Integer nubKey);
+  IucnRedListCategory getIucnRedListCategory(Integer nubKey);
 
 }
