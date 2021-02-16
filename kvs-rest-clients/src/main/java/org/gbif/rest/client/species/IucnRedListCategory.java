@@ -1,5 +1,7 @@
 package org.gbif.rest.client.species;
 
+import org.gbif.api.vocabulary.TaxonomicStatus;
+
 import java.io.Serializable;
 
 import lombok.Data;
@@ -14,7 +16,14 @@ public class IucnRedListCategory implements Serializable {
 
   private String code;
 
-  private Integer iucnRedListSpeciesKey;
+  private Integer usageKey;
 
-  private String iucnRedListName;
+  private String scientificName;
+
+  private TaxonomicStatus taxonomicStatus;
+
+  private String acceptedName;
+
+  private String acceptedUsageKey;
+
 }
