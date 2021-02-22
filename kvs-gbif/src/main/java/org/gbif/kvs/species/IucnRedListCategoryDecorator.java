@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor(staticName = "of")
+@AllArgsConstructor(staticName = "with")
 public class IucnRedListCategoryDecorator {
 
   private ChecklistbankService checklistbankService;

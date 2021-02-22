@@ -124,7 +124,7 @@ public class NameUsageMatchIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       SpeciesMatchRequest request = context.element();
-                      NameUsageMatch nameUsageMatch = IucnRedListCategoryDecorator.of(checklistbankService).decorate(checklistbankService.match(request.getKingdom(),
+                      NameUsageMatch nameUsageMatch = IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(request.getKingdom(),
                                                                                                               request.getPhylum(),
                                                                                                               request.getClazz(),
                                                                                                               request.getOrder(),

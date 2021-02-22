@@ -149,7 +149,7 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             request -> {
               try {
-                return IucnRedListCategoryDecorator.of(checklistbankService).decorate(checklistbankService.match(
+                return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(
                     request.getKingdom(),
                     request.getPhylum(),
                     request.getClazz(),
@@ -189,7 +189,7 @@ public class NameUsageMatchKVStoreFactory {
       @Override
       public NameUsageMatch get(SpeciesMatchRequest key) {
         try {
-          return IucnRedListCategoryDecorator.of(checklistbankService).decorate(checklistbankService.match(
+          return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(
               key.getKingdom(),
               key.getPhylum(),
               key.getClazz(),
