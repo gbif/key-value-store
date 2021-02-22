@@ -149,7 +149,7 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             request -> {
               try {
-                return checklistbankService.match(
+                return IucnRedListCategoryDecorator.of(checklistbankService).decorate(checklistbankService.match(
                     request.getKingdom(),
                     request.getPhylum(),
                     request.getClazz(),
@@ -159,7 +159,7 @@ public class NameUsageMatchKVStoreFactory {
                     Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
                     TaxonParsers.interpretScientificName(request),
                     false,
-                    false);
+                    false));
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting the species math service");
               }
@@ -189,7 +189,7 @@ public class NameUsageMatchKVStoreFactory {
       @Override
       public NameUsageMatch get(SpeciesMatchRequest key) {
         try {
-          return checklistbankService.match(
+          return IucnRedListCategoryDecorator.of(checklistbankService).decorate(checklistbankService.match(
               key.getKingdom(),
               key.getPhylum(),
               key.getClazz(),
@@ -199,7 +199,7 @@ public class NameUsageMatchKVStoreFactory {
               Optional.ofNullable(TaxonParsers.interpretRank(key)).map(Rank::name).orElse(null),
               TaxonParsers.interpretScientificName(key),
               false,
-              false);
+              false));
         } catch (Exception ex) {
           throw logAndThrow(ex, "Error contacting the species math service");
         }
