@@ -2,6 +2,7 @@ package org.gbif.rest.client.retrofit;
 
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,25 @@ public class SyncCall {
       Response<T> response = call.execute();
       if (response.isSuccessful() && response.body() != null) {
         return response.body();
+      }
+      LOG.error("Service responded with an error {}", response);
+      throw new HttpException(response); // Propagates the failed response
+    } catch (IOException ex) {
+      throw new RestClientException("Error executing call", ex);
+    }
+  }
+
+  /**
+   * Performs a synchronous call to {@link Call} instance that can return a null response.
+   * @param call to be executed
+   * @param <T> content of the response object
+   * @return the content of the response, throws an {@link HttpException} in case of error
+   */
+  public static <T> Optional<T> nullableSyncCall(Call<T> call) {
+    try {
+      Response<T> response = call.execute();
+      if (response.isSuccessful()) {
+        return Optional.ofNullable(response.body());
       }
       LOG.error("Service responded with an error {}", response);
       throw new HttpException(response); // Propagates the failed response

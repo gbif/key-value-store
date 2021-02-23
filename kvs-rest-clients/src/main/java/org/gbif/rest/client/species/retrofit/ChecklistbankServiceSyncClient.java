@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static org.gbif.rest.client.retrofit.SyncCall.nullableSyncCall;
 import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
 
 /**
@@ -55,7 +56,7 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
    */
   @Override
   public IucnRedListCategory getIucnRedListCategory(Integer nubKey) {
-    return syncCall(checklistbankRetrofitService.getIucnRedListCategory(nubKey));
+    return nullableSyncCall(checklistbankRetrofitService.getIucnRedListCategory(nubKey)).orElse(null);
   }
 
   @Override
