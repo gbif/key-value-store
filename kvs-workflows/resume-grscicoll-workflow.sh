@@ -8,7 +8,7 @@ TOKEN=$2
 echo "Resuming grscicoll cache workflow for $ENV"
 
 echo "Get latest grscicoll cache refresh config profiles from GitHub"
-curl -Ss -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/gbif/gbif-configuration/contents/grscicoll-cache-refresh/$ENV/job.properties
+curl -Ss -H "Authorization: token $TOKEN" -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/gbif/gbif-configuration/contents/grscicoll/cache-refresh-wf/$ENV/job.properties
 
 OOZIE=$(grep '^oozie.url=' job.properties | cut -d= -f 2)
 
