@@ -12,7 +12,7 @@ import lombok.Data;
 import static org.gbif.api.model.collections.lookup.Match.Status;
 
 @Data
-public class GrscicollLookupResponse {
+public class GrscicollLookupResponse implements Serializable {
 
   private Match institutionMatch;
   private Match collectionMatch;
