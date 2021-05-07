@@ -7,10 +7,12 @@ import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.kvs.indexing.options.HBaseIndexingOptions;
 import org.gbif.kvs.species.IucnRedListCategoryDecorator;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.kvs.species.SpeciesMatchRequest;
 import org.gbif.kvs.species.TaxonParsers;
+import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
@@ -61,6 +63,30 @@ public class NameUsageMatchIndexer {
   }
 
   /**
+   * Creates a {@link ClientConfiguration} from a {@link NameUsageMatchIndexingOptions} instance for a Checklistbank client.
+   *
+   */
+  public static ClientConfiguration clbClientConfiguration(NameUsageMatchIndexingOptions options) {
+    return ClientConfiguration.builder()
+      .withBaseApiUrl(options.getClbBaseApiUrl())
+      .withTimeOut(options.getClbApiTimeOut())
+      .withFileCacheMaxSizeMb(options.getClbRestClientCacheMaxSize())
+      .build();
+  }
+
+  /**
+   * Creates a {@link ClientConfiguration} from a {@link NameUsageMatchIndexingOptions} instance for a Checklistbank NameUsage client.
+   *
+   */
+  public static ClientConfiguration nameUsageClientConfiguration(NameUsageMatchIndexingOptions options) {
+    return ClientConfiguration.builder()
+      .withBaseApiUrl(options.getNameUsageBaseApiUrl())
+      .withTimeOut(options.getNameUsageApiTimeOut())
+      .withFileCacheMaxSizeMb(options.getNameUsageRestClientCacheMaxSize())
+      .build();
+  }
+
+  /**
    * Runs the indexing beam pipeline.
    * 1. Reads all latitude and longitude from the occurrence table.
    * 2. Selects only distinct coordinates
@@ -79,7 +105,11 @@ public class NameUsageMatchIndexer {
 
     // Config
     CachedHBaseKVStoreConfiguration storeConfiguration = nameUsageMatchKVConfiguration(options);
-    ClientConfiguration nameMatchClientConfiguration = ConfigurationMapper.clientConfiguration(options);
+    ChecklistbankClientsConfiguration checklistbankClientsConfiguration = ChecklistbankClientsConfiguration.builder()
+                                                                            .checklistbankClientConfiguration(clbClientConfiguration(options))
+                                                                            .nameUSageClientConfiguration(nameUsageClientConfiguration(options))
+                                                                            .build();
+
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Read the occurrence table
@@ -112,7 +142,7 @@ public class NameUsageMatchIndexer {
 
                   @Setup
                   public void start() {
-                    checklistbankService = new ChecklistbankServiceSyncClient(nameMatchClientConfiguration);
+                    checklistbankService = new ChecklistbankServiceSyncClient(checklistbankClientsConfiguration);
                     valueMutator =
                         NameUsageMatchKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),

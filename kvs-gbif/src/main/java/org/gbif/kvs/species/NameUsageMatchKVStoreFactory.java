@@ -6,7 +6,7 @@ import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
-import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
 import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
@@ -99,9 +99,9 @@ public class NameUsageMatchKVStoreFactory {
   }
 
   public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                         ClientConfiguration clientConfiguration) throws IOException {
+                                                                                         ChecklistbankClientsConfiguration clientConfigurations) throws IOException {
     ChecklistbankServiceSyncClient
-      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfiguration);
+      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfigurations);
     Command closeHandler = () -> {
       try {
         checklistbankServiceSyncClient.close();
@@ -119,10 +119,10 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
-  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
-    KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = restKVStore(clientConfiguration);
-    if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
-      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), SpeciesMatchRequest.class, NameUsageMatch.class);
+  public static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> nameUsageMatchKVStore(ChecklistbankClientsConfiguration clientConfigurations) {
+    KeyValueStore<SpeciesMatchRequest, NameUsageMatch> keyValueStore = restKVStore(clientConfigurations);
+    if (Objects.nonNull(clientConfigurations.getChecklistbankClientConfiguration().getFileCacheMaxSizeMb())) {
+      return KeyValueCache.cache(keyValueStore, clientConfigurations.getChecklistbankClientConfiguration().getFileCacheMaxSizeMb(), SpeciesMatchRequest.class, NameUsageMatch.class);
     }
     return keyValueStore;
   }
@@ -168,9 +168,9 @@ public class NameUsageMatchKVStoreFactory {
         .build();
   }
 
-  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(ClientConfiguration clientConfiguration) {
+  private static KeyValueStore<SpeciesMatchRequest, NameUsageMatch> restKVStore(ChecklistbankClientsConfiguration clientConfigurations) {
     ChecklistbankServiceSyncClient
-      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfiguration);
+      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfigurations);
     return restKVStore(checklistbankServiceSyncClient, () -> {
       try {
         checklistbankServiceSyncClient.close();

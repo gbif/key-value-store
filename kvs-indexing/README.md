@@ -74,11 +74,14 @@ By default uses the table definition:
   - runner: Apache Beam runner
   - hbaseZk: Zookeeper HBase ensemble
   - sourceGlob: glob (wildcard pattern) for Avro occurrence files
-  - targetTable: HBase table to store species match responses
-  - baseApiUrl: GBIF base API URL
+  - targetTable: HBase table to store species match responses  
   - saltedKeyBuckets: Number of buckets to use for the salted/primary key
-  - apiTimeOut: connection time-out to the match service
-  - restClientCacheMaxSize: client file cache maximum size
+  - clbBaseApiUrl: Checklistbank GBIF base API URL
+  - clbApiTimeOut: Checklistbank API connection time-out to the match service
+  - clbRestClientCacheMaxSize: Checklistbank client file cache maximum size
+  - nameUsageBaseApiUrl: Checklistbank NameUsage GBIF base API URL    
+  - nameUsageApiTimeOut: Checklistbank NameUsage  API connection time-out to the match service
+  - nameUSageRestClientCacheMaxSize: Checklistbank NameUsage  client file cache maximum size
 
 ### Example
 
@@ -92,10 +95,13 @@ spark2-submit --class org.gbif.kvs.indexing.species.NameUsageMatchIndexer \
   --hbaseZk=c4zk1.gbif-uat.org,c4zk2.gbif-uat.org,c4zk3.gbif-uat.org \
   --sourceGlob=hdfs://ha-nn/data/hdfsview/occurrence/view_occurrence_* \
   --targetTable=name_usage_new_kv \
-  --baseApiUrl=http://api.gbif-uat.org/v1/ \
   --saltedKeyBuckets=5 \
-  --apiTimeOut=6000 \
-  --restClientCacheMaxSize=64
+  --clbNaseApiUrl=http://api.gbif-uat.org/v1/ \ 
+  --clbApiTimeOut=6000 \
+  --clbRestClientCacheMaxSize=64
+  --nameUsageBaseApiUrl=http://api.gbif-uat.org/v1/ \ 
+  --nameUsageApiTimeOut=6000 \
+  --nameUsageRestClientCacheMaxSize=64
 ```
 
 ## GrSciColl lookup indexing
