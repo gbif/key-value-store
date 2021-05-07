@@ -20,6 +20,6 @@ interface GeocodeRetrofitService {
    * @param longitude decimal longitude
    * @return a executable call to the Geocode service
    */
-  @GET("/v1/geocode/reverse")
+  @GET("/geocode/reverse")
   Call<List<Location>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude);
 }

@@ -1,7 +1,8 @@
 package org.gbif.rest.client.species.retrofit;
 
 import okhttp3.OkHttpClient;
-import org.gbif.rest.client.configuration.ClientConfiguration;
+
+import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
 import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.IucnRedListCategory;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -25,20 +25,30 @@ import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
  */
 public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
+  //NameUsage match and CLB services are split in two clients since effectively are deployed in two different backends
   //Wrapped services
   private final ChecklistbankRetrofitService checklistbankRetrofitService;
 
-  private final OkHttpClient okHttpClient;
+  private final NameMatchRetrofitService nameMatchRetrofitService;
+
+  private final OkHttpClient clbOkHttpClient;
+
+  private final OkHttpClient nameMatchOkHttpClient;
 
   /**
    * Creates an instance using the provided configuration settings.
    * @param clientConfiguration Rest client configuration
    */
-  public ChecklistbankServiceSyncClient(ClientConfiguration clientConfiguration) {
-    okHttpClient = RetrofitClientFactory.createClient(clientConfiguration);
-    checklistbankRetrofitService = RetrofitClientFactory.createRetrofitClient(okHttpClient,
-                                                                              clientConfiguration.getBaseApiUrl(),
+  public ChecklistbankServiceSyncClient(ChecklistbankClientsConfiguration clientConfigurations) {
+    clbOkHttpClient = RetrofitClientFactory.createClient(clientConfigurations.getChecklistbankClientConfiguration());
+    checklistbankRetrofitService = RetrofitClientFactory.createRetrofitClient(clbOkHttpClient,
+                                                                              clientConfigurations.getChecklistbankClientConfiguration().getBaseApiUrl(),
                                                                               ChecklistbankRetrofitService.class);
+
+    nameMatchOkHttpClient = RetrofitClientFactory.createClient(clientConfigurations.getChecklistbankClientConfiguration());
+    nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(nameMatchOkHttpClient,
+                                                                          clientConfigurations.getNameUSageClientConfiguration().getBaseApiUrl(),
+                                                                          NameMatchRetrofitService.class);
   }
 
   /**
@@ -47,7 +57,7 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
   @Override
   public NameUsageMatch match(String kingdom, String phylum, String clazz, String order, String family, String genus,
                               String rank, String name, boolean verbose, boolean strict) {
-    return syncCall(checklistbankRetrofitService.match(kingdom, phylum, clazz, order, family, genus, rank, name, verbose,
+    return syncCall(nameMatchRetrofitService.match(kingdom, phylum, clazz, order, family, genus, rank, name, verbose,
                                                        strict));
   }
 
@@ -61,8 +71,13 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
   @Override
   public void close() throws IOException {
+    close(clbOkHttpClient);
+    close(nameMatchOkHttpClient);
+  }
+
+  public void close(OkHttpClient okHttpClient) throws IOException {
     if (Objects.nonNull(okHttpClient) && Objects.nonNull(okHttpClient.cache())
-            && Objects.nonNull(okHttpClient.cache().directory())) {
+        && Objects.nonNull(okHttpClient.cache().directory())) {
       File cacheDirectory = okHttpClient.cache().directory();
       if (cacheDirectory.exists()) {
         try(Stream<File> files = Files.walk(cacheDirectory.toPath())

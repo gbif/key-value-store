@@ -15,7 +15,7 @@ import retrofit2.http.Query;
  */
 interface GrscicollLookupRetrofitService {
 
-  @GET("/v1/grscicoll/lookup")
+  @GET("/grscicoll/lookup")
   Call<GrscicollLookupResponse> lookup(
       @Query("institutionCode") String institutionCode,
       @Query("ownerInstitutionCode") String ownerInstitutionCode,
