@@ -8,32 +8,6 @@ import org.apache.beam.sdk.options.Description;
 /** Apache Beam options for indexing into HBase NameUsageMatch lookups. */
 public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
 
-  @Description("HBase Zookeeper ensemble")
-  String getHbaseZk();
-
-  void setHbaseZk(String hbaseZk);
-
-  @Description("Avro source glob to scan and extract values")
-  String getSourceGlob();
-
-  void setSourceGlob(String sourceGlob);
-
-  @Description("HBase table to store key-value elements")
-  String getTargetTable();
-
-  void setTargetTable(String targetTable);
-
-  @Description("HBase column family in which the elements are stored")
-  @Default.String("v")
-  String getKVColumnFamily();
-
-  void setKVColumnFamily(String kvColumnFamily);
-
-  @Description("Number of buckets/split to generate in salted-keys")
-  int getSaltedKeyBuckets();
-
-  void setSaltedKeyBuckets(int saltedKeyBuckets);
-
   @Description("GBIF Checklistbank base API URL")
   String getClbBaseApiUrl();
 
