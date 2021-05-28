@@ -15,6 +15,6 @@ public interface ChecklistbankRetrofitService {
   /**
    * See {@link org.gbif.rest.client.species.ChecklistbankService#getIucnRedListCategory(Integer)}
    */
-  @GET("/species/{nubKey}/iucnRedListCategory")
+  @GET("species/{nubKey}/iucnRedListCategory")
   Call<IucnRedListCategory>  getIucnRedListCategory(@Path("nubKey") Integer nubKey);
 }
