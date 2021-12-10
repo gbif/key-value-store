@@ -43,7 +43,7 @@ class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<Gen
     putIfExists(input, DwcTerm.taxonRank, builder::withRank);
     putIfExists(input, DwcTerm.verbatimTaxonRank, builder::withVerbatimRank);
 
-    putIfExists(input, GbifTerm.genericName, builder::withGenericName);
+    putIfExists(input, DwcTerm.genericName, builder::withGenericName);
     putIfExists(input, DwcTerm.scientificName, builder::withScientificName);
     putIfExists(input, DwcTerm.scientificNameAuthorship, builder::withScientificNameAuthorship);
 

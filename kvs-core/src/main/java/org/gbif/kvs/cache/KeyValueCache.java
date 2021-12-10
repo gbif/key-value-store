@@ -32,7 +32,6 @@ public class KeyValueCache<K,V> implements KeyValueStore<K,V> {
     this.cache = Cache2kBuilder.of(keyClass, valueClass)
         .eternal(true)    //never expire entries
         .entryCapacity(capacity) //maximum capacity
-        .suppressExceptions(false) //communicate errors
         .loader(keyValueStore::get) //auto populating function
         .permitNullValues(true) //allow nulls
         .build();

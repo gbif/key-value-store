@@ -1,5 +1,6 @@
 package org.gbif.kvs;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -66,5 +67,36 @@ public class SaltedKeyGeneratorTest {
       Assert.assertEquals("Bucket prefix is not of expected size", Integer.toString(bucket - 1).length(),
                           saltedKeyGenerator.bucketOf(saltedKeyGenerator.computeKey(TEST_LOGICAL_KEY)).length);
     });
+  }
+
+
+  @Test
+  public void testKeys() {
+
+    System.out.println("First batch");
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("a"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("b"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("c"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("d"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("e"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("f"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("g"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("h"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("i"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("j"), StandardCharsets.UTF_8));
+
+
+    System.out.println("Second batch");
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("l"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("m"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("n"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("o"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("p"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("q"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("r"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("s"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("t"), StandardCharsets.UTF_8));
+    System.out.println(new String(SALT_KEY_GENERATOR.computeKey("u"), StandardCharsets.UTF_8));
+
   }
 }

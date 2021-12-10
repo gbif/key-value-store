@@ -75,7 +75,7 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
     Optional.ofNullable(scientificName).ifPresent(v -> map.put(DwcTerm.scientificName.simpleName(), v));
     Optional.ofNullable(scientificNameAuthorship).ifPresent(v -> map.put(DwcTerm.scientificNameAuthorship.simpleName(), v));
-    Optional.ofNullable(genericName).ifPresent(v -> map.put(GbifTerm.genericName.simpleName(), v));
+    Optional.ofNullable(genericName).ifPresent(v -> map.put(DwcTerm.genericName.simpleName(), v));
 
     return map.build();
   }
