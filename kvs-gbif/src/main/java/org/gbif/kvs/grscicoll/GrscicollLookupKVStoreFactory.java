@@ -26,6 +26,7 @@ import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -142,7 +143,12 @@ public class GrscicollLookupKVStoreFactory {
         hbaseKVStore(configuration, lookupService, closeHandler) : restKVStore(lookupService, closeHandler);
 
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), GrscicollLookupRequest.class, GrscicollLookupResponse.class);
+      return KeyValueCache.cache(
+          keyValueStore,
+          configuration.getCacheCapacity(),
+          GrscicollLookupRequest.class,
+          GrscicollLookupResponse.class,
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }
@@ -172,7 +178,12 @@ public class GrscicollLookupKVStoreFactory {
                 Bytes.toBytes(configuration.getValueColumnQualifier())))
         .build();
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), GrscicollLookupRequest.class, GrscicollLookupResponse.class);
+      return KeyValueCache.cache(
+          keyValueStore,
+          configuration.getCacheCapacity(),
+          GrscicollLookupRequest.class,
+          GrscicollLookupResponse.class,
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }

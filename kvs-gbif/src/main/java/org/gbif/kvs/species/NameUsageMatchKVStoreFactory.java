@@ -127,7 +127,12 @@ public class NameUsageMatchKVStoreFactory {
                                                                                      checklistbankServiceSyncClient, closeHandler) : restKVStore(
       checklistbankServiceSyncClient, closeHandler);
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), SpeciesMatchRequest.class, NameUsageMatch.class);
+      return KeyValueCache.cache(
+          keyValueStore,
+          configuration.getCacheCapacity(),
+          SpeciesMatchRequest.class,
+          NameUsageMatch.class,
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }

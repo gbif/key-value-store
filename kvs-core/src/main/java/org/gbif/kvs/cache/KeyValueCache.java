@@ -13,9 +13,10 @@
  */
 package org.gbif.kvs.cache;
 
-import org.gbif.kvs.KeyValueStore;
-
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.gbif.kvs.KeyValueStore;
 
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
@@ -36,24 +37,52 @@ public class KeyValueCache<K,V> implements KeyValueStore<K,V> {
 
   /**
    * Creates a Cache for the KV store.
+   *
    * @param keyValueStore wrapped kv store
    * @param capacity maximum capacity of the cache
    * @param keyClass type descriptor for the key elements
    * @param valueClass type descriptor for the value elements
+   * @param expiryTimeInSeconds expiry time in seconds
    */
-  private KeyValueCache(KeyValueStore<K,V> keyValueStore, long capacity, Class<K> keyClass, Class<V> valueClass) {
+  private KeyValueCache(
+      KeyValueStore<K, V> keyValueStore,
+      long capacity,
+      Class<K> keyClass,
+      Class<V> valueClass,
+      long expiryTimeInSeconds) {
     this.keyValueStore = keyValueStore;
     this.cache = Cache2kBuilder.of(keyClass, valueClass)
-        .eternal(true)    //never expire entries
+        .expireAfterWrite(expiryTimeInSeconds, TimeUnit.SECONDS)
         .entryCapacity(capacity) //maximum capacity
         .loader(keyValueStore::get) //auto populating function
         .permitNullValues(true) //allow nulls
         .build();
   }
 
+  /**
+   * Factory method to create instances of KeyValueStore caches.
+   *
+   * @param keyValueStore store to be cached/wrapped
+   * @param capacity maximum capacity of the in-memory cache
+   * @param keyClass type descriptor for the key elements
+   * @param valueClass type descriptor for the value elements
+   * @param <K1> type of key elements
+   * @param <V1> type of value elements
+   * @param expiryTimeInSeconds expiry time in seconds
+   * @return a new instance of KeyValueStore cache
+   */
+  public static <K1, V1> KeyValueStore<K1, V1> cache(
+      KeyValueStore<K1, V1> keyValueStore,
+      long capacity,
+      Class<K1> keyClass,
+      Class<V1> valueClass,
+      long expiryTimeInSeconds) {
+    return new KeyValueCache<>(keyValueStore, capacity, keyClass, valueClass, expiryTimeInSeconds);
+  }
 
   /**
    * Factory method to create instances of KeyValueStore caches.
+   *
    * @param keyValueStore store to be cached/wrapped
    * @param capacity maximum capacity of the in-memory cache
    * @param keyClass type descriptor for the key elements
@@ -62,10 +91,13 @@ public class KeyValueCache<K,V> implements KeyValueStore<K,V> {
    * @param <V1> type of value elements
    * @return a new instance of KeyValueStore cache
    */
-  public static <K1,V1> KeyValueStore<K1,V1> cache(KeyValueStore<K1,V1> keyValueStore, long capacity, Class<K1> keyClass, Class<V1> valueClass) {
-    return new KeyValueCache<>(keyValueStore, capacity, keyClass, valueClass);
+  public static <K1, V1> KeyValueStore<K1, V1> cache(
+      KeyValueStore<K1, V1> keyValueStore,
+      long capacity,
+      Class<K1> keyClass,
+      Class<V1> valueClass) {
+    return new KeyValueCache<>(keyValueStore, capacity, keyClass, valueClass, Long.MAX_VALUE);
   }
-
 
   @Override
   public V get(K key) {

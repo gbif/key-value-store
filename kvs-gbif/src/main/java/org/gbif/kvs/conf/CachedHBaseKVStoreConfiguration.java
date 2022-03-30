@@ -37,6 +37,8 @@ public class CachedHBaseKVStoreConfiguration implements Serializable {
 
   private final Long cacheCapacity;
 
+  private final Long cacheExpiryTimeInSeconds;
+
   /**
    * Creates an configuration instance using the HBase KV and Rest client configurations.
    *
@@ -44,12 +46,14 @@ public class CachedHBaseKVStoreConfiguration implements Serializable {
    * @param loaderRetryConfig exponential backoff retry config
    * @param valueColumnQualifier column qualifier to store the entire json response
    * @param cacheCapacity maximum number of entries in the in-memory cache
+   * @param cacheExpiryTimeInSeconds cache expiry time in seconds
    */
   public CachedHBaseKVStoreConfiguration(HBaseKVStoreConfiguration hBaseKVStoreConfiguration, LoaderRetryConfig loaderRetryConfig,
-                                         String valueColumnQualifier, Long cacheCapacity) {
+                                         String valueColumnQualifier, Long cacheCapacity, Long cacheExpiryTimeInSeconds) {
     this.hBaseKVStoreConfiguration = hBaseKVStoreConfiguration;
     this.loaderRetryConfig = loaderRetryConfig;
     this.valueColumnQualifier = valueColumnQualifier;
     this.cacheCapacity = cacheCapacity;
+    this.cacheExpiryTimeInSeconds = cacheExpiryTimeInSeconds;
   }
 }

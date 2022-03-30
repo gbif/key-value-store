@@ -26,6 +26,7 @@ import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -142,7 +143,8 @@ public class GeocodeKVStoreFactory {
         hbaseKVStore(configuration, geocodeService, closeHandler) : restKVStore(geocodeService, closeHandler);
 
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
+      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class,
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
 
@@ -174,7 +176,12 @@ public class GeocodeKVStoreFactory {
                 Bytes.toBytes(configuration.getValueColumnQualifier())))
         .build();
     if (Objects.nonNull(configuration.getCacheCapacity())) {
-      return KeyValueCache.cache(keyValueStore, configuration.getCacheCapacity(), LatLng.class, GeocodeResponse.class);
+      return KeyValueCache.cache(
+          keyValueStore,
+          configuration.getCacheCapacity(),
+          LatLng.class,
+          GeocodeResponse.class,
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }
