@@ -34,7 +34,7 @@ public class GeocodeTestService implements GeocodeService {
    * @return a List with a single Geocode response, and empty List if the coordinate do not resolve to a country
    */
   @Override
-  public List<Location> reverse(Double latitude, Double longitude) {
+  public List<Location> reverse(Double latitude, Double longitude, Double uncertaintyMeters) {
     return COUNTRY_CENTROIDS.findByCoordinate(latitude, longitude).map(country -> {
               Location location = new Location();
                 location.setName(country.getName());

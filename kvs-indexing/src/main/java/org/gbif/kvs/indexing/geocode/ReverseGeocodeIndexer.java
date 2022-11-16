@@ -155,9 +155,9 @@ public class ReverseGeocodeIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       LatLng latLng = context.element();
-                      Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()))
+                      Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()))
                               .ifPresent( locations -> {
-                                  GeocodeResponse response = new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()));
+                                  GeocodeResponse response = new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()));
                                   byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                   context.output(valueMutator.apply(saltedKey, response));
                               });

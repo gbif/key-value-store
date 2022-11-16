@@ -30,6 +30,7 @@ public class LatLng implements Serializable, Indexable {
 
   private Double latitude;
   private Double longitude;
+  private Double uncertaintyMeters;
 
   public LatLng() {}
 
@@ -41,14 +42,29 @@ public class LatLng implements Serializable, Indexable {
     this.longitude = longitude;
   }
 
+  public void setUncertaintyMeters(Double uncertaintyMeters) {
+    this.uncertaintyMeters = uncertaintyMeters;
+  }
+
   /**
-   * Facrtory method.
+   * Factory method.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
    * @return a new instance of LatLng
    */
   public static LatLng create(Double latitude, Double longitude) {
-    return new LatLng(latitude,longitude);
+    return new LatLng(latitude, longitude, null);
+  }
+
+  /**
+   * Factory method.
+   * @param latitude decimal latitude
+   * @param longitude decimal longitude
+   * @param uncertaintyMeters uncertainty in metres
+   * @return a new instance of LatLng
+   */
+  public static LatLng create(Double latitude, Double longitude, Double uncertaintyMeters) {
+    return new LatLng(latitude, longitude, uncertaintyMeters);
   }
 
   /**
@@ -73,6 +89,10 @@ public class LatLng implements Serializable, Indexable {
    */
   @Override
   public String getLogicalKey() {
-    return latitude.toString() + '|' + longitude.toString();
+    if (uncertaintyMeters == null) {
+      return latitude.toString() + '|' + longitude.toString();
+    } else {
+      return latitude.toString() + '|' + longitude.toString() + '|' + uncertaintyMeters.toString();
+    }
   }
 }

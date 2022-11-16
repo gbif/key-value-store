@@ -26,7 +26,18 @@ public interface GeocodeService extends Closeable {
    * Gets the list of proposed geo-locations of coordinate.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
+   * @param uncertaintyMeters coordinate uncertainty in meters
    * @return a list of proposed locations, an empty list if no proposals were found
    */
-  List<Location> reverse(Double latitude, Double longitude);
+  List<Location> reverse(Double latitude, Double longitude, Double uncertaintyMeters);
+
+  /**
+   * Gets the list of proposed geo-locations of coordinate.
+   * @param latitude decimal latitude
+   * @param longitude decimal longitude
+   * @return a list of proposed locations, an empty list if no proposals were found
+   */
+  default List<Location> reverse(Double latitude, Double longitude) {
+    return reverse(latitude, longitude, null);
+  }
 }

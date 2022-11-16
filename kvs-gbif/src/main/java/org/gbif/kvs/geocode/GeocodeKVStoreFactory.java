@@ -206,7 +206,7 @@ public class GeocodeKVStoreFactory {
         .withLoader(
             latLng -> {
               try {
-                return new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude()));
+                return new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()));
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting geocode service");
               }
@@ -221,10 +221,9 @@ public class GeocodeKVStoreFactory {
   private static KeyValueStore<LatLng, GeocodeResponse> restKVStore(GeocodeService geocodeService, Command closeHandler) {
     return new KeyValueStore<LatLng, GeocodeResponse>() {
 
-
       @Override
       public GeocodeResponse get(LatLng key) {
-        return new GeocodeResponse(geocodeService.reverse(key.getLatitude(), key.getLongitude()));
+        return new GeocodeResponse(geocodeService.reverse(key.getLatitude(), key.getLongitude(), key.getUncertaintyMeters()));
       }
 
       @Override

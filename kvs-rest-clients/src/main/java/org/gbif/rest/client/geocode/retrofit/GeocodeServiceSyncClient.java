@@ -57,11 +57,12 @@ public class GeocodeServiceSyncClient implements GeocodeService {
    * Performs a synchronous call to the Geocode service.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
+   * @param uncertaintyMeters coordinate uncertainty in meters
    * @return the List of proposed locations, an empty list otherwise
    */
   @Override
-  public List<Location> reverse(Double latitude, Double longitude) {
-    return syncCall(retrofitService.reverse(latitude, longitude));
+  public List<Location> reverse(Double latitude, Double longitude, Double uncertaintyMeters) {
+    return syncCall(retrofitService.reverse(latitude, longitude, uncertaintyMeters));
   }
 
   @Override

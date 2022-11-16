@@ -31,8 +31,9 @@ interface GeocodeRetrofitService {
    * Builds an executable call to the reverse geocode service.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
+   * @param uncertaintyMeters coordinate uncertainty in meters
    * @return a executable call to the Geocode service
    */
   @GET("geocode/reverse")
-  Call<List<Location>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude);
+  Call<List<Location>> reverse(@Query("lat") Double latitude, @Query("lng") Double longitude, @Query("uncertaintyMeters") Double uncertaintyMeters);
 }

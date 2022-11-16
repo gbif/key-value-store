@@ -23,7 +23,7 @@
 
     <name>KeyValue Store :: Parent</name>
     <description>Generic client and indexing services to store key value elements</description>
-    <url>http://github.com/gbif/key-value-store</url>
+    <url>https://github.com/gbif/key-value-store</url>
 
     <scm>
         <connection>scm:git:git@github.com:gbif/key-value-store.git</connection>
@@ -35,18 +35,18 @@
     <distributionManagement>
         <site>
             <id>gh-pages</id>
-            <url>http://gbif.github.io/key-value-store/</url>
+            <url>https://gbif.github.io/key-value-store/</url>
         </site>
     </distributionManagement>
 
     <repositories>
         <repository>
             <id>gbif-all</id>
-            <url>http://repository.gbif.org/content/groups/gbif</url>
+            <url>https://repository.gbif.org/content/groups/gbif</url>
         </repository>
         <repository>
             <id>cloudera-release</id>
-            <url>http://repository.cloudera.com/artifactory/cloudera-repos/</url>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
     </repositories>
 

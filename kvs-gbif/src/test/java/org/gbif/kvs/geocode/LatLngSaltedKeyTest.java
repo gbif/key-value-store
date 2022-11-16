@@ -48,10 +48,10 @@ public class LatLngSaltedKeyTest {
 
   @Parameterized.Parameters(name = "{index}: LatLng({0})")
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][]{{LatLng.create(48.019573, 66.923684)},
-                                        {LatLng.create(35.937496, 14.375416)},
-                                        {LatLng.create(-16.290154, -63.588653)},
-                                        {LatLng.create(36.93, 13.37)}});
+    return Arrays.asList(new Object[][]{{LatLng.create(48.019573, 66.923684, -50.0)},
+                                        {LatLng.create(35.937496, 14.375416, 3000.0)},
+                                        {LatLng.create(-16.290154, -63.588653, null)},
+                                        {LatLng.create(36.93, 13.37, null)}});
   }
 
   /**
