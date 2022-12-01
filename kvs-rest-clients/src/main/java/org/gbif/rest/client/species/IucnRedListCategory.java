@@ -13,6 +13,7 @@
  */
 package org.gbif.rest.client.species;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 
 import java.io.Serializable;
@@ -23,6 +24,7 @@ import lombok.Data;
  * The IUCN RedList Category associated to a species.
  */
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IucnRedListCategory implements Serializable {
 
   private String category;

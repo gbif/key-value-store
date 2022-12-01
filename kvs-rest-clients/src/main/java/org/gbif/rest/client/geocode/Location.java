@@ -15,6 +15,7 @@ package org.gbif.rest.client.geocode;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -23,6 +24,7 @@ import lombok.Data;
  * Models the response content of the {@link GeocodeService}.
  */
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Location implements Serializable {
 
   private static final long serialVersionUID = -9137655613118727430L;
@@ -34,4 +36,5 @@ public class Location implements Serializable {
   private String name;
   private String isoCountryCode2Digit;
   private Double distance;
+  private Double distanceMeters;
 }

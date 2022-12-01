@@ -13,6 +13,7 @@
  */
 package org.gbif.rest.client.grscicoll;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.model.collections.lookup.Match.MatchType;
 import org.gbif.api.model.collections.lookup.Match.Reason;
 
@@ -25,12 +26,14 @@ import lombok.Data;
 import static org.gbif.api.model.collections.lookup.Match.Status;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GrscicollLookupResponse implements Serializable {
 
   private Match institutionMatch;
   private Match collectionMatch;
 
   @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Match implements Serializable {
     private MatchType matchType;
     private Status status;
@@ -39,6 +42,7 @@ public class GrscicollLookupResponse implements Serializable {
   }
 
   @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class EntityMatchedResponse implements Serializable {
     private UUID key;
   }

@@ -13,6 +13,7 @@
  */
 package org.gbif.rest.client.species;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.v2.RankedName;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NameUsageMatch implements Serializable {
 
   private boolean synonym;
@@ -36,6 +38,7 @@ public class NameUsageMatch implements Serializable {
   private IucnRedListCategory iucnRedListCategory;
 
   @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Diagnostics {
     private org.gbif.api.model.checklistbank.NameUsageMatch.MatchType matchType;
     private Integer confidence;
@@ -46,6 +49,7 @@ public class NameUsageMatch implements Serializable {
   }
 
   @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Nomenclature {
     private String source;
     private String id;
