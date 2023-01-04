@@ -59,7 +59,7 @@ public class LatLngSaltedKeyTest {
    */
   @Test
   public void  latLngSaltedKeyTest() {
-    int bucket = Character.getNumericValue(new String(SALTED_KEY_GENERATOR.computeKey(latLng.getLogicalKey())).charAt(0));
+    int bucket = Character.getNumericValue(new String(SALTED_KEY_GENERATOR.computeKey(latLng.getLogicalKey()), StandardCharsets.UTF_8).charAt(0));
     Assert.assertTrue("", bucket >= 0 && bucket < NUM_OF_BUCKETS);
   }
 }

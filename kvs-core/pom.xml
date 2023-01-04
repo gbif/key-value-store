@@ -33,6 +33,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
         <!-- Hadoop and Hbase -->
         <dependency>
             <groupId>org.apache.hbase</groupId>

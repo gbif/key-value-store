@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import lombok.Data;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
@@ -58,6 +59,7 @@ import io.micrometer.elastic.ElasticMeterRegistry;
  * @param <V> type of values
  * @param <L> type of values produced by the loader
  */
+@Data
 public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V>, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(HBaseStore.class);
