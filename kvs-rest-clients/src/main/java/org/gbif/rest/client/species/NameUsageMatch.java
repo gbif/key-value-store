@@ -13,13 +13,14 @@
  */
 package org.gbif.rest.client.species;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.v2.RankedName;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 

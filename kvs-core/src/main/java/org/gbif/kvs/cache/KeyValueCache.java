@@ -13,10 +13,10 @@
  */
 package org.gbif.kvs.cache;
 
+import org.gbif.kvs.KeyValueStore;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import org.gbif.kvs.KeyValueStore;
 
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;

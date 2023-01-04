@@ -13,10 +13,11 @@
  */
 package org.gbif.rest.client.species;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 

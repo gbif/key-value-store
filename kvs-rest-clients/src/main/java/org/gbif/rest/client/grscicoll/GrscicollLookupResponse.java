@@ -13,13 +13,14 @@
  */
 package org.gbif.rest.client.grscicoll;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gbif.api.model.collections.lookup.Match.MatchType;
 import org.gbif.api.model.collections.lookup.Match.Reason;
 
 import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 

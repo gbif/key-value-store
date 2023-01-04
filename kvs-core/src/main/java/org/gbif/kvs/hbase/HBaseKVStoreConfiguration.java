@@ -14,13 +14,12 @@
 package org.gbif.kvs.hbase;
 
 import java.io.Serializable;
-import java.util.Objects;
-import java.util.StringJoiner;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import lombok.Builder;
 import lombok.Data;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 
 /** Configuration settings for KV store based on a simple HBase table. */
 @Data
