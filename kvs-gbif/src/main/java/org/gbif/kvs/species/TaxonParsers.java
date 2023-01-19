@@ -13,17 +13,21 @@
  */
 package org.gbif.kvs.species;
 
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.common.parsers.RankParser;
 
-import java.util.Optional;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 
 /** Converter to create queries for the name match service. */
 public class TaxonParsers {
 
+  private static final Pattern AUTHORSHIPS_PATTERN =
+      Pattern.compile("(s\\.|sensu)(\\s*)(l\\.|lat[.o]|s\\.|str\\.|stricto)$");
   private static final RankParser RANK_PARSER = RankParser.getInstance();
 
   private TaxonParsers() {}
@@ -52,13 +56,16 @@ public class TaxonParsers {
     return speciesMatchRequest.getInfraspecificEpithet() != null ? Rank.INFRASPECIFIC_NAME : Rank.SPECIES;
   }
 
-  private static String fromScientificName(String scientificName, String authorship) {
+  @VisibleForTesting
+  static String fromScientificName(String scientificName, String authorship) {
     boolean containsAuthorship =
       scientificName != null
             && !Strings.isNullOrEmpty(authorship)
             && !scientificName.toLowerCase().contains(authorship.toLowerCase());
 
-    return containsAuthorship ? scientificName + " " + authorship : scientificName;
+    return containsAuthorship
+        ? AUTHORSHIPS_PATTERN.matcher(scientificName).replaceAll("").trim() + " " + authorship
+        : scientificName;
   }
 
   /**
