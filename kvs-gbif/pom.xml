@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>1.25-hbase2-SNAPSHOT</version>
+        <version>1.26-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -84,14 +84,17 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>
+            <version>${hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
+            <version>${hbase.version}</version>
         </dependency>
 
         <!-- Tests -->
@@ -103,11 +106,13 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-testing-util</artifactId>
+            <version>${hbase.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-minicluster</artifactId>
+            <version>${hadoop.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
