@@ -164,7 +164,7 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                         context.output(valueMutator.apply(saltedKey, lookupResponse));
                       }
                     } catch (Exception ex) {
-                      LOG.error("Error performing Geocode lookup", ex);
+                      LOG.error("Error performing GrSciColl lookup", ex);
                     }
                   }
 
