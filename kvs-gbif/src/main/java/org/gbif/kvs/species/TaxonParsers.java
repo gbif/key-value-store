@@ -46,16 +46,6 @@ public class TaxonParsers {
     return Optional.ofNullable(rank);
   }
 
-  private static Rank fromFields(SpeciesMatchRequest speciesMatchRequest) {
-    if (speciesMatchRequest.getGenus() == null) {
-      return null;
-    }
-    if (speciesMatchRequest.getSpecificEpithet() == null) {
-      return Rank.GENUS;
-    }
-    return speciesMatchRequest.getInfraspecificEpithet() != null ? Rank.INFRASPECIFIC_NAME : Rank.SPECIES;
-  }
-
   @VisibleForTesting
   static String fromScientificName(String scientificName, String authorship) {
     boolean containsAuthorship =
@@ -82,9 +72,12 @@ public class TaxonParsers {
   }
 
 
+  /**
+   * Extract any stated rank from the request, but does not attempt to interpret it from the
+   * fields.
+   */
   public static Rank interpretRank(SpeciesMatchRequest speciesMatchRequest) {
-    return parserRank(speciesMatchRequest)
-            .orElseGet(() -> fromFields(speciesMatchRequest));
+    return parserRank(speciesMatchRequest).orElse(null);
   }
 
 
