@@ -1,10 +1,22 @@
 package org.gbif.kvs.species;
 
+import org.gbif.api.vocabulary.Rank;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class TaxonParsersTest {
+
+  @Test
+  public void requestExtractFromTest() {
+    assertEquals(
+            Rank.FAMILY,
+            TaxonParsers.interpretRank(SpeciesMatchRequest.builder().withRank("family").build()));
+
+    assertNull(
+            TaxonParsers.interpretRank(SpeciesMatchRequest.builder().withGenus("Aus").build()));
+  }
 
   @Test
   public void authorshipTest() {

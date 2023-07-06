@@ -20,6 +20,8 @@ import org.gbif.kvs.hbase.Indexable;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.avro.reflect.Nullable;
 
@@ -53,18 +55,14 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   @Nullable private String scientificNameAuthorship;
 
   @Override
+  /**
+   * Returns a unique key for the request that strictly respects the fields populated.
+   */
   public String getLogicalKey() {
-    return appendIgnoreNulls(kingdom, phylum, clazz, order, family, genus, specificEpithet,
+    return Stream.of(kingdom, phylum, clazz, order, family, genus, specificEpithet,
                             infraspecificEpithet, rank, verbatimTaxonRank, scientificName, genericName,
-                            scientificNameAuthorship);
-  }
-
-  private String appendIgnoreNulls(String... values) {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (String value : values) {
-      Optional.ofNullable(value).map(String::trim).ifPresent(stringBuilder::append);
-    }
-    return stringBuilder.toString();
+                            scientificNameAuthorship)
+            .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
   }
 
   /**
