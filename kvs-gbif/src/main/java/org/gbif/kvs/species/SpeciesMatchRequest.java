@@ -56,13 +56,13 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
 
   @Override
   /**
-   * Returns a unique for the request that strictly respects the fields populated.
+   * Returns a unique key for the request that strictly respects the fields populated.
    */
   public String getLogicalKey() {
     return Stream.of(kingdom, phylum, clazz, order, family, genus, specificEpithet,
                             infraspecificEpithet, rank, verbatimTaxonRank, scientificName, genericName,
                             scientificNameAuthorship)
-            .map(s -> s == null ? "" : s).collect(Collectors.joining("|"));
+            .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
   }
 
   /**
