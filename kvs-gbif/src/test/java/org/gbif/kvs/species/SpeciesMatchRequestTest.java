@@ -11,12 +11,21 @@ public class SpeciesMatchRequestTest {
   @Test
   public void testKey() {
     assertEquals(
-            "Animalia||||||||species||Puma concolor||Tim Robertson 2023",
+            "1|2|3|4|5|6|7|8|9|10|11|12",
             (SpeciesMatchRequest.builder()
-                    .withKingdom("Animalia")
-                    .withScientificName("Puma concolor")
-                    .withScientificNameAuthorship("Tim Robertson 2023")
-                    .withRank("species").build().getLogicalKey()));
+                    .withKingdom("1")
+                    .withPhylum("2")
+                    .withClazz("3")
+                    .withOrder("4")
+                    .withFamily("5")
+                    .withGenus("6")
+                    .withScientificName("7")
+                    .withGenericName("8")
+                    .withSpecificEpithet("9")
+                    .withInfraspecificEpithet("10")
+                    .withScientificNameAuthorship("11")
+                    .withVerbatimRank("I will be ignored")
+                    .withRank("12").build().getLogicalKey()));
 
   }
 }
