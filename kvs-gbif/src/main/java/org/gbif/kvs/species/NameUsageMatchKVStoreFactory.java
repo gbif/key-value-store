@@ -167,17 +167,20 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             request -> {
               try {
-                return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(
-                    request.getKingdom(),
-                    request.getPhylum(),
-                    request.getClazz(),
-                    request.getOrder(),
-                    request.getFamily(),
-                    request.getGenus(),
-                    Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
-                    TaxonParsers.interpretScientificName(request),
-                    false,
-                    false));
+                return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(request.getKingdom(),
+                        request.getPhylum(),
+                        request.getClazz(),
+                        request.getOrder(),
+                        request.getFamily(),
+                        request.getGenus(),
+                        request.getScientificName(),
+                        request.getGenericName(),
+                        request.getSpecificEpithet(),
+                        request.getInfraspecificEpithet(),
+                        request.getScientificNameAuthorship(),
+                        request.getRank(),
+                        false,
+                        false));
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting the species math service");
               }
@@ -207,17 +210,20 @@ public class NameUsageMatchKVStoreFactory {
       @Override
       public NameUsageMatch get(SpeciesMatchRequest key) {
         try {
-          return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(
-              key.getKingdom(),
-              key.getPhylum(),
-              key.getClazz(),
-              key.getOrder(),
-              key.getFamily(),
-              key.getGenus(),
-              Optional.ofNullable(TaxonParsers.interpretRank(key)).map(Rank::name).orElse(null),
-              TaxonParsers.interpretScientificName(key),
-              false,
-              false));
+          return IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(key.getKingdom(),
+                  key.getPhylum(),
+                  key.getClazz(),
+                  key.getOrder(),
+                  key.getFamily(),
+                  key.getGenus(),
+                  key.getScientificName(),
+                  key.getGenericName(),
+                  key.getSpecificEpithet(),
+                  key.getInfraspecificEpithet(),
+                  key.getScientificNameAuthorship(),
+                  key.getRank(),
+                  false,
+                  false));
         } catch (Exception ex) {
           throw logAndThrow(ex, "Error contacting the species math service");
         }
