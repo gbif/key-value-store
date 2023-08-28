@@ -63,14 +63,13 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
                                                                           NameMatchRetrofitService.class);
   }
 
-  /**
-   * See {@link ChecklistbankService#match(String, String, String, String, String, String, String, String, boolean, boolean)}
-   */
   @Override
   public NameUsageMatch match(String kingdom, String phylum, String clazz, String order, String family, String genus,
-                              String rank, String name, boolean verbose, boolean strict) {
-    return syncCall(nameMatchRetrofitService.match(kingdom, phylum, clazz, order, family, genus, rank, name, verbose,
-                                                       strict));
+                              String scientificName, String genericName, String specificEpithet,
+                              String infraspecificEpithet, String scientificNameAuthorship, String rank, boolean verbose,
+                              boolean strict) {
+    return syncCall(nameMatchRetrofitService.match(kingdom, phylum, clazz, order, family, genus, scientificName,
+            genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank, verbose, strict));
   }
 
   /**

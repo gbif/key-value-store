@@ -20,6 +20,8 @@ import org.gbif.kvs.hbase.Indexable;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.avro.reflect.Nullable;
 
@@ -44,27 +46,21 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   @Nullable private String order;
   @Nullable private String family;
   @Nullable private String genus;
-  @Nullable private String specificEpithet;
-  @Nullable private String infraspecificEpithet;
-  @Nullable private String rank;
-  @Nullable private String verbatimTaxonRank;
   @Nullable private String scientificName;
   @Nullable private String genericName;
+  @Nullable private String specificEpithet;
+  @Nullable private String infraspecificEpithet;
   @Nullable private String scientificNameAuthorship;
+  @Nullable private String rank;
 
   @Override
+  /**
+   * Returns a unique key for the request that strictly respects the fields populated in order.
+   */
   public String getLogicalKey() {
-    return appendIgnoreNulls(kingdom, phylum, clazz, order, family, genus, specificEpithet,
-                            infraspecificEpithet, rank, verbatimTaxonRank, scientificName, genericName,
-                            scientificNameAuthorship);
-  }
-
-  private String appendIgnoreNulls(String... values) {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (String value : values) {
-      Optional.ofNullable(value).map(String::trim).ifPresent(stringBuilder::append);
-    }
-    return stringBuilder.toString();
+    return Stream.of(kingdom, phylum, clazz, order, family, genus, scientificName,
+                            genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank)
+            .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
   }
 
   /**
@@ -81,14 +77,12 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     Optional.ofNullable(order).ifPresent(v -> map.put(DwcTerm.order.simpleName(), v));
     Optional.ofNullable(family).ifPresent(v -> map.put(DwcTerm.family.simpleName(), v));
     Optional.ofNullable(genus).ifPresent(v -> map.put(DwcTerm.genus.simpleName(), v));
-
-    Optional.ofNullable(rank).ifPresent(v -> map.put(DwcTerm.taxonRank.simpleName(), v));
-    Optional.ofNullable(verbatimTaxonRank).ifPresent(v -> map.put(DwcTerm.verbatimTaxonRank.simpleName(), v));
-
-
     Optional.ofNullable(scientificName).ifPresent(v -> map.put(DwcTerm.scientificName.simpleName(), v));
-    Optional.ofNullable(scientificNameAuthorship).ifPresent(v -> map.put(DwcTerm.scientificNameAuthorship.simpleName(), v));
     Optional.ofNullable(genericName).ifPresent(v -> map.put(DwcTerm.genericName.simpleName(), v));
+    Optional.ofNullable(specificEpithet).ifPresent(v -> map.put(DwcTerm.specificEpithet.simpleName(), v));
+    Optional.ofNullable(infraspecificEpithet).ifPresent(v -> map.put(DwcTerm.infraspecificEpithet.simpleName(), v));
+    Optional.ofNullable(scientificNameAuthorship).ifPresent(v -> map.put(DwcTerm.scientificNameAuthorship.simpleName(), v));
+    Optional.ofNullable(rank).ifPresent(v -> map.put(DwcTerm.taxonRank.simpleName(), v));
 
     return map.build();
   }
@@ -107,13 +101,13 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     private String order;
     private String family;
     private String genus;
-    private String specificEpithet;
-    private String infraspecificEpithet;
-    private String rank;
-    private String verbatimRank;
     private String scientificName;
     private String genericName;
+    private String specificEpithet;
+    private String infraspecificEpithet;
     private String scientificNameAuthorship;
+    private String rank;
+    private String verbatimRank;
 
     public Builder withKingdom(String kingdom) {
       this.kingdom = ClassificationUtils.clean(kingdom);
@@ -146,20 +140,23 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     }
 
     public Builder withSpecificEpithet(String specificEpithet) {
-      this.specificEpithet = ClassificationUtils.cleanAuthor(specificEpithet);
+      this.specificEpithet = ClassificationUtils.clean(specificEpithet);
       return this;
     }
 
     public Builder withInfraspecificEpithet(String infraspecificEpithet) {
-      this.infraspecificEpithet = ClassificationUtils.cleanAuthor(infraspecificEpithet);
+      this.infraspecificEpithet = ClassificationUtils.clean(infraspecificEpithet);
       return this;
     }
 
     public Builder withRank(String rank) {
-      this.rank = rank;
+      this.rank = ClassificationUtils.clean(rank);
       return this;
     }
 
+    /**
+     * Will be ignored if a Rank is also provided.
+     */
     public Builder withVerbatimRank(String verbatimRank) {
       this.verbatimRank = ClassificationUtils.clean(verbatimRank);
       return this;
@@ -181,9 +178,10 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     }
 
     public SpeciesMatchRequest build() {
-      return new SpeciesMatchRequest(kingdom, phylum, clazz, order, family, genus, specificEpithet,
-                                     infraspecificEpithet, rank, verbatimRank, scientificName, genericName,
-                                     scientificNameAuthorship);
+      // prefer the rank over verbatim rank
+      String r = rank == null ? verbatimRank : rank;
+      return new SpeciesMatchRequest(kingdom, phylum, clazz, order, family, genus, scientificName, genericName,
+              specificEpithet, infraspecificEpithet, scientificNameAuthorship, r);
     }
   }
 }

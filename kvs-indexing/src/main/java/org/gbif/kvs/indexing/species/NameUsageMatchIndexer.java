@@ -13,21 +13,18 @@
  */
 package org.gbif.kvs.indexing.species;
 
-import org.gbif.api.vocabulary.Rank;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.kvs.species.IucnRedListCategoryDecorator;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.kvs.species.SpeciesMatchRequest;
-import org.gbif.kvs.species.TaxonParsers;
 import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.NameUsageMatch;
 import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
 
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.beam.runners.spark.SparkRunner;
@@ -130,14 +127,14 @@ public class NameUsageMatchIndexer {
           .from(sourceGlob)
       );
 
-    // Select distinct coordinates
+    // Select distinct names
     PCollection<SpeciesMatchRequest> distinctNames =
         inputRecords
             .apply(
                 Distinct.<SpeciesMatchRequest, String>withRepresentativeValueFn(SpeciesMatchRequest::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
-    // Perform Geocode lookup
+    // Perform name lookup
     distinctNames
         .apply(
             ParDo.of(
@@ -171,8 +168,12 @@ public class NameUsageMatchIndexer {
                                                                                                               request.getOrder(),
                                                                                                               request.getFamily(),
                                                                                                               request.getGenus(),
-                                                                                                              Optional.ofNullable(TaxonParsers.interpretRank(request)).map(Rank::name).orElse(null),
-                                                                                                              TaxonParsers.interpretScientificName(request),
+                                                                                                              request.getScientificName(),
+                                                                                                              request.getGenericName(),
+                                                                                                              request.getSpecificEpithet(),
+                                                                                                              request.getInfraspecificEpithet(),
+                                                                                                              request.getScientificNameAuthorship(),
+                                                                                                              request.getRank(),
                                                                                                               false,
                                                                                                               false));
 

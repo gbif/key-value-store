@@ -36,8 +36,12 @@ public interface NameMatchRetrofitService {
     @Query("order") String order,
     @Query("family") String family,
     @Query("genus") String genus,
+    @Query("scientificName") String scientificName,
+    @Query("genericName") String genericName,
+    @Query("specificEpithet") String specificEpithet,
+    @Query("infraspecificEpithet") String infraspecificEpithet,
+    @Query("scientificNameAuthorship") String scientificNameAuthorship,
     @Query("rank") String rank,
-    @Query("name") String name,
     @Query("verbose") boolean verbose,
     @Query("strict") boolean strict
   );
