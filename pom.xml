@@ -67,7 +67,7 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>1.11.0</gbif-api.version>
+        <gbif-api.version>1.12.0-SNAPSHOT</gbif-api.version>
         <dwc-api.version>1.48-H3-SNAPSHOT</dwc-api.version>
         <gbif-parsers.version>0.60</gbif-parsers.version>
 
