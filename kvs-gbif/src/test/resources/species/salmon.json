@@ -1,0 +1,47 @@
+{
+  "synonym": false,
+  "usage": {
+    "key": 7595433,
+    "name": "Salmo salar Linnaeus, 1758",
+    "rank": "SPECIES"
+  },
+  "classification": [
+    {
+      "key": 1,
+      "name": "Animalia",
+      "rank": "KINGDOM"
+    },
+    {
+      "key": 44,
+      "name": "Chordata",
+      "rank": "PHYLUM"
+    },
+    {
+      "key": 1313,
+      "name": "Salmoniformes",
+      "rank": "ORDER"
+    },
+    {
+      "key": 8615,
+      "name": "Salmonidae",
+      "rank": "FAMILY"
+    },
+    {
+      "key": 2347608,
+      "name": "Salmo",
+      "rank": "GENUS"
+    },
+    {
+      "key": 7595433,
+      "name": "Salmo salar",
+      "rank": "SPECIES"
+    }
+  ],
+  "diagnostics": {
+    "matchType": "EXACT",
+    "confidence": 99,
+    "status": "ACCEPTED",
+    "lineage": [],
+    "alternatives": []
+  }
+}

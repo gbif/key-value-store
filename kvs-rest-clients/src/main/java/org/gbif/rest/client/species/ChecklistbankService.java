@@ -14,6 +14,7 @@
 package org.gbif.rest.client.species;
 
 
+
 import java.io.Closeable;
 
 /**
@@ -25,7 +26,7 @@ public interface ChecklistbankService extends Closeable {
    * Fuzzy matches against the GBIF Backbone Taxonomy.
    * @return a possible null name match
    */
-  NameUsageMatch match(String kingdom,String phylum, String clazz, String order, String family, String genus,
+  NameUsageMatch match(Integer usageKey, String kingdom,String phylum, String clazz, String order, String family, String genus,
                        String scientificName, String genericName, String specificEpithet, String infraspecificEpithet,
                        String scientificNameAuthorship, String rank, boolean verbose, boolean strict);
 
@@ -36,4 +37,11 @@ public interface ChecklistbankService extends Closeable {
    */
   IucnRedListCategory getIucnRedListCategory(Integer nubKey);
 
+  /**
+   * Locates a nameUsage having the sourceId within the checklist.
+   * @param datasetKey For the checklist to lookup
+   * @param sourceId For the name usage within the checklist (e.g. a WorMS LSID)
+   * @return the NameUsageSearchResponse containing the lookup result(s)
+   */
+  NameUsageSearchResponse lookupNameUsage(String datasetKey, String sourceId);
 }
