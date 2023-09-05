@@ -11,18 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gbif.rest.client.configuration;
+package org.gbif.kvs.species;
+
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Data;
 
-
+/** Configuration for mapping well known name/taxa IDs to checklist datasets */
 @Data
 @Builder
-public class ChecklistbankClientsConfiguration {
+public class IdMappingConfiguration {
 
-  private final ClientConfiguration checklistbankClientConfiguration;
+  // supports replacement e.g. http://margine.org/ to urn:lsid:marine.org:
+  private Map<String, String> prefixReplacement;
 
-  private final ClientConfiguration nameUsageClientConfiguration;
-
+  // maps the ID prefix to a datasetKey to lookup
+  private Map<String, String> prefixToDataset;
 }

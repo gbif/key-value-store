@@ -16,9 +16,10 @@ package org.gbif.kvs.indexing.species;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
-import org.gbif.kvs.species.IucnRedListCategoryDecorator;
+import org.gbif.kvs.species.BackboneMatchByID;
+import org.gbif.kvs.species.IdMappingConfiguration;
+import org.gbif.kvs.species.Identification;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
-import org.gbif.kvs.species.SpeciesMatchRequest;
 import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.ChecklistbankService;
@@ -46,7 +47,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Apache Beam Pipeline that indexes Taxonomic NameUsage matches into an HBase KV table. */
+/** Apache Beam Pipeline that indexes Taxonomic NameUsageSearchResponse matches into an HBase KV table. */
 public class NameUsageMatchIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageMatchIndexer.class);
@@ -83,7 +84,18 @@ public class NameUsageMatchIndexer {
   }
 
   /**
-   * Creates a {@link ClientConfiguration} from a {@link NameUsageMatchIndexingOptions} instance for a Checklistbank NameUsage client.
+   * Creates a {@link ClientConfiguration} from a {@link NameUsageMatchIndexingOptions} instance for a Checklistbank client.
+   *
+   */
+  public static IdMappingConfiguration idMappingConfiguration(NameUsageMatchIndexingOptions options) {
+    return IdMappingConfiguration.builder()
+            .prefixReplacement(options.getPrefixReplacement())
+            .prefixToDataset(options.getPrefixToDataset())
+            .build();
+  }
+
+  /**
+   * Creates a {@link ClientConfiguration} from a {@link NameUsageMatchIndexingOptions} instance for a Checklistbank NameUsageSearchResponse client.
    *
    */
   public static ClientConfiguration nameUsageClientConfiguration(NameUsageMatchIndexingOptions options) {
@@ -115,36 +127,39 @@ public class NameUsageMatchIndexer {
     CachedHBaseKVStoreConfiguration storeConfiguration = nameUsageMatchKVConfiguration(options);
     ChecklistbankClientsConfiguration checklistbankClientsConfiguration = ChecklistbankClientsConfiguration.builder()
                                                                             .checklistbankClientConfiguration(clbClientConfiguration(options))
-                                                                            .nameUSageClientConfiguration(nameUsageClientConfiguration(options))
+                                                                            .nameUsageClientConfiguration(nameUsageClientConfiguration(options))
                                                                             .build();
+    IdMappingConfiguration idMappingConfiguration = idMappingConfiguration(options);
 
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Read the occurrence table
-    PCollection<SpeciesMatchRequest> inputRecords =
+    PCollection<Identification> inputRecords =
       pipeline.apply(AvroIO.parseGenericRecords(new AvroOccurrenceRecordToNameUsageRequest())
-          .withCoder(AvroCoder.of(SpeciesMatchRequest.class))
+          .withCoder(AvroCoder.of(Identification.class))
           .from(sourceGlob)
       );
 
     // Select distinct names
-    PCollection<SpeciesMatchRequest> distinctNames =
+    PCollection<Identification> distinctNames =
         inputRecords
             .apply(
-                Distinct.<SpeciesMatchRequest, String>withRepresentativeValueFn(SpeciesMatchRequest::getLogicalKey)
+                Distinct.<Identification, String>withRepresentativeValueFn(Identification::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform name lookup
     distinctNames
         .apply(
             ParDo.of(
-                new DoFn<SpeciesMatchRequest, Mutation>() {
+                new DoFn<Identification, Mutation>() {
 
                   private final SaltedKeyGenerator keyGenerator =
                       new SaltedKeyGenerator(
                           storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
                   private transient ChecklistbankService checklistbankService;
+
+                  private transient BackboneMatchByID backboneMatcher;
 
                   private transient BiFunction<byte[], NameUsageMatch, Put> valueMutator;
 
@@ -155,27 +170,32 @@ public class NameUsageMatchIndexer {
                         NameUsageMatchKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
                             Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
+                    backboneMatcher = new BackboneMatchByID(checklistbankService,
+                        idMappingConfiguration.getPrefixReplacement(),
+                        idMappingConfiguration.getPrefixToDataset());
                   }
-
 
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
-                      SpeciesMatchRequest request = context.element();
-                      NameUsageMatch nameUsageMatch = IucnRedListCategoryDecorator.with(checklistbankService).decorate(checklistbankService.match(request.getKingdom(),
-                                                                                                              request.getPhylum(),
-                                                                                                              request.getClazz(),
-                                                                                                              request.getOrder(),
-                                                                                                              request.getFamily(),
-                                                                                                              request.getGenus(),
-                                                                                                              request.getScientificName(),
-                                                                                                              request.getGenericName(),
-                                                                                                              request.getSpecificEpithet(),
-                                                                                                              request.getInfraspecificEpithet(),
-                                                                                                              request.getScientificNameAuthorship(),
-                                                                                                              request.getRank(),
-                                                                                                              false,
-                                                                                                              false));
+                      Identification request = context.element();
+                      org.gbif.kvs.species.Identification identification = org.gbif.kvs.species.Identification.builder()
+                              .withScientificNameID(request.getScientificNameID())
+                              .withTaxonID(request.getTaxonID())
+                              .withTaxonConceptID(request.getTaxonConceptID())
+                              .withKingdom(request.getKingdom())
+                              .withPhylum(request.getPhylum())
+                              .withClazz(request.getClazz())
+                              .withOrder(request.getOrder())
+                              .withFamily(request.getFamily())
+                              .withGenus(request.getGenus())
+                              .withScientificName(request.getScientificName())
+                              .withGenericName(request.getGenericName())
+                              .withSpecificEpithet(request.getSpecificEpithet())
+                              .withRank(request.getRank()).build();
+
+                      NameUsageMatch nameUsageMatch = NameUsageMatchKVStoreFactory
+                              .matchAndDecorate(checklistbankService, identification, backboneMatcher);
 
                       byte[] saltedKey = keyGenerator.computeKey(request.getLogicalKey());
                       context.output(valueMutator.apply(saltedKey, nameUsageMatch));

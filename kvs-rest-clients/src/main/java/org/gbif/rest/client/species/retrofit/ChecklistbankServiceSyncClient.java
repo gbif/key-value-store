@@ -18,6 +18,7 @@ import org.gbif.rest.client.retrofit.RetrofitClientFactory;
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.IucnRedListCategory;
 import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.rest.client.species.NameUsageSearchResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,7 @@ import static org.gbif.rest.client.retrofit.SyncCall.syncCall;
  */
 public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
-  //NameUsage match and CLB services are split in two clients since effectively are deployed in two different backends
+  //NameUsageSearchResponse match and CLB services are split in two clients since effectively are deployed in two different backends
   //Wrapped services
   private final ChecklistbankRetrofitService checklistbankRetrofitService;
 
@@ -49,7 +50,7 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
   /**
    * Creates an instance using the provided configuration settings.
-   * @param clientConfiguration Rest client configuration
+   * @param clientConfigurations Rest client configuration
    */
   public ChecklistbankServiceSyncClient(ChecklistbankClientsConfiguration clientConfigurations) {
     clbOkHttpClient = RetrofitClientFactory.createClient(clientConfigurations.getChecklistbankClientConfiguration());
@@ -59,16 +60,16 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
 
     nameMatchOkHttpClient = RetrofitClientFactory.createClient(clientConfigurations.getChecklistbankClientConfiguration());
     nameMatchRetrofitService = RetrofitClientFactory.createRetrofitClient(nameMatchOkHttpClient,
-                                                                          clientConfigurations.getNameUSageClientConfiguration().getBaseApiUrl(),
+                                                                          clientConfigurations.getNameUsageClientConfiguration().getBaseApiUrl(),
                                                                           NameMatchRetrofitService.class);
   }
 
   @Override
-  public NameUsageMatch match(String kingdom, String phylum, String clazz, String order, String family, String genus,
+  public NameUsageMatch match(Integer usageKey, String kingdom, String phylum, String clazz, String order, String family, String genus,
                               String scientificName, String genericName, String specificEpithet,
                               String infraspecificEpithet, String scientificNameAuthorship, String rank, boolean verbose,
                               boolean strict) {
-    return syncCall(nameMatchRetrofitService.match(kingdom, phylum, clazz, order, family, genus, scientificName,
+    return syncCall(nameMatchRetrofitService.match(usageKey, kingdom, phylum, clazz, order, family, genus, scientificName,
             genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank, verbose, strict));
   }
 
@@ -78,6 +79,14 @@ public class ChecklistbankServiceSyncClient implements ChecklistbankService {
   @Override
   public IucnRedListCategory getIucnRedListCategory(Integer nubKey) {
     return nullableSyncCall(checklistbankRetrofitService.getIucnRedListCategory(nubKey)).orElse(null);
+  }
+
+  /**
+   * See {@link ChecklistbankService#lookupNameUsage(String, String)}
+   */
+  @Override
+  public NameUsageSearchResponse lookupNameUsage(String datasetKey, String sourceId) {
+    return nullableSyncCall(checklistbankRetrofitService.lookupNameUsage(datasetKey, sourceId)).orElse(null);
   }
 
   @Override

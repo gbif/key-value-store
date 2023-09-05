@@ -11,41 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gbif.rest.client.grscicoll;
-
-import org.gbif.api.model.collections.lookup.Match.MatchType;
-import org.gbif.api.model.collections.lookup.Match.Reason;
+package org.gbif.rest.client.species;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.UUID;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
-import static org.gbif.api.model.collections.lookup.Match.Status;
 
+/**
+ * Contains a partial NameUsageSearchResponse mapping, with the fields necessary to lookup concepts within a checklist and locate
+ * their equivalent backbone taxon id.
+ */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GrscicollLookupResponse implements Serializable {
-
-  private Match institutionMatch;
-  private Match collectionMatch;
+public class NameUsageSearchResponse implements Serializable {
+  private List<Result> results;
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class Match implements Serializable {
-    private MatchType matchType;
-    private Status status;
-    private Set<Reason> reasons;
-    private EntityMatchedResponse entityMatched;
+  public static class Result {
+    private int key;
+    private Integer nubKey;
+    private String scientificName;
   }
-
-  @Data
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class EntityMatchedResponse implements Serializable {
-    private UUID key;
-  }
-
 }

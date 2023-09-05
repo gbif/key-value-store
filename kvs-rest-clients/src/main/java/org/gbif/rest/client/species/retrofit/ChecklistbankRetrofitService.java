@@ -15,10 +15,12 @@ package org.gbif.rest.client.species.retrofit;
 
 import org.gbif.rest.client.species.ChecklistbankService;
 import org.gbif.rest.client.species.IucnRedListCategory;
+import org.gbif.rest.client.species.NameUsageSearchResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * see {@link ChecklistbankService}
@@ -30,4 +32,11 @@ public interface ChecklistbankRetrofitService {
    */
   @GET("species/{nubKey}/iucnRedListCategory")
   Call<IucnRedListCategory>  getIucnRedListCategory(@Path("nubKey") Integer nubKey);
+
+  /**
+   * See {@link org.gbif.rest.client.species.ChecklistbankService#lookupNameUsage(String, String)}
+   */
+  @GET("species")
+  Call<NameUsageSearchResponse> lookupNameUsage(@Query("datasetKey") String datasetKey, @Query("sourceId") String sourceId);
+
 }

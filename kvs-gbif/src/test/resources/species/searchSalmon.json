@@ -1,0 +1,50 @@
+{
+  "offset": 0,
+  "limit": 20,
+  "endOfRecords": true,
+  "results": [
+    {
+      "key": 155379487,
+      "nubKey": 7595433,
+      "nameKey": 10016245,
+      "taxonID": "urn:lsid:marinespecies.org:taxname:127186",
+      "kingdom": "Animalia",
+      "phylum": "Chordata",
+      "order": "Salmoniformes",
+      "family": "Salmonidae",
+      "genus": "Salmo",
+      "species": "Salmo salar",
+      "kingdomKey": 154946057,
+      "phylumKey": 155295572,
+      "classKey": 155303230,
+      "orderKey": 155378998,
+      "familyKey": 155378999,
+      "genusKey": 155379398,
+      "speciesKey": 155379487,
+      "datasetKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+      "parentKey": 155379398,
+      "parent": "Salmo",
+      "scientificName": "Salmo salar Linnaeus, 1758",
+      "canonicalName": "Salmo salar",
+      "vernacularName": "Atlantic salmon",
+      "authorship": "Linnaeus, 1758",
+      "nameType": "SCIENTIFIC",
+      "rank": "SPECIES",
+      "origin": "SOURCE",
+      "taxonomicStatus": "ACCEPTED",
+      "nomenclaturalStatus": [],
+      "publishedIn": "Linnaeus, C. (1758). Systema Naturae per regna tria naturae, secundum classes, ordines, genera, species, cum characteribus, differentiis, synonymis, locis. <em>Editio decima, reformata [10th revised edition], vol. 1: 824 pp. Laurentius Salvius: Holmiae.</em>",
+      "numDescendants": 0,
+      "references": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=127186",
+      "lastCrawled": "2023-02-05T22:56:33.417+00:00",
+      "lastInterpreted": "2023-08-08T06:09:05.084+00:00",
+      "issues": [
+        "SCIENTIFIC_NAME_ASSEMBLED",
+        "CLASSIFICATION_NOT_APPLIED",
+        "DISTRIBUTION_INVALID"
+      ],
+      "synonym": false,
+      "class": "Teleostei"
+    }
+  ]
+}
