@@ -13,16 +13,24 @@
  */
 package org.gbif.kvs.species;
 
+import java.io.Serializable;
 import java.util.Map;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/** Configuration for mapping well known name/taxa IDs to checklist datasets */
+/** Configuration for mapping well-known name/taxa IDs to checklist datasets */
 @Data
 @Builder
-public class IdMappingConfiguration {
-
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class IdMappingConfiguration implements Serializable {
+  private static final long serialVersionUID = -1247505660415335501L;
+  
   // supports replacement e.g. http://margine.org/ to urn:lsid:marine.org:
   private Map<String, String> prefixReplacement;
 
