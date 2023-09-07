@@ -14,6 +14,7 @@
 package org.gbif.kvs.species;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -30,10 +31,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IdMappingConfiguration implements Serializable {
   private static final long serialVersionUID = -1247505660415335501L;
-  
+
   // supports replacement e.g. http://margine.org/ to urn:lsid:marine.org:
-  private Map<String, String> prefixReplacement;
+  private Map<String, String> prefixReplacement = new HashMap<>();
 
   // maps the ID prefix to a datasetKey to lookup
-  private Map<String, String> prefixToDataset;
+  private Map<String, String> prefixToDataset = new HashMap<>();
 }

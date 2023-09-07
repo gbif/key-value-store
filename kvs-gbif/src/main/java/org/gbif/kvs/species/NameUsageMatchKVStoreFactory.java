@@ -162,6 +162,7 @@ public class NameUsageMatchKVStoreFactory {
                                                                             IdMappingConfiguration idMappingConfig,
                                                                             ChecklistbankService checklistbankService,
                                                                             Command closeHandler) throws IOException {
+    idMappingConfig = idMappingConfig == null ? new IdMappingConfiguration() : idMappingConfig; // defensive
     BackboneMatchByID backboneMatcher = new BackboneMatchByID(checklistbankService, idMappingConfig.getPrefixReplacement(), idMappingConfig.getPrefixToDataset());
 
     return HBaseStore.<Identification, NameUsageMatch, NameUsageMatch>builder()
@@ -254,6 +255,7 @@ public class NameUsageMatchKVStoreFactory {
   private static KeyValueStore<Identification, NameUsageMatch> restKVStore(ChecklistbankClientsConfiguration config, IdMappingConfiguration idMappingConfig) {
     ChecklistbankServiceSyncClient
       checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(config);
+    idMappingConfig = idMappingConfig == null ? new IdMappingConfiguration() : idMappingConfig; // defensive
 
     return restKVStore(checklistbankServiceSyncClient, idMappingConfig, () -> {
       try {
@@ -269,7 +271,6 @@ public class NameUsageMatchKVStoreFactory {
   */
   private static KeyValueStore<Identification, NameUsageMatch> restKVStore(ChecklistbankService checklistbankService, IdMappingConfiguration idMappingConfig, Command closeHandler) {
     return new KeyValueStore<Identification, NameUsageMatch>() {
-
       BackboneMatchByID backboneMatcher = new BackboneMatchByID(checklistbankService, idMappingConfig.getPrefixReplacement(), idMappingConfig.getPrefixToDataset());
 
       @Override
