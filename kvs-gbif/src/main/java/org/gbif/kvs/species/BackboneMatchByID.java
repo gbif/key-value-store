@@ -33,6 +33,11 @@ public class BackboneMatchByID {
   private Map<String, String> prefixToChecklistKey;
 
   public BackboneMatchByID(ChecklistbankService checklistbankService, Map<String, String> prefixMapping, Map<String, String> prefixToChecklistKey) {
+    if (prefixMapping != null) {
+      LOG.debug("{} prefixes supported for name/taxa ID matching", prefixToChecklistKey.size());
+    } else {
+      LOG.debug("No prefixes supported for name/taxa ID matching");
+    }
     this.checklistbankService = checklistbankService;
     this.prefixMapping = prefixMapping;
     this.prefixToChecklistKey = prefixToChecklistKey;
