@@ -221,6 +221,7 @@ public class NameUsageMatchKVStoreFactory {
     // Attempt to locate a backbone concept using the provided IDs
     Set<OccurrenceIssue> issues = new HashSet<>();
     Integer backboneKey = backboneMatchByID.lookupBackboneKey(identification, issues);
+    nameOnlyLookup.getIssues().addAll(issues); // adds e.g. that an ID was ignored
     if (backboneKey != null) {
       NameUsageMatch idLookup = checklistbankService.match(
           backboneKey, // names will be ignored if a good ID is provided
