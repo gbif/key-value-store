@@ -162,7 +162,11 @@ public class NameUsageMatchKVStoreFactory {
                                                                             IdMappingConfiguration idMappingConfig,
                                                                             ChecklistbankService checklistbankService,
                                                                             Command closeHandler) throws IOException {
-    idMappingConfig = idMappingConfig == null ? new IdMappingConfiguration() : idMappingConfig; // defensive
+    if (idMappingConfig == null) {
+      LOG.info("No name/taxon ID mapping supplied so IDs will be ignored when matching to the backbone");
+      idMappingConfig = new IdMappingConfiguration();
+    }
+
     BackboneMatchByID backboneMatcher = new BackboneMatchByID(checklistbankService, idMappingConfig.getPrefixReplacement(), idMappingConfig.getPrefixToDataset());
 
     return HBaseStore.<Identification, NameUsageMatch, NameUsageMatch>builder()
@@ -255,7 +259,10 @@ public class NameUsageMatchKVStoreFactory {
   private static KeyValueStore<Identification, NameUsageMatch> restKVStore(ChecklistbankClientsConfiguration config, IdMappingConfiguration idMappingConfig) {
     ChecklistbankServiceSyncClient
       checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(config);
-    idMappingConfig = idMappingConfig == null ? new IdMappingConfiguration() : idMappingConfig; // defensive
+    if (idMappingConfig == null) {
+      LOG.info("No name/taxon ID mapping supplied so IDs will be ignored when matching to the backbone");
+      idMappingConfig = new IdMappingConfiguration();
+    }
 
     return restKVStore(checklistbankServiceSyncClient, idMappingConfig, () -> {
       try {
