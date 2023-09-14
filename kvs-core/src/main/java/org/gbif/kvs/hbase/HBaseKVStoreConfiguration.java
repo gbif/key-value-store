@@ -32,6 +32,12 @@ public class HBaseKVStoreConfiguration implements Serializable {
   private final String hBaseZk;
 
   /**
+   * HBase Zookeeper root Znode.
+   */
+  @lombok.Builder.Default
+  private final String hBaseZnode = "/hbase";
+
+  /**
    * HBase table name to store key value elements.
    */
   private final String tableName;
@@ -48,13 +54,14 @@ public class HBaseKVStoreConfiguration implements Serializable {
 
   /**
    * Creates an instance of {@link Configuration} setting the 'hbase.zookeeper.quorum' to
-   * getHbaseZk.
+   * getHbaseZk and zookeeper.znode.parent to hBaseZnode.
    *
    * @return a new Hadoop configuration
    */
   public Configuration hbaseConfig() {
     Configuration hbaseConfig = HBaseConfiguration.create();
     hbaseConfig.set("hbase.zookeeper.quorum", hBaseZk);
+    hbaseConfig.set("zookeeper.znode.parent", hBaseZnode);
     return hbaseConfig;
   }
 }
