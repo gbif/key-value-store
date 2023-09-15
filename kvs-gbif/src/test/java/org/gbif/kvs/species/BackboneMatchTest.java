@@ -10,11 +10,14 @@ import org.gbif.rest.client.species.NameUsageSearchResponse;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
 import static org.gbif.kvs.species.BackboneMatchTest.MockChecklistbank.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * These test the behaviour of the backbone lookup behaviour including the expectations when using the IDs.
@@ -82,6 +85,15 @@ public class BackboneMatchTest {
     assertTrue(u1.getIssues().contains(OccurrenceIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS)); // name search finds a cod
     assertTrue(u1.getIssues().contains(OccurrenceIssue.SCIENTIFIC_NAME_ID_NOT_FOUND));
     assertTrue(u1.getIssues().contains(OccurrenceIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED));
+  }
+
+  @Test
+  public void testHigherNameComparison() {
+    Set<OccurrenceIssue> issues = new HashSet<>();
+    NameUsageSearchResponse.Result match = NameUsageSearchResponse.Result.builder()
+        .key(155433679).scientificName("Cnidaria Hatschek, 1888").nubKey(43).build();
+    BackboneMatchByID.compareAndFlagDifferingNames("ignored", "Cnidaria", issues, match);
+    assertTrue("The canonical names are the same", issues.isEmpty());
   }
 
   @Test
