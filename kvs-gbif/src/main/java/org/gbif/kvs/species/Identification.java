@@ -14,32 +14,31 @@
 package org.gbif.kvs.species;
 
 import org.gbif.common.parsers.utils.ClassificationUtils;
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.kvs.hbase.Indexable;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.avro.reflect.Nullable;
-
-import com.google.common.collect.ImmutableMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Represents a request to the species name match service.
- * This class is used mostly to efficiently store it as a lookup mechanism for caching.
+ * This encapsulates the identification fields to lookup against the backbone taxonomy.
+ * It includes verbatim fields for the names, the rank and the common name/taxa ID fields which will typically be found on Occurrence
+ * records.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SpeciesMatchRequest implements Serializable, Indexable {
+public class Identification implements Serializable, Indexable {
 
+  @Nullable private String scientificNameID;
+  @Nullable private String taxonConceptID;
+  @Nullable private String taxonID;
   @Nullable private String kingdom;
   @Nullable private String phylum;
   @Nullable private String clazz;
@@ -58,33 +57,9 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
    * Returns a unique key for the request that strictly respects the fields populated in order.
    */
   public String getLogicalKey() {
-    return Stream.of(kingdom, phylum, clazz, order, family, genus, scientificName,
+    return Stream.of(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, scientificName,
                             genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank)
-            .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
-  }
-
-  /**
-   * Converts a {@link Map} of terms to {@link Map} with the params needed to call the {@link
-   * SpeciesMatchv2Service}.
-   */
-  public Map<String, String> asTermMap() {
-
-    ImmutableMap.Builder<String, String> map = ImmutableMap.builder();
-
-    Optional.ofNullable(kingdom).ifPresent(v -> map.put(DwcTerm.kingdom.simpleName(), v));
-    Optional.ofNullable(phylum).ifPresent(v -> map.put(DwcTerm.phylum.simpleName(), v));
-    Optional.ofNullable(clazz).ifPresent(v -> map.put(DwcTerm.class_.simpleName(), v));
-    Optional.ofNullable(order).ifPresent(v -> map.put(DwcTerm.order.simpleName(), v));
-    Optional.ofNullable(family).ifPresent(v -> map.put(DwcTerm.family.simpleName(), v));
-    Optional.ofNullable(genus).ifPresent(v -> map.put(DwcTerm.genus.simpleName(), v));
-    Optional.ofNullable(scientificName).ifPresent(v -> map.put(DwcTerm.scientificName.simpleName(), v));
-    Optional.ofNullable(genericName).ifPresent(v -> map.put(DwcTerm.genericName.simpleName(), v));
-    Optional.ofNullable(specificEpithet).ifPresent(v -> map.put(DwcTerm.specificEpithet.simpleName(), v));
-    Optional.ofNullable(infraspecificEpithet).ifPresent(v -> map.put(DwcTerm.infraspecificEpithet.simpleName(), v));
-    Optional.ofNullable(scientificNameAuthorship).ifPresent(v -> map.put(DwcTerm.scientificNameAuthorship.simpleName(), v));
-    Optional.ofNullable(rank).ifPresent(v -> map.put(DwcTerm.taxonRank.simpleName(), v));
-
-    return map.build();
+            .map(s -> s == null ? "" : s.toString().trim()).collect(Collectors.joining("|"));
   }
 
   /**
@@ -95,6 +70,10 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
   }
 
   public static class Builder {
+
+    private String scientificNameID;
+    private String taxonConceptID;
+    private String taxonID;
     private String kingdom;
     private String phylum;
     private String clazz;
@@ -109,6 +88,19 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
     private String rank;
     private String verbatimRank;
 
+    // GBIF specific service requiring integers
+    public Builder withScientificNameID(String scientificNameID) {
+      this.scientificNameID = scientificNameID;
+      return this;
+    }
+    public Builder withTaxonConceptID(String taxonConceptID) {
+      this.taxonConceptID = taxonConceptID;
+      return this;
+    }
+    public Builder withTaxonID(String taxonID) {
+      this.taxonID = taxonID;
+      return this;
+    }
     public Builder withKingdom(String kingdom) {
       this.kingdom = ClassificationUtils.clean(kingdom);
       return this;
@@ -177,10 +169,10 @@ public class SpeciesMatchRequest implements Serializable, Indexable {
       return this;
     }
 
-    public SpeciesMatchRequest build() {
+    public Identification build() {
       // prefer the rank over verbatim rank
       String r = rank == null ? verbatimRank : rank;
-      return new SpeciesMatchRequest(kingdom, phylum, clazz, order, family, genus, scientificName, genericName,
+      return new Identification(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, scientificName, genericName,
               specificEpithet, infraspecificEpithet, scientificNameAuthorship, r);
     }
   }

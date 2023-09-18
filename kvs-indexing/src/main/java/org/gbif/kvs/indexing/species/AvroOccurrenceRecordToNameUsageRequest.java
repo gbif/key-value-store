@@ -15,7 +15,7 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.kvs.species.SpeciesMatchRequest;
+import org.gbif.kvs.species.Identification;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 
-/** Utility to convert HBase occurrence records into SpeciesMatchRequest objects. */
-class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<GenericRecord, SpeciesMatchRequest> {
+/** Utility to convert HBase occurrence records into Identification objects. */
+class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<GenericRecord, Identification> {
 
   // each UnknownTerm is prefixed differently
   private static final String VERBATIM_TERM_PREFIX = "v_";
@@ -35,11 +35,11 @@ class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<Gen
   }
 
   /**
-   * Translates an HBase record/result into a SpeciesMatchRequest object.
+   * Translates an HBase record/result into a Identification object.
    */
   @Override
-  public SpeciesMatchRequest apply(GenericRecord input) {
-    SpeciesMatchRequest.Builder builder = SpeciesMatchRequest.builder();
+  public Identification apply(GenericRecord input) {
+    Identification.Builder builder = Identification.builder();
 
     // Interpret common
     putIfExists(input, DwcTerm.kingdom, builder::withKingdom);

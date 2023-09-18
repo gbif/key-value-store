@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 
-/** Utility to convert HBase occurrence records into SpeciesMatchRequest objects. */
+/** Utility to convert HBase occurrence records into Identification objects. */
 class AvroOccurrenceRecordToLookupRequest
     implements SerializableFunction<GenericRecord, GrscicollLookupRequest> {
 
@@ -39,7 +39,7 @@ class AvroOccurrenceRecordToLookupRequest
     // DO NOTHING
   }
 
-  /** Translates an HBase record/result into a SpeciesMatchRequest object. */
+  /** Translates an HBase record/result into a Identification object. */
   @Override
   public GrscicollLookupRequest apply(GenericRecord input) {
     GrscicollLookupRequest.Builder builder = GrscicollLookupRequest.builder();

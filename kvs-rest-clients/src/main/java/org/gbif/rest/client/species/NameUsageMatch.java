@@ -14,11 +14,16 @@
 package org.gbif.rest.client.species;
 
 import org.gbif.api.v2.RankedName;
+import org.gbif.api.vocabulary.OccurrenceIssue;
 import org.gbif.api.vocabulary.TaxonomicStatus;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -35,8 +40,12 @@ public class NameUsageMatch implements Serializable {
   private List<RankedName> classification = new ArrayList<>();
   private NameUsageMatch.Diagnostics diagnostics = new NameUsageMatch.Diagnostics();
 
-  //This is not part of the NameUsageMatch response, but it is stored in the same record in the Cache
+  // This is not part of the NameUsageMatch response, but it is stored in the same record in the Cache
   private IucnRedListCategory iucnRedListCategory;
+
+  // Annotations flags to be added based on the rules of interpretation (not part of species/match response)
+  // See https://github.com/gbif/pipelines/issues/217
+  private Set<OccurrenceIssue> issues = new HashSet<>();
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)

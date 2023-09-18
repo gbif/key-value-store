@@ -1,0 +1,47 @@
+{
+  "synonym": false,
+  "usage": {
+    "key": 8084280,
+    "name": "Gadus morhua Linnaeus, 1758",
+    "rank": "SPECIES"
+  },
+  "classification": [
+    {
+      "key": 1,
+      "name": "Animalia",
+      "rank": "KINGDOM"
+    },
+    {
+      "key": 44,
+      "name": "Chordata",
+      "rank": "PHYLUM"
+    },
+    {
+      "key": 549,
+      "name": "Gadiformes",
+      "rank": "ORDER"
+    },
+    {
+      "key": 3701,
+      "name": "Gadidae",
+      "rank": "FAMILY"
+    },
+    {
+      "key": 2335052,
+      "name": "Gadus",
+      "rank": "GENUS"
+    },
+    {
+      "key": 8084280,
+      "name": "Gadus morhua",
+      "rank": "SPECIES"
+    }
+  ],
+  "diagnostics": {
+    "matchType": "EXACT",
+    "confidence": 98,
+    "status": "ACCEPTED",
+    "lineage": [],
+    "alternatives": []
+  }
+}
