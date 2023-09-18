@@ -15,6 +15,8 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.kvs.indexing.options.HBaseIndexingOptions;
 
+import java.util.Map;
+
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 
@@ -37,17 +39,17 @@ public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
   void setClbRestClientCacheMaxSize(long clbRestClientCacheMaxSize);
 
 
-  @Description("GBIF NameUsage base API URL")
+  @Description("GBIF NameUsageSearchResponse base API URL")
   String getNameUsageBaseApiUrl();
 
   void setNameUsageBaseApiUrl(String nameUsageBaseApiUrl);
 
-  @Description("GBIF NameUsage API connection time-out")
+  @Description("GBIF NameUsageSearchResponse API connection time-out")
   long getNameUsageApiTimeOut();
 
   void setNameUsageApiTimeOut(long nameUsageApiTimeOut);
 
-  @Description("NameUsage Rest/HTTP client file-cache max size")
+  @Description("NameUsageSearchResponse Rest/HTTP client file-cache max size")
   long getNameUsageRestClientCacheMaxSize();
 
   void setNameUsageRestClientCacheMaxSize(long nameUsageRestClientCacheMaxSize);
@@ -57,4 +59,12 @@ public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
   String getJsonColumnQualifier();
 
   void setJsonColumnQualifier(String jsonColumnQualifier);
+
+  @Description("Prefixes to replace before doing the taxon/name ID lookups")
+  Map<String,String> getPrefixReplacement();
+  void setPrefixReplacement(Map<String,String> prefixReplacement);
+
+  @Description("Mapping of taxon/name ID prefixes to the checklist dataset key they should be looked up againdst")
+  Map<String,String> getPrefixToDataset();
+  void setPrefixToDataset(Map<String,String> prefixReplacement);
 }

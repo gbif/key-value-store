@@ -26,10 +26,11 @@ import retrofit2.http.Query;
 public interface NameMatchRetrofitService {
 
   /**
-   * See {@link ChecklistbankService#match(String, String, String, String, String, String, String, String, boolean, boolean)}
+   * See {@link ChecklistbankService#match(Integer, String, String, String, String, String, String, String, String, String, String, String, String, boolean, boolean)}
    */
   @GET("species/match2")
   Call<NameUsageMatch> match(
+    @Query("usageKey") Integer usageKey,
     @Query("kingdom") String kingdom,
     @Query("phylum") String phylum,
     @Query("class") String clazz,

@@ -1,0 +1,10 @@
+{
+  "synonym": false,
+  "classification": [],
+  "diagnostics": {
+    "matchType": "NONE",
+    "confidence": 100,
+    "lineage": [],
+    "alternatives": []
+  }
+}
