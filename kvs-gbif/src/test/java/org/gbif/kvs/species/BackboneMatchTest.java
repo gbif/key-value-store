@@ -91,8 +91,8 @@ public class BackboneMatchTest {
   public void testHigherNameComparison() {
     Set<OccurrenceIssue> issues = new HashSet<>();
     NameUsageSearchResponse.Result match = NameUsageSearchResponse.Result.builder()
-        .key(155433679).scientificName("Cnidaria Hatschek, 1888").nubKey(43).build();
-    BackboneMatchByID.compareAndFlagDifferingNames("ignored", "Cnidaria", issues, match);
+        .key(123).scientificName("Larus fuscus subsp. heuglini Bree, 1876").nubKey(123).build();
+    BackboneMatchByID.compareAndFlagDifferingNames("ignored", "Larus fuscus heuglini", issues, match);
     assertTrue("The canonical names are the same", issues.isEmpty());
   }
 
