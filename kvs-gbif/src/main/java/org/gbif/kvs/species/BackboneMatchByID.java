@@ -134,7 +134,7 @@ public class BackboneMatchByID {
       ParsedName recordName = PARSER.parse(name, null, null);
       ParsedName foundName = PARSER.parse(match.getScientificName(), null, null);
       // flag as a hint if we have successfully parsed and found the canonical names to differ
-      if (!StringUtils.equals(recordName.canonicalNameWithoutAuthorship(), foundName.canonicalNameWithoutAuthorship())) {
+      if (!StringUtils.equals(recordName.canonicalNameMinimal(), foundName.canonicalNameMinimal())) {
         LOG.debug("Canonical name[{}] found using ID[{}] and parsed from [{}] does not match canonical name[{}] on record, after parsing",
             foundName.canonicalNameWithoutAuthorship(), id, match.getScientificName(), recordName.canonicalNameWithoutAuthorship());
         issues.add(SCIENTIFIC_NAME_AND_ID_INCONSISTENT); // we will still use the found concept though
