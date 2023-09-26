@@ -22,7 +22,7 @@ public class IdentificationTest {
   @Test
   public void testKey() {
     assertEquals(
-            "A|B|C|1|2|3|4|5|6|7|8|9|10|11|12",
+            "A|B|C|1|2|3|4|5|6|7|8|9|10|11|GENUS",
             (Identification.builder()
                     .withScientificNameID("A")
                     .withTaxonConceptID("B")
@@ -39,7 +39,7 @@ public class IdentificationTest {
                     .withInfraspecificEpithet("10")
                     .withScientificNameAuthorship("11")
                     .withVerbatimRank("I will be ignored")
-                    .withRank("12").build().getLogicalKey()));
+                    .withRank("GENUS").build().getLogicalKey()));
 
   }
 }

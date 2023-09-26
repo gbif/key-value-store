@@ -13,6 +13,7 @@
  */
 package org.gbif.kvs.species;
 
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.common.parsers.utils.ClassificationUtils;
 import org.gbif.kvs.hbase.Indexable;
 
@@ -59,7 +60,7 @@ public class Identification implements Serializable, Indexable {
   public String getLogicalKey() {
     return Stream.of(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, scientificName,
                             genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank)
-            .map(s -> s == null ? "" : s.toString().trim()).collect(Collectors.joining("|"));
+            .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
   }
 
   /**
@@ -142,7 +143,7 @@ public class Identification implements Serializable, Indexable {
     }
 
     public Builder withRank(String rank) {
-      this.rank = ClassificationUtils.clean(rank);
+      this.rank = StringUtils.trimToNull(rank);
       return this;
     }
 
@@ -150,7 +151,7 @@ public class Identification implements Serializable, Indexable {
      * Will be ignored if a Rank is also provided.
      */
     public Builder withVerbatimRank(String verbatimRank) {
-      this.verbatimRank = ClassificationUtils.clean(verbatimRank);
+      this.verbatimRank = StringUtils.trimToNull(verbatimRank);
       return this;
     }
 
