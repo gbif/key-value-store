@@ -15,6 +15,7 @@ package org.gbif.kvs.species;
 
 import org.gbif.api.vocabulary.OccurrenceIssue;
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.cache.CaffeineCache;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
@@ -156,7 +157,11 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
-
+  public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStoreCaffeine(
+      ChecklistbankClientsConfiguration clientConfigurations,
+      IdMappingConfiguration idMappingConfig) {
+    return CaffeineCache.cache(restKVStore(clientConfigurations, idMappingConfig));
+  }
 
   private static KeyValueStore<Identification, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             IdMappingConfiguration idMappingConfig,
