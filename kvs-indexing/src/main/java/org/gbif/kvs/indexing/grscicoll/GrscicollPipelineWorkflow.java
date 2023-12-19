@@ -1,10 +1,5 @@
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.apache.beam.sdk.coders.AvroCoder;
-import org.apache.beam.sdk.coders.Coder;
-
-import org.apache.beam.sdk.coders.CoderException;
-
 import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -17,9 +12,6 @@ import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -109,36 +101,37 @@ public class GrscicollPipelineWorkflow {
             options.getTrinoCatalog(),
             options.getTrinoDbName());
 
-    PCollection<KV<String, GrscicollLookupRequest>> trinoRecords = pipeline.apply(
-        JdbcIO.<KV<String, GrscicollLookupRequest>>read()
-            .withDataSourceConfiguration(
-                JdbcIO.DataSourceConfiguration.create("io.trino.jdbc.TrinoDriver", trinoUrl)
-                    .withUsername(options.getTrinoUser())
-                    .withPassword(options.getTrinoPassword()))
-            .withQuery("select * from " + options.getTrinoTargetTable())
-            .withRowMapper(
-                resultSet -> {
-                  GrscicollLookupRequest request =
-                      GrscicollLookupRequest.builder()
-                          .withOwnerInstitutionCode(resultSet.getString("ownerInstitutionCode"))
-                          .withInstitutionCode(resultSet.getString("institutionCode"))
-                          .withInstitutionId(resultSet.getString("institutionId"))
-                          .withCollectionCode(resultSet.getString("collectionCode"))
-                          .withCollectionId(resultSet.getString("collectionId"))
-                          .withDatasetKey(resultSet.getString("datasetKey"))
-                          .withCountry(resultSet.getString("country"))
-                          .build();
+    PCollection<KV<String, GrscicollLookupRequest>> trinoRecords =
+        pipeline.apply(
+            JdbcIO.<KV<String, GrscicollLookupRequest>>read()
+                .withDataSourceConfiguration(
+                    JdbcIO.DataSourceConfiguration.create("io.trino.jdbc.TrinoDriver", trinoUrl)
+                        .withUsername(options.getTrinoUser())
+                        .withPassword(options.getTrinoPassword()))
+                .withQuery("select * from " + options.getTrinoTargetTable())
+                .withRowMapper(
+                    resultSet -> {
+                      GrscicollLookupRequest request =
+                          GrscicollLookupRequest.builder()
+                              .withOwnerInstitutionCode(resultSet.getString("ownerInstitutionCode"))
+                              .withInstitutionCode(resultSet.getString("institutionCode"))
+                              .withInstitutionId(resultSet.getString("institutionId"))
+                              .withCollectionCode(resultSet.getString("collectionCode"))
+                              .withCollectionId(resultSet.getString("collectionId"))
+                              .withDatasetKey(resultSet.getString("datasetKey"))
+                              .withCountry(resultSet.getString("country"))
+                              .build();
 
-                  String key =
-                      new String(
-                          keyGenerator.computeKey(request.getLogicalKey()),
-                          keyGenerator.getCharset());
+                      String key =
+                          new String(
+                              keyGenerator.computeKey(request.getLogicalKey()),
+                              keyGenerator.getCharset());
 
-                  return KV.of(key, request);
-                })
-            .withCoder(
-                KvCoder.of(
-                    StringUtf8Coder.of(), SerializableCoder.of(GrscicollLookupRequest.class))));
+                      return KV.of(key, request);
+                    })
+                .withCoder(
+                    KvCoder.of(
+                        StringUtf8Coder.of(), SerializableCoder.of(GrscicollLookupRequest.class))));
 
     // convert hive keys to KVs
     PCollection<KV<String, String>> hiveKVs =
