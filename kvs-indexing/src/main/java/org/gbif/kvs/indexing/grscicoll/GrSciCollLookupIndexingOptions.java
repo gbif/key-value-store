@@ -41,4 +41,35 @@ public interface GrSciCollLookupIndexingOptions extends HBaseIndexingOptions {
   String getMetastoreUris();
 
   void setMetastoreUris(String metastoreUris);
+
+  @Description("Trino server")
+  String getTrinoServer();
+
+  void setTrinoServer(String trinoServer);
+
+  @Description("Trino user")
+  String getTrinoUser();
+
+  void setTrinoUser(String trinoUser);
+
+  @Description("Trino password")
+  String getTrinoPassword();
+
+  void setTrinoPassword(String trinoPassword);
+
+  @Description("Trino catalog")
+  @Default.String("hive")
+  String getTrinoCatalog();
+
+  void setTrinoCatalog(String trinoCatalog);
+
+  @Description("Trino DB name")
+  String getTrinoDbName();
+
+  void setTrinoDbName(String trinoDbName);
+
+  @Description("Trino target table")
+  String getTrinoTargetTable();
+
+  void setTrinoTargetTable(String trinoTargetTable);
 }

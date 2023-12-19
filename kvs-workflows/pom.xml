@@ -15,6 +15,11 @@
       <groupId>org.gbif.kvs</groupId>
       <artifactId>kvs-indexing</artifactId>
     </dependency>
+    <!-- trino -->
+    <dependency>
+      <groupId>io.trino</groupId>
+      <artifactId>trino-jdbc</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
