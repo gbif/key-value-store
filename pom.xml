@@ -148,6 +148,7 @@
                         <forceJavacCompilerUse>true</forceJavacCompilerUse>
                         <source>${jdkLevel}</source>
                         <target>${jdkLevel}</target>
+                        <release>${jdkLevel}</release>
                         <compilerArgs>
                             <arg>-XepExcludedPaths:.*/src/main/java-generated/.*</arg>
                             <arg>-XepDisableWarningsInGeneratedCode</arg>
