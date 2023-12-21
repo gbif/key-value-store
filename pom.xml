@@ -60,7 +60,9 @@
 
     <properties>
         <!-- Common variables -->
-        <jdkLevel>1.8</jdkLevel>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <jdkLevel>11</jdkLevel>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
