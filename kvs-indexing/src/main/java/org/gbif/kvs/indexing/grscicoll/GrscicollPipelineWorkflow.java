@@ -10,9 +10,12 @@ import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
+import org.gbif.utils.PreconditionUtils;
+import org.gbif.utils.file.properties.PropertiesUtil;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
@@ -39,6 +42,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.parquet.Strings;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,10 +53,28 @@ public class GrscicollPipelineWorkflow {
   private static final String TRINO_URL = "jdbc:trino://%s/%s/%s?SSL=true&SSLVerification=NONE";
 
   public static void main(String[] args) throws Exception {
+    PreconditionUtils.checkArgument(!Strings.isNullOrEmpty(args[0]));
+
+    Properties properties = PropertiesUtil.readFromFile(args[0]);
+
     GrSciCollLookupIndexingOptions options =
-        PipelineOptionsFactory.fromArgs(args)
-            .withValidation()
-            .as(GrSciCollLookupIndexingOptions.class);
+        PipelineOptionsFactory.as(GrSciCollLookupIndexingOptions.class);
+
+    options.setTrinoServer(properties.getProperty("trinoServer"));
+    options.setTrinoUser(properties.getProperty("trinoUser"));
+    options.setTrinoPassword(properties.getProperty("trinoPassword"));
+    options.setTrinoDbName(properties.getProperty("trinoDbName"));
+    options.setTrinoTargetTable(properties.getProperty("trinoTargetTable"));
+
+    options.setHbaseZk(properties.getProperty("hbaseZk"));
+    options.setSaltedKeyBuckets(Integer.parseInt(properties.getProperty("saltedKeyBuckets")));
+    options.setTargetTable(properties.getProperty("hbaseTargetTable"));
+
+    options.setBaseApiUrl(properties.getProperty("apiBaseUrl"));
+    options.setApiTimeOut(Long.parseLong(properties.getProperty("apiTimeOut")));
+    options.setRestClientCacheMaxSize(
+        Long.parseLong(properties.getProperty("apiRestClientCacheMaxSize")));
+
     run(options);
   }
 
