@@ -66,6 +66,10 @@
                                     <pattern>org.apache.hadoop.hive.metastore</pattern>
                                     <shadedPattern>h12.org.apache.hadoop.hive.metastore</shadedPattern>
                                 </relocation>
+                              <relocation>
+                                <pattern>org.apache.beam.vendor.guava.v32_1_2_jre</pattern>
+                                <shadedPattern>bg.org.apache.beam.vendor.guava.v32_1_2_jre</shadedPattern>
+                              </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -107,7 +111,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-spark</artifactId>
+            <artifactId>beam-runners-spark-3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -135,32 +139,6 @@
           <artifactId>beam-sdks-java-io-jdbc</artifactId>
         </dependency>
 
-        <!-- hive -->
-        <dependency>
-            <groupId>org.apache.hive.hcatalog</groupId>
-            <artifactId>hive-hcatalog-core</artifactId>
-            <exclusions>
-                <!-- Excluded because it contains a shaded version of Avro -->
-                <exclusion>
-                    <groupId>org.apache.hive</groupId>
-                    <artifactId>hive-exec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-metastore</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-exec</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-common</artifactId>
-        </dependency>
-
         <!-- Hadoop  and HBase -->
         <dependency>
             <groupId>org.apache.hbase</groupId>
@@ -186,17 +164,20 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-      <dependency>
-        <groupId>io.trino</groupId>
-        <artifactId>trino-jdbc</artifactId>
-      </dependency>
+        <!--<dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </dependency>-->
 
-      <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-scala -->
-      <dependency>
-        <groupId>com.fasterxml.jackson.module</groupId>
-        <artifactId>jackson-module-scala_2.12</artifactId>
-        <version>2.9.8</version>
-      </dependency>
+        <dependency>
+          <groupId>io.trino</groupId>
+          <artifactId>trino-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-scala_2.12</artifactId>
+        </dependency>
 
     </dependencies>
 

@@ -10,7 +10,6 @@ import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
-import org.gbif.utils.PreconditionUtils;
 import org.gbif.utils.file.properties.PropertiesUtil;
 
 import java.io.IOException;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.parquet.Strings;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,9 +51,7 @@ public class GrscicollPipelineWorkflow {
   private static final String TRINO_URL = "jdbc:trino://%s/%s/%s?SSL=true&SSLVerification=NONE";
 
   public static void main(String[] args) throws Exception {
-    PreconditionUtils.checkArgument(!Strings.isNullOrEmpty(args[0]));
-
-    Properties properties = PropertiesUtil.readFromFile(args[0]);
+    Properties properties = PropertiesUtil.readFromFile("/etc/gbif/config.properties");
 
     GrSciCollLookupIndexingOptions options =
         PipelineOptionsFactory.as(GrSciCollLookupIndexingOptions.class);
@@ -67,8 +63,9 @@ public class GrscicollPipelineWorkflow {
     options.setTrinoTargetTable(properties.getProperty("trinoTargetTable"));
 
     options.setHbaseZk(properties.getProperty("hbaseZk"));
-    options.setSaltedKeyBuckets(Integer.parseInt(properties.getProperty("saltedKeyBuckets")));
+    options.setSaltedKeyBuckets(Integer.parseInt(properties.getProperty("hbaseSaltedKeyBuckets")));
     options.setTargetTable(properties.getProperty("hbaseTargetTable"));
+    options.setHbaseZkNode(properties.getProperty("hbaseZkNode"));
 
     options.setBaseApiUrl(properties.getProperty("apiBaseUrl"));
     options.setApiTimeOut(Long.parseLong(properties.getProperty("apiTimeOut")));
@@ -100,7 +97,6 @@ public class GrscicollPipelineWorkflow {
    * @param options beam HBase indexing options
    */
   private static void run(GrSciCollLookupIndexingOptions options) throws Exception {
-
     Pipeline pipeline = Pipeline.create(options);
     options.setRunner(SparkRunner.class);
 

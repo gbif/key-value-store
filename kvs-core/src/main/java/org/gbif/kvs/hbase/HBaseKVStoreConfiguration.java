@@ -61,7 +61,10 @@ public class HBaseKVStoreConfiguration implements Serializable {
   public Configuration hbaseConfig() {
     Configuration hbaseConfig = HBaseConfiguration.create();
     hbaseConfig.set("hbase.zookeeper.quorum", hBaseZk);
-    hbaseConfig.set("zookeeper.znode.parent", hBaseZnode);
+    // this is sometimes overwritten as null to take the default value from the cluster
+    if (hBaseZnode != null) {
+      hbaseConfig.set("zookeeper.znode.parent", hBaseZnode);
+    }
     return hbaseConfig;
   }
 }

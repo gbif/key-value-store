@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<coordinator-app name="Grscicoll-cache" frequency="${frequency}"
-                 start="${start}" end="2050-05-28T00:00Z" timezone="UTC" xmlns="uri:oozie:coordinator:0.4">
-  <action>
-    <workflow>
-      <app-path>hdfs://ha-nn/grscicoll-cache-workflow</app-path>
-    </workflow>
-  </action>
-</coordinator-app>

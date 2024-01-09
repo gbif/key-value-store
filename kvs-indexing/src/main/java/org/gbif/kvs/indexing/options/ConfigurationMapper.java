@@ -35,6 +35,7 @@ public class ConfigurationMapper {
             .withTableName(options.getTargetTable())
             .withColumnFamily(options.getKVColumnFamily())
             .withHBaseZk(options.getHbaseZk())
+            .withHBaseZnode(options.getHbaseZkNode())
             .withNumOfKeyBuckets(options.getSaltedKeyBuckets())
             .build();
   }
