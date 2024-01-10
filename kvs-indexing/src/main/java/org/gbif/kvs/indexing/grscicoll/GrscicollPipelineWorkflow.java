@@ -1,23 +1,7 @@
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
-import org.gbif.kvs.SaltedKeyGenerator;
-import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
-import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
-import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
-import org.gbif.kvs.indexing.options.ConfigurationMapper;
-import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
-import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
-import org.gbif.utils.file.properties.PropertiesUtil;
-
-import java.io.IOException;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.function.BiFunction;
-
+import com.google.common.base.Strings;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
@@ -35,14 +19,26 @@ import org.apache.beam.sdk.transforms.WithKeys;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Mutation;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.gbif.api.vocabulary.Country;
+import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
+import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
+import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
+import org.gbif.rest.client.grscicoll.GrscicollLookupService;
+import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
+import org.gbif.utils.PreconditionUtils;
+import org.gbif.utils.file.properties.PropertiesUtil;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.function.BiFunction;
 
 @Slf4j
 public class GrscicollPipelineWorkflow {
@@ -51,8 +47,12 @@ public class GrscicollPipelineWorkflow {
   private static final String TRINO_URL = "jdbc:trino://%s/%s/%s?SSL=true&SSLVerification=NONE";
 
   public static void main(String[] args) throws Exception {
-    Properties properties = PropertiesUtil.readFromFile("/etc/gbif/config.properties");
+    PreconditionUtils.checkArgument(
+        !Strings.isNullOrEmpty(args[0]), "Config properties file is required");
+    run(parseConfig(PropertiesUtil.readFromFile(args[0])));
+  }
 
+  private static GrSciCollLookupIndexingOptions parseConfig(Properties properties) {
     GrSciCollLookupIndexingOptions options =
         PipelineOptionsFactory.as(GrSciCollLookupIndexingOptions.class);
 
@@ -71,8 +71,7 @@ public class GrscicollPipelineWorkflow {
     options.setApiTimeOut(Long.parseLong(properties.getProperty("apiTimeOut")));
     options.setRestClientCacheMaxSize(
         Long.parseLong(properties.getProperty("apiRestClientCacheMaxSize")));
-
-    run(options);
+    return options;
   }
 
   /**
