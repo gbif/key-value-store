@@ -68,9 +68,9 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>1.13.0-SNAPSHOT</gbif-api.version>
+        <gbif-api.version>1.13.0</gbif-api.version>
         <dwc-api.version>1.48-H3-SNAPSHOT</dwc-api.version>
-        <gbif-parsers.version>0.63-SNAPSHOT</gbif-parsers.version>
+        <gbif-parsers.version>0.63</gbif-parsers.version>
 
         <!-- Common libraries -->
         <apache.beam.version>2.51.0</apache.beam.version>
