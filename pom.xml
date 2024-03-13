@@ -68,7 +68,7 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>1.13.0</gbif-api.version>
+        <gbif-api.version>1.14.2</gbif-api.version>
         <dwc-api.version>1.48-H3-SNAPSHOT</dwc-api.version>
         <gbif-parsers.version>0.63</gbif-parsers.version>
 
@@ -119,7 +119,7 @@
         <trino-jdbc.version>414</trino-jdbc.version>
 
         <!-- Spark -->
-        <spark.version>3.3.0</spark.version>
+        <spark.version>3.4.0</spark.version>
         <scala.tools.version>2.12</scala.tools.version>
     </properties>
 
