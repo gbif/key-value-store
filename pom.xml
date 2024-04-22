@@ -369,20 +369,6 @@
                 <version>${hadoop-core.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.apache.hbase</groupId>
-                <artifactId>hbase-server</artifactId>
-                <version>${hbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hbase</groupId>
-                <artifactId>hbase-server</artifactId>
-                <version>${hbase.version}</version>
-                <scope>test</scope>
-                <classifier>tests</classifier>
-                <type>test-jar</type>
-            </dependency>
-
 
             <!-- Utils -->
             <dependency>
