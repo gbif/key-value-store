@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gbif.rest.client.grscicoll.retrofit;
+package org.gbif.rest.client;
 
 import org.gbif.api.model.collections.lookup.Match.MatchType;
 import org.gbif.rest.client.configuration.ClientConfiguration;
@@ -19,19 +19,25 @@ import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-public class GrscicollLookupServiceClientTest {
+public class GrscicollLookupTest {
 
-  @Ignore("manual test")
   @Test
   public void clientTest() {
     ClientConfiguration config =
-        ClientConfiguration.builder().withBaseApiUrl("https://api.gbif-dev.org").build();
-    GrscicollLookupService lookupService = new GrscicollLookupServiceSyncClient(config);
+        ClientConfiguration.builder()
+                .withTimeOut(60L)
+                .withFileCacheMaxSizeMb(64L)
+                .withBaseApiUrl("https://api.gbif-uat.org/v1/")
+                .build();
+
+    GrscicollLookupService lookupService = ClientFactory.createGrscicollLookupService(config);
+
     GrscicollLookupResponse response =
-        lookupService.lookup("K", null, null, null, null, null, null);
+        lookupService.lookup(
+                "K", null, null,
+                null, null, null, null, true);
     Assert.assertEquals(MatchType.FUZZY, response.getInstitutionMatch().getMatchType());
   }
 }

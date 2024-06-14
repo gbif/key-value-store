@@ -13,9 +13,18 @@
  */
 package org.gbif.rest.client.geocode;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +35,36 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(using = GeocodeResponse.GeocodeDeserializer.class)
 public class GeocodeResponse implements Serializable {
-
     private List<Location> locations;
+
+    public static class GeocodeDeserializer extends JsonDeserializer<GeocodeResponse> {
+
+        @Override
+        public GeocodeResponse deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+            List<Location> locations = jsonParser.readValueAs(new TypeReference<List<Location>>(){});
+            return new GeocodeResponse(locations);
+        }
+    }
+
+    /**
+     * Models the response content of the {@link GeocodeService}.
+     */
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Location implements Serializable {
+
+      private static final long serialVersionUID = -9137655613118727430L;
+
+      private String id;
+      private String type;
+      private String source;
+      @JsonProperty("title")
+      private String name;
+      private String isoCountryCode2Digit;
+      private Double distance;
+      private Double distanceMeters;
+    }
 }

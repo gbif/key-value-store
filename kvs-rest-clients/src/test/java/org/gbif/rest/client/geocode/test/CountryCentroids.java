@@ -13,6 +13,11 @@
  */
 package org.gbif.rest.client.geocode.test;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -20,11 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
-
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
 /**
  * Tests utility class that loads test data for Geocode reverse lookups.
@@ -51,7 +51,6 @@ public class CountryCentroids {
   public CountryCentroids() {
     countries = loadCountriesData(CountryCentroids.class.getClassLoader().getResource(COUNTRIES_FILE).getFile());
   }
-
 
   /**
    *
@@ -123,10 +122,9 @@ public class CountryCentroids {
   @ToString
   @AllArgsConstructor
   public static class Country {
-    private final String isoCode;
-    private final Double latitude;
-    private final Double longitude;
-    private final String name;
+      private String isoCode;
+      private Double latitude;
+      private Double longitude;
+      private String name;
   }
-
 }

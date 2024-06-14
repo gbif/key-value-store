@@ -13,14 +13,19 @@
  */
 package org.gbif.rest.client.geocode;
 
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.io.Closeable;
 import java.util.List;
 
 /**
  * GBIF Geocode Service client.
- * This class is used for creation of Sync and Async clients. It is not exposed outside this package.
  */
-public interface GeocodeService extends Closeable {
+@FeignClient(name = "geocode", url = "${geocode.baseApiUrl}")
+public interface GeocodeService {
 
   /**
    * Gets the list of proposed geo-locations of coordinate.
@@ -29,15 +34,9 @@ public interface GeocodeService extends Closeable {
    * @param uncertaintyMeters coordinate uncertainty in meters
    * @return a list of proposed locations, an empty list if no proposals were found
    */
-  List<Location> reverse(Double latitude, Double longitude, Double uncertaintyMeters);
-
-  /**
-   * Gets the list of proposed geo-locations of coordinate.
-   * @param latitude decimal latitude
-   * @param longitude decimal longitude
-   * @return a list of proposed locations, an empty list if no proposals were found
-   */
-  default List<Location> reverse(Double latitude, Double longitude) {
-    return reverse(latitude, longitude, null);
-  }
+  @RequestMapping(method = RequestMethod.GET, value = "geocode/reverse")
+  GeocodeResponse reverse(
+          @RequestParam("lat") Double latitude,
+          @RequestParam("lng") Double longitude,
+          @RequestParam("uncertaintyMeters") Double uncertaintyMeters);
 }

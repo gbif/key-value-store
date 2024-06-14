@@ -1,6 +1,6 @@
-#kvs-rest-clients
+# kvs-rest-clients
 This module contains GBIF REST clients to access GBIF API resources.
-All clients are implemented using [Retrofit](https://square.github.io/retrofit/), [OkHttp](https://square.github.io/okhttp/) and [Jackson](https://github.com/FasterXML/jackson-dataformat-xml).
+All clients are implemented using [Feign](https://docs.spring.io/spring-cloud-openfeign/docs/current/reference/html/) and [Jackson](https://github.com/FasterXML/jackson-dataformat-xml).
 
 To create an instance of a Rest client, a [ClienConfiguration](src/main/java/org/gbif/rest/client/configuration/ClientConfiguration.java) is required, for example"
 

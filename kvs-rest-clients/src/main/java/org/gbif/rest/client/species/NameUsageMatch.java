@@ -13,53 +13,56 @@
  */
 package org.gbif.rest.client.species;
 
-import org.gbif.api.v2.RankedName;
-import org.gbif.api.vocabulary.OccurrenceIssue;
-import org.gbif.api.vocabulary.TaxonomicStatus;
-
+import lombok.ToString;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import lombok.Data;
+import org.gbif.nameparser.api.Rank;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
+@ToString
 public class NameUsageMatch implements Serializable {
 
   private boolean synonym;
   private RankedName usage;
   private RankedName acceptedUsage;
-  private NameUsageMatch.Nomenclature nomenclature;
   private List<RankedName> classification = new ArrayList<>();
+  private List<NameUsageMatch> alternatives = new ArrayList<>();
   private NameUsageMatch.Diagnostics diagnostics = new NameUsageMatch.Diagnostics();
-
-  // This is not part of the NameUsageMatch response, but it is stored in the same record in the Cache
-  private IucnRedListCategory iucnRedListCategory;
-
-  // Annotations flags to be added based on the rules of interpretation (not part of species/match response)
-  // See https://github.com/gbif/pipelines/issues/217
-  private Set<OccurrenceIssue> issues = new HashSet<>();
+  /**
+   * Status information from external sources like IUCN Red List.
+   */
+  private List<Status> additionalStatus = new ArrayList<>();
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Diagnostics {
-    private org.gbif.api.model.checklistbank.NameUsageMatch.MatchType matchType;
+    private String matchType; //FIXME - should be an enum
+    /**
+     * Annotations flags to be added based on the rules of interpretation (not part of species/match response)
+     * See https://github.com/gbif/pipelines/issues/217
+     */
+    private List<String> issues;
     private Integer confidence;
-    private TaxonomicStatus status;
-    private List<String> lineage = new ArrayList<>();
-    private List<NameUsageMatch> alternatives = new ArrayList<>();
+    private String status; //FIXME - should be an enum
     private String note;
   }
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class Nomenclature {
-    private String source;
-    private String id;
+  public static class Status {
+    private String datasetKey;
+    private String datasetTitle;
+    private String category;
+  }
+
+  @Data
+  public static class RankedName {
+      private String key;
+      private String name;
+      private Rank rank;
   }
 }

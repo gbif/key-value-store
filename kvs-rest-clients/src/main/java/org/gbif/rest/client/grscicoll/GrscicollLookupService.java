@@ -14,22 +14,28 @@
 package org.gbif.rest.client.grscicoll;
 
 import org.gbif.api.vocabulary.Country;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Closeable;
 import java.util.UUID;
 
 /**
- * GrSciColl lookup service. This class is used for creation of Sync and Async clients. It is not
- * exposed outside this package.
+ * GrSciColl lookup service
  */
-public interface GrscicollLookupService extends Closeable {
+@FeignClient(name = "grscicoll", url = "${grscicoll.baseApiUrl}")
+public interface GrscicollLookupService {
 
+  @RequestMapping(method = RequestMethod.GET, value = "grscicoll/lookup")
   GrscicollLookupResponse lookup(
-      String institutionCode,
-      String ownerInstitutionCode,
-      String institutionId,
-      String collectionCode,
-      String collectionId,
-      UUID datasetKey,
-      Country country);
+          @RequestParam("institutionCode") String institutionCode,
+          @RequestParam("ownerInstitutionCode") String ownerInstitutionCode,
+          @RequestParam("institutionId") String institutionId,
+          @RequestParam("collectionCode") String collectionCode,
+          @RequestParam("collectionId") String collectionId,
+          @RequestParam("datasetKey") String datasetKey,
+          @RequestParam("country") Country country,
+          @RequestParam("verbose") boolean verbose);
 }
