@@ -18,11 +18,10 @@ import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.Location;
-import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -91,7 +90,7 @@ public class GeocodeKVStoreFactory {
 
 
   /**
-   * Creates a mutator function that maps a key and a list of {@link Location} into a {@link
+   * Creates a mutator function that maps a key and a list of {@link GeocodeResponse.Location} into a {@link
    * Put}.
    *
    * @param columnFamily HBase column in which values are stored
@@ -124,14 +123,9 @@ public class GeocodeKVStoreFactory {
    */
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             ClientConfiguration geocodeClientConfiguration) throws IOException {
-    GeocodeServiceSyncClient geocodeService =  new GeocodeServiceSyncClient(geocodeClientConfiguration);
-    return simpleGeocodeKVStore(configuration, geocodeService, () -> {
-        try {
-          geocodeService.close();
-        } catch (IOException ex) {
-          throw logAndThrow(ex, "Error closing client");
-        }
-    });
+
+    GeocodeService geocodeService =  RestClientFactory.createGeocodeService(geocodeClientConfiguration);
+    return simpleGeocodeKVStore(configuration, geocodeService, () -> {});
 
   }
 
@@ -151,14 +145,8 @@ public class GeocodeKVStoreFactory {
   }
 
   public static KeyValueStore<LatLng, GeocodeResponse> simpleGeocodeKVStore(ClientConfiguration clientConfiguration) {
-    GeocodeServiceSyncClient geocodeService =  new GeocodeServiceSyncClient(clientConfiguration);
-    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = restKVStore(geocodeService, () -> {
-      try {
-        geocodeService.close();
-      } catch (IOException ex) {
-        throw logAndThrow(ex, "Error closing client");
-      }
-    });
+    GeocodeService geocodeService =  RestClientFactory.createGeocodeService(clientConfiguration);
+    KeyValueStore<LatLng, GeocodeResponse> keyValueStore = restKVStore(geocodeService, () -> {});
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
       return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), LatLng.class, GeocodeResponse.class);
     }
@@ -206,7 +194,7 @@ public class GeocodeKVStoreFactory {
         .withLoader(
             latLng -> {
               try {
-                return new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()));
+                return geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters());
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting geocode service");
               }
@@ -223,7 +211,7 @@ public class GeocodeKVStoreFactory {
 
       @Override
       public GeocodeResponse get(LatLng key) {
-        return new GeocodeResponse(geocodeService.reverse(key.getLatitude(), key.getLongitude(), key.getUncertaintyMeters()));
+        return geocodeService.reverse(key.getLatitude(), key.getLongitude(), key.getUncertaintyMeters());
       }
 
       @Override

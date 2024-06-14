@@ -16,7 +16,6 @@ package org.gbif.kvs.geocode;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.rest.client.geocode.GeocodeResponse;
-import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
@@ -85,7 +84,7 @@ public class GeocodeKVHBaseStoreTestIT {
   public GeocodeKVHBaseStoreTestIT(LatLng latLng, String countryCode) {
     this.latLng = latLng;
     this.geocodeResponse = Optional.ofNullable(countryCode).map( isoCode -> {
-                              Location location = new Location();
+                              GeocodeResponse.Location location = new GeocodeResponse.Location();
                               location.setIsoCountryCode2Digit(countryCode);
                               GeocodeResponse geocodeResponse = new GeocodeResponse();
                               geocodeResponse.setLocations(Collections.singletonList(location));

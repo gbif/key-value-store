@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>1.34-SNAPSHOT</version>
+        <version>1.36-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -90,6 +90,10 @@
     <dependencies>
 
         <!-- GBIF -->
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>gbif-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
             <artifactId>dwc-api</artifactId>

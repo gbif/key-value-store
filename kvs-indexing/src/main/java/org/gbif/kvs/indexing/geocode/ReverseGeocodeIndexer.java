@@ -20,10 +20,10 @@ import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
 import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -144,7 +144,7 @@ public class ReverseGeocodeIndexer {
 
                   @Setup
                   public void start() {
-                    geocodeService = new GeocodeServiceSyncClient(geocodeClientConfiguration);
+                    geocodeService = RestClientFactory.createGeocodeService(geocodeClientConfiguration);
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
@@ -157,7 +157,7 @@ public class ReverseGeocodeIndexer {
                       LatLng latLng = context.element();
                       Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()))
                               .ifPresent( locations -> {
-                                  GeocodeResponse response = new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()));
+                                  GeocodeResponse response = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters());
                                   byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                   context.output(valueMutator.apply(saltedKey, response));
                               });

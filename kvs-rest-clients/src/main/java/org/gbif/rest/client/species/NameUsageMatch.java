@@ -13,13 +13,16 @@
  */
 package org.gbif.rest.client.species;
 
-import lombok.ToString;
+import org.gbif.nameparser.api.Rank;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
-import org.gbif.nameparser.api.Rank;
+import lombok.ToString;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -32,7 +32,7 @@ public class GrscicollLookupTest {
                 .withBaseApiUrl("https://api.gbif-uat.org/v1/")
                 .build();
 
-    GrscicollLookupService lookupService = ClientFactory.createGrscicollLookupService(config);
+    GrscicollLookupService lookupService = RestClientFactory.createGrscicollLookupService(config);
 
     GrscicollLookupResponse response =
         lookupService.lookup(

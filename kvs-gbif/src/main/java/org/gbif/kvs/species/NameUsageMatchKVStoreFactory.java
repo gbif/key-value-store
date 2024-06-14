@@ -13,16 +13,15 @@
  */
 package org.gbif.kvs.species;
 
-import org.gbif.api.vocabulary.OccurrenceIssue;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
-import org.gbif.rest.client.configuration.ChecklistbankClientsConfiguration;
-import org.gbif.rest.client.species.ChecklistbankService;
+import org.gbif.rest.client.RestClientFactory;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.retrofit.ChecklistbankServiceSyncClient;
+import org.gbif.rest.client.species.NameUsageMatchService;
 
 import java.io.IOException;
 import java.util.*;
@@ -81,7 +80,7 @@ public class NameUsageMatchKVStoreFactory {
     return result ->  {
         try {
            byte[] value = result.getValue(columnFamily, columnQualifier);
-           if(Objects.nonNull(value)) {
+           if (Objects.nonNull(value)) {
             return MAPPER.readValue(value, NameUsageMatch.class);
            }
            return null;
@@ -90,7 +89,6 @@ public class NameUsageMatchKVStoreFactory {
         }
       };
   }
-
 
   /**
    * Creates a mutator function that maps a key and a list of {@link NameUsageMatch} into a {@link Put}.
@@ -114,17 +112,21 @@ public class NameUsageMatchKVStoreFactory {
     };
   }
 
+  /**
+   * Creates a KV Store that uses the provided configuration to connect to the species match service.
+   *
+   * @param configuration to use to connect to the species match service
+   * @return a new KV Store
+   * @throws IOException if the KV Store cannot be created
+   */
   public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                    ChecklistbankClientsConfiguration clientConfigurations,
-                                                                                    IdMappingConfiguration idMappingConfig) throws IOException {
-    ChecklistbankServiceSyncClient
-      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(clientConfigurations);
-    Command closeHandler = closeHandler(checklistbankServiceSyncClient);
+                                                                                    ClientConfiguration clientConfiguration) throws IOException {
+    NameUsageMatchService
+            nameUsageMatchService = RestClientFactory.createNameMatchService(clientConfiguration);
 
-    KeyValueStore<Identification, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration())?
-                                                                        hbaseKVStore(configuration, idMappingConfig,
-                                                                                     checklistbankServiceSyncClient, closeHandler) : restKVStore(
-      checklistbankServiceSyncClient, idMappingConfig, closeHandler);
+    KeyValueStore<Identification, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
+                                                                        hbaseKVStore(configuration, nameUsageMatchService, () -> {}) : restKVStore(
+            nameUsageMatchService, () -> {});
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(
           keyValueStore,
@@ -136,38 +138,9 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
-  private static Command closeHandler(ChecklistbankServiceSyncClient client) {
-    Command closeHandler = () -> {
-      try {
-        client.close();
-      } catch (IOException ex) {
-        throw logAndThrow(ex, "Error closing client");
-      }
-    };
-    return closeHandler;
-  }
-
-  public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(ChecklistbankClientsConfiguration clientConfigurations, IdMappingConfiguration idMappingConfig) {
-
-    KeyValueStore<Identification, NameUsageMatch> keyValueStore = restKVStore(clientConfigurations, idMappingConfig);
-    if (Objects.nonNull(clientConfigurations.getChecklistbankClientConfiguration().getFileCacheMaxSizeMb())) {
-      return KeyValueCache.cache(keyValueStore, clientConfigurations.getChecklistbankClientConfiguration().getFileCacheMaxSizeMb(), Identification.class, NameUsageMatch.class);
-    }
-    return keyValueStore;
-  }
-
-
-
   private static KeyValueStore<Identification, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                            IdMappingConfiguration idMappingConfig,
-                                                                            ChecklistbankService checklistbankService,
+                                                                            NameUsageMatchService nameUsageMatchService,
                                                                             Command closeHandler) throws IOException {
-    if (idMappingConfig == null) {
-      LOG.info("No name/taxon ID mapping supplied so IDs will be ignored when matching to the backbone");
-      idMappingConfig = new IdMappingConfiguration();
-    }
-
-    BackboneMatchByID backboneMatcher = new BackboneMatchByID(checklistbankService, idMappingConfig.getPrefixReplacement(), idMappingConfig.getPrefixToDataset());
 
     return HBaseStore.<Identification, NameUsageMatch, NameUsageMatch>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
@@ -186,7 +159,7 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             identification -> {
               try {
-                return matchAndDecorate(checklistbankService, identification, backboneMatcher);
+                return match(nameUsageMatchService, identification);
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting the species math service");
               }
@@ -195,13 +168,13 @@ public class NameUsageMatchKVStoreFactory {
         .build();
   }
 
-
   /**
    * Matches the provided identification to a backbone concept, first using any well known taxon/name ID and then the name strings, and then
    * decorates the response with the IUCN status.
    */
-  public static NameUsageMatch matchAndDecorate(ChecklistbankService checklistbankService, Identification identification, BackboneMatchByID backboneMatchByID) {
-    NameUsageMatch nameOnlyLookup = checklistbankService.match(
+  public static NameUsageMatch match(NameUsageMatchService nameUsageMatchService, Identification identification) {
+
+    return nameUsageMatchService.match(
         null, // No backbone key
         identification.getKingdom(),
         identification.getPhylum(),
@@ -217,74 +190,19 @@ public class NameUsageMatchKVStoreFactory {
         identification.getRank(),
         false,
         false);
-
-    // Attempt to locate a backbone concept using the provided IDs
-    Set<OccurrenceIssue> issues = new HashSet<>();
-    Integer backboneKey = backboneMatchByID.lookupBackboneKey(identification, issues);
-    nameOnlyLookup.getIssues().addAll(issues); // adds e.g. that an ID was ignored
-    if (backboneKey != null) {
-      NameUsageMatch idLookup = checklistbankService.match(
-          backboneKey, // names will be ignored if a good ID is provided
-          identification.getKingdom(),
-          identification.getPhylum(),
-          identification.getClazz(),
-          identification.getOrder(),
-          identification.getFamily(),
-          identification.getGenus(),
-          identification.getScientificName(),
-          identification.getGenericName(),
-          identification.getSpecificEpithet(),
-          identification.getInfraspecificEpithet(),
-          identification.getScientificNameAuthorship(),
-          identification.getRank(),
-          false,
-          false);
-
-      idLookup.getIssues().addAll(issues);
-
-      if (nameOnlyLookup.getUsage() != null &&
-          idLookup.getUsage() != null &&
-          nameOnlyLookup.getUsage().getKey()!=idLookup.getUsage().getKey()) {
-        LOG.info("The backbone key found using IDs [{}] differs to that using names [{}]", idLookup.getUsage().getKey(),
-            nameOnlyLookup.getUsage().getKey());
-        idLookup.getIssues().add(OccurrenceIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
-      }
-
-      if (idLookup.getUsage() != null) {
-        return IucnRedListCategoryDecorator.with(checklistbankService).decorate(idLookup);
-      }
-    }
-    return IucnRedListCategoryDecorator.with(checklistbankService).decorate(nameOnlyLookup);
-  }
-
-  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(ChecklistbankClientsConfiguration config, IdMappingConfiguration idMappingConfig) {
-    ChecklistbankServiceSyncClient
-      checklistbankServiceSyncClient = new ChecklistbankServiceSyncClient(config);
-    if (idMappingConfig == null) {
-      LOG.info("No name/taxon ID mapping supplied so IDs will be ignored when matching to the backbone");
-      idMappingConfig = new IdMappingConfiguration();
-    }
-
-    return restKVStore(checklistbankServiceSyncClient, idMappingConfig, () -> {
-      try {
-        checklistbankServiceSyncClient.close();
-      } catch (IOException ex) {
-        throw logAndThrow(ex, "Error closing client");
-      }
-    });
   }
 
   /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(ChecklistbankService checklistbankService, IdMappingConfiguration idMappingConfig, Command closeHandler) {
+  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(NameUsageMatchService nameUsageMatchService,
+                                                                           Command closeHandler) {
     return new KeyValueStore<Identification, NameUsageMatch>() {
-      BackboneMatchByID backboneMatcher = new BackboneMatchByID(checklistbankService, idMappingConfig.getPrefixReplacement(), idMappingConfig.getPrefixToDataset());
 
       @Override
       public NameUsageMatch get(Identification identification) {
         try {
-          return matchAndDecorate(checklistbankService, identification, backboneMatcher);
+          return match(nameUsageMatchService, identification);
         } catch (Exception ex) {
           throw logAndThrow(ex, "Error contacting the species math service");
         }

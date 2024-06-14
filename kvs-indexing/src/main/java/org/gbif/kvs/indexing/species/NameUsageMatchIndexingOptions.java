@@ -15,29 +15,11 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.kvs.indexing.options.HBaseIndexingOptions;
 
-import java.util.Map;
-
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 
 /** Apache Beam options for indexing into HBase NameUsageMatch lookups. */
 public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
-
-  @Description("GBIF Checklistbank base API URL")
-  String getClbBaseApiUrl();
-
-  void setClbBaseApiUrl(String clbBaseApiUrl);
-
-  @Description("GBIF Checklistbank API connection time-out")
-  long getClbApiTimeOut();
-
-  void setClbApiTimeOut(long clbApiTimeOut);
-
-  @Description("Checklistbank Rest/HTTP client file-cache max size")
-  long getClbRestClientCacheMaxSize();
-
-  void setClbRestClientCacheMaxSize(long clbRestClientCacheMaxSize);
-
 
   @Description("GBIF NameUsageSearchResponse base API URL")
   String getNameUsageBaseApiUrl();
@@ -59,12 +41,4 @@ public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
   String getJsonColumnQualifier();
 
   void setJsonColumnQualifier(String jsonColumnQualifier);
-
-  @Description("Prefixes to replace before doing the taxon/name ID lookups")
-  Map<String,String> getPrefixReplacement();
-  void setPrefixReplacement(Map<String,String> prefixReplacement);
-
-  @Description("Mapping of taxon/name ID prefixes to the checklist dataset key they should be looked up againdst")
-  Map<String,String> getPrefixToDataset();
-  void setPrefixToDataset(Map<String,String> prefixReplacement);
 }

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>1.34-SNAPSHOT</version>
+        <version>1.36-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -14,25 +14,12 @@
     <name>KeyValue Store :: Core</name>
     <description>Common elements to the key value store</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
         <!-- Hadoop and Hbase -->
         <dependency>
             <groupId>org.apache.hbase</groupId>
@@ -56,6 +43,10 @@
             <groupId>org.cache2k</groupId>
             <artifactId>cache2k-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
 
         <!-- Fault tolerance -->
         <dependency>
@@ -64,10 +55,6 @@
         </dependency>
 
         <!-- Metrics -->
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-elastic</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>

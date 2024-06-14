@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>1.35-SNAPSHOT</version>
+        <version>1.36-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -11,6 +11,10 @@
 
     <name>KeyValue Store :: Rest clients</name>
     <description>Rest clients of GBIF services</description>
+
+    <properties>
+        <jackson.version>2.17.1</jackson.version>
+    </properties>
 
     <build>
         <plugins>

@@ -19,15 +19,14 @@ import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -124,15 +123,8 @@ public class GrscicollLookupKVStoreFactory {
    */
   public static KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> simpleGrscicollLookupKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             ClientConfiguration grSciCollClientConfiguration) throws IOException {
-    GrscicollLookupServiceSyncClient lookupService =  new GrscicollLookupServiceSyncClient(grSciCollClientConfiguration);
-    return simpleGrscicollLookupKVStore(configuration, lookupService, () -> {
-        try {
-          lookupService.close();
-        } catch (IOException ex) {
-          throw logAndThrow(ex, "Error closing client");
-        }
-    });
-
+    GrscicollLookupService lookupService =  RestClientFactory.createGrscicollLookupService(grSciCollClientConfiguration);
+    return simpleGrscicollLookupKVStore(configuration, lookupService, () -> {});
   }
 
 
@@ -154,14 +146,8 @@ public class GrscicollLookupKVStoreFactory {
   }
 
   public static KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> simpleGrscicollLookupKVStore(ClientConfiguration clientConfiguration) {
-    GrscicollLookupServiceSyncClient lookupService =  new GrscicollLookupServiceSyncClient(clientConfiguration);
-    KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> keyValueStore = restKVStore(lookupService, () -> {
-      try {
-        lookupService.close();
-      } catch (IOException ex) {
-        throw logAndThrow(ex, "Error closing client");
-      }
-    });
+    GrscicollLookupService lookupService =  RestClientFactory.createGrscicollLookupService(clientConfiguration);
+    KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> keyValueStore = restKVStore(lookupService, () -> {});
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
       return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), GrscicollLookupRequest.class, GrscicollLookupResponse.class);
     }
@@ -214,8 +200,9 @@ public class GrscicollLookupKVStoreFactory {
                     req.getInstitutionId(),
                     req.getCollectionCode(),
                     req.getCollectionId(),
-                    req.getDatasetKey() != null ? UUID.fromString(req.getDatasetKey()) : null,
-                    req.getCountry() != null ? Country.fromIsoCode(req.getCountry()) : null);
+                    req.getDatasetKey(),
+                    req.getCountry() != null ? Country.fromIsoCode(req.getCountry()) : null,
+                    false);
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting lookup service");
               }
@@ -238,8 +225,10 @@ public class GrscicollLookupKVStoreFactory {
             key.getInstitutionId(),
             key.getCollectionCode(),
             key.getCollectionId(),
-            key.getDatasetKey() != null ? UUID.fromString(key.getDatasetKey()) : null,
-            key.getCountry() != null ? Country.fromIsoCode(key.getCountry()) : null);
+            key.getDatasetKey(),
+            key.getCountry() != null ? Country.fromIsoCode(key.getCountry()) : null,
+            false
+        );
       }
 
       @Override

@@ -19,15 +19,13 @@ import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 import org.apache.beam.runners.spark.SparkRunner;
@@ -128,7 +126,7 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                   @Setup
                   public void start() {
                     lookupService =
-                        new GrscicollLookupServiceSyncClient(grSciCollClientConfiguration);
+                        RestClientFactory.createGrscicollLookupService(grSciCollClientConfiguration);
                     valueMutator =
                         GrscicollLookupKVStoreFactory.valueMutator(
                             Bytes.toBytes(
@@ -153,29 +151,16 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                               req.getInstitutionId(),
                               req.getCollectionCode(),
                               req.getCollectionId(),
-                              req.getDatasetKey() != null
-                                  ? UUID.fromString(req.getDatasetKey())
-                                  : null,
+                              req.getDatasetKey(),
                               req.getCountry() != null
                                   ? Country.fromIsoCode(req.getCountry())
-                                  : null);
+                                  : null, false);
                       if (Objects.nonNull(lookupResponse)) {
                         byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, lookupResponse));
                       }
                     } catch (Exception ex) {
                       LOG.error("Error performing GrSciColl lookup", ex);
-                    }
-                  }
-
-                  @Teardown
-                  public void tearDown() {
-                    if (Objects.nonNull(lookupService)) {
-                      try {
-                        lookupService.close();
-                      } catch (IOException ex) {
-                        LOG.error("Error closing lookup service", ex);
-                      }
                     }
                   }
                 }))
