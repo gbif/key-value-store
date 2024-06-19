@@ -38,9 +38,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Factory of NameUsageMatch KV instances. When performing a match this can be configured to use taxonID and
- * scientificNameID first to attempt to locate a backbone concept using well managed checklists and taxon IDs before
- * making use of the names. The response is decorated with IUCN status before caching.
+ * Factory of NameUsageMatch KV instances.
 */
 public class NameUsageMatchKVStoreFactory {
 

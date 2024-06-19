@@ -62,7 +62,8 @@ public class NameUsageMatchIndexer {
    * @return a new instance of CachedHBaseKVStoreConfiguration
    */
   private static CachedHBaseKVStoreConfiguration nameUsageMatchKVConfiguration(NameUsageMatchIndexingOptions options) {
-    return CachedHBaseKVStoreConfiguration.builder()
+    return CachedHBaseKVStoreConfiguration
+            .builder()
             .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
             .withValueColumnQualifier(options.getJsonColumnQualifier())
             .build();
@@ -138,14 +139,13 @@ public class NameUsageMatchIndexer {
                         NameUsageMatchKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
                             Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
-
                   }
 
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
                       Identification request = context.element();
-                      org.gbif.kvs.species.Identification identification = org.gbif.kvs.species.Identification.builder()
+                      Identification identification = Identification.builder()
                               .withScientificNameID(request.getScientificNameID())
                               .withTaxonID(request.getTaxonID())
                               .withTaxonConceptID(request.getTaxonConceptID())
@@ -170,7 +170,8 @@ public class NameUsageMatchIndexer {
                       LOG.error("Error performing species match", ex);
                     }
                   }
-                }))
+                })
+        )
         .apply(// Write to HBase
             HBaseIO.write()
                 .withConfiguration(hBaseConfiguration)

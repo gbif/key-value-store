@@ -186,13 +186,6 @@
             <artifactId>hbase-shaded-client</artifactId>
         </dependency>
 
-        <!-- Rest client responses handling-->
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>retrofit</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
