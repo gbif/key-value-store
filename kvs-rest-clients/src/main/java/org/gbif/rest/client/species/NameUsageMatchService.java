@@ -38,6 +38,14 @@ public interface NameUsageMatchService {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+      @RequestParam(value = "kingdom", required = false) String kingdom,
+      @RequestParam(value = "phylum", required = false) String phylum,
+      @RequestParam(value = "class", required = false) String clazz,
+      @RequestParam(value = "order", required = false) String order,
+      @RequestParam(value = "family", required = false) String family,
+      @RequestParam(value = "genus", required = false) String genus,
+      @RequestParam(value = "subgenus", required = false) String subgenus,
+      @RequestParam(value = "species", required = false) String species,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose
   );

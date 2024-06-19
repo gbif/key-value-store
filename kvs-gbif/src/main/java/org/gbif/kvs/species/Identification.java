@@ -29,8 +29,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * This encapsulates the identification fields to lookup against the backbone taxonomy.
- * It includes verbatim fields for the names, the rank and the common name/taxa ID fields which will typically be found on Occurrence
- * records.
+ * It includes verbatim fields for the names, the rank and the common name/taxa ID fields
+ * which will typically be found on Occurrence records.
  */
 @Data
 @AllArgsConstructor
@@ -46,6 +46,8 @@ public class Identification implements Serializable, Indexable {
   @Nullable private String order;
   @Nullable private String family;
   @Nullable private String genus;
+  @Nullable private String subgenus;
+  @Nullable private String species;
   @Nullable private String scientificName;
   @Nullable private String genericName;
   @Nullable private String specificEpithet;
@@ -58,8 +60,8 @@ public class Identification implements Serializable, Indexable {
    * Returns a unique key for the request that strictly respects the fields populated in order.
    */
   public String getLogicalKey() {
-    return Stream.of(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, scientificName,
-                            genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank)
+    return Stream.of(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, subgenus, species,
+                    scientificName, genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, rank)
             .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
   }
 
@@ -71,16 +73,17 @@ public class Identification implements Serializable, Indexable {
   }
 
   public static class Builder {
-
-    private String scientificNameID;
-    private String taxonConceptID;
     private String taxonID;
+    private String taxonConceptID;
+    private String scientificNameID;
     private String kingdom;
     private String phylum;
     private String clazz;
     private String order;
     private String family;
     private String genus;
+    private String subgenus;
+    private String species;
     private String scientificName;
     private String genericName;
     private String specificEpithet;
@@ -135,6 +138,16 @@ public class Identification implements Serializable, Indexable {
       return this;
     }
 
+    public Builder withSubgenus(String subgenus) {
+      this.subgenus = ClassificationUtils.clean(subgenus);
+      return this;
+    }
+
+    public Builder withSpecies(String species) {
+      this.species = ClassificationUtils.clean(species);
+      return this;
+    }
+
     public Builder withSpecificEpithet(String specificEpithet) {
       this.specificEpithet = ClassificationUtils.clean(specificEpithet);
       return this;
@@ -176,8 +189,11 @@ public class Identification implements Serializable, Indexable {
     public Identification build() {
       // prefer the rank over verbatim rank
       String r = rank == null ? verbatimRank : rank;
-      return new Identification(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, scientificName, genericName,
-              specificEpithet, infraspecificEpithet, scientificNameAuthorship, r);
+      return new Identification(
+              scientificNameID, taxonConceptID, taxonID,
+              kingdom, phylum, clazz, order, family, genus, subgenus, species,
+              scientificName,
+              genericName, specificEpithet, infraspecificEpithet, scientificNameAuthorship, r);
     }
   }
 }

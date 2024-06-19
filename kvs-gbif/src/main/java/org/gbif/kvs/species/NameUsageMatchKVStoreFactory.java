@@ -171,21 +171,28 @@ public class NameUsageMatchKVStoreFactory {
    * decorates the response with the IUCN status.
    */
   public static NameUsageMatch match(NameUsageMatchService nameUsageMatchService, Identification identification) {
-
     return nameUsageMatchService.match(
-        null, // No backbone key
+        null,
+        identification.getTaxonID(),
+        identification.getTaxonConceptID(),
+        identification.getScientificNameID(),
+        null,
+        identification.getScientificName(),
+        null,
+        identification.getRank(),
+        null,
+        identification.getScientificNameAuthorship(),
+        identification.getSpecificEpithet(),
+        identification.getInfraspecificEpithet(),
         identification.getKingdom(),
         identification.getPhylum(),
         identification.getClazz(),
         identification.getOrder(),
         identification.getFamily(),
         identification.getGenus(),
-        identification.getScientificName(),
-        identification.getGenericName(),
-        identification.getSpecificEpithet(),
-        identification.getInfraspecificEpithet(),
-        identification.getScientificNameAuthorship(),
-        identification.getRank(),
+        null,
+        null,
+        null,
         false,
         false);
   }

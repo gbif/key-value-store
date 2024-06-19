@@ -145,23 +145,8 @@ public class NameUsageMatchIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       Identification request = context.element();
-                      Identification identification = Identification.builder()
-                              .withScientificNameID(request.getScientificNameID())
-                              .withTaxonID(request.getTaxonID())
-                              .withTaxonConceptID(request.getTaxonConceptID())
-                              .withKingdom(request.getKingdom())
-                              .withPhylum(request.getPhylum())
-                              .withClazz(request.getClazz())
-                              .withOrder(request.getOrder())
-                              .withFamily(request.getFamily())
-                              .withGenus(request.getGenus())
-                              .withScientificName(request.getScientificName())
-                              .withGenericName(request.getGenericName())
-                              .withSpecificEpithet(request.getSpecificEpithet())
-                              .withRank(request.getRank()).build();
-
                       NameUsageMatch nameUsageMatch = NameUsageMatchKVStoreFactory
-                              .match(nameUsageMatchService, identification);
+                              .match(nameUsageMatchService, request);
 
                       byte[] saltedKey = keyGenerator.computeKey(request.getLogicalKey());
                       context.output(valueMutator.apply(saltedKey, nameUsageMatch));
