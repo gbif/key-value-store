@@ -73,6 +73,9 @@
         <dwc-api.version>1.35</dwc-api.version>
         <gbif-parsers.version>0.60</gbif-parsers.version>
 
+        <!-- GBIF name parser - required for enums -->
+        <gbif-name-parser.version>3.11.0</gbif-name-parser.version>
+
         <!-- Common libraries -->
         <apache.beam.version>2.17.0</apache.beam.version>
         <hadoop-common.version>3.2.4</hadoop-common.version>
@@ -87,14 +90,17 @@
         <logback.version>1.2.3</logback.version>
 
         <!-- JSON -->
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.13.5</jackson.version>
 
         <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
+        <!-- Spring / Feign-->
+        <spring-cloud-starter-openfeign.version>3.1.9</spring-cloud-starter-openfeign.version>
+        <spring-boot.version>2.7.18</spring-boot.version>
+
         <!-- Caching -->
         <cache2k.version>2.0.0.Final</cache2k.version>
-        <caffeine.version>2.9.2</caffeine.version>
 
         <!-- Fault tolerance -->
         <resilience4j.version>1.7.0</resilience4j.version>
@@ -106,7 +112,6 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
-        <guava.version>27.0.1-jre</guava.version>
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -114,14 +119,10 @@
         <!-- Plugins -->
         <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
 
-        <!-- Trino -->
-        <trino-jdbc.version>414</trino-jdbc.version>
-
         <!-- Spark -->
         <spark.version>3.4.0</spark.version>
         <scala.tools.version>2.12</scala.tools.version>
     </properties>
-
 
     <!--
     All dependencies of all modules are listed here with the project-wide default version.  Only when necessary
@@ -436,11 +437,6 @@
                 <groupId>org.cache2k</groupId>
                 <artifactId>cache2k-api</artifactId>
                 <version>${cache2k.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.ben-manes.caffeine</groupId>
-                <artifactId>caffeine</artifactId>
-                <version>${caffeine.version}</version>
             </dependency>
 
             <!-- Fault tolerance -->
