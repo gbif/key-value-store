@@ -1,7 +1,7 @@
 # Key-Value Store: Indexing
 
 [Apache Beam](https://beam.apache.org/) pipelines to build HBase KV stores using GBIF data.
-All pipeline must be run in an (Apache Spark)[https://spark.apache.org/] cluster.
+All pipelines must be run in an (Apache Spark)[https://spark.apache.org/] cluster.
 
 ## Build
 
@@ -19,8 +19,19 @@ In general, this pipeline executes this workflow:
 
 By default uses the table definition:
   - Column family: `v`
-  - Column qualifier for iso contry code: `c`
+  - Column qualifier for iso country code: `c`
   - Column qualifier for the JSON response: `j`
+
+# Prepare HBase tables
+
+Using `hbase shell`, run the following:
+
+```bash
+
+create 'name_usage_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+create 'geocode_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+create 'grscicoll_lookup_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+```
 
 ### Run
 
@@ -107,10 +118,16 @@ On k8s
 
 ```bash
 /stackable/spark/bin/spark-submit \
---master k8s://https://130.225.43.216:6443 --deploy-mode client \
+--master k8s://https://130.225.43.216:6443 \
+--deploy-mode client \
 --conf spark.kubernetes.authenticate.serviceAccountName="dev-spark-client" \
 --conf spark.kubernetes.namespace="uat" \
+--conf spark.executor.instances=6 \
+--conf spark.executor.memory="8g" \
+--conf spark.executor.cores="4" \
 --conf spark.driver.host="spark-shell-gateway" \
+--conf spark.driver.memory="2g" \
+--conf spark.driver.cores="2" \
 --conf spark.driver.port="7078" \
 --conf spark.blockManager.port="7089" \
 --conf spark.driver.bindAddress="0.0.0.0" \
@@ -122,7 +139,7 @@ On k8s
 --class org.gbif.kvs.indexing.species.NameUsageMatchIndexer \
 /tmp/kvs-indexing.jar \
 --runner=SparkRunner \
---hbaseZk=gbif-zookeeper-server-default-0.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-1.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-2.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-3.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-4.gbif-zookeeper-server-default.uat.svc.cluster.local:2282 \
+--hbaseZk=gbif-zookeeper-server-default-0.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-1.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-2.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-3.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-4.gbif-zookeeper-server-default.uat.svc.cluster.local:2282  \
 --sourceGlob=hdfs://gbif-hdfs/data/hdfsview/occurrence/occurrence/*.avro \
 --targetTable=test_name_usage_kv \
 --saltedKeyBuckets=5 \

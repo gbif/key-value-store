@@ -16,8 +16,9 @@
     <modules>
         <module>kvs-core</module>
         <module>kvs-rest-clients</module>
-        <module>kvs-indexing</module>
         <module>kvs-gbif</module>
+        <module>kvs-indexing</module>
+        <module>kvs-workflows</module>
     </modules>
 
     <name>KeyValue Store :: Parent</name>
@@ -59,9 +60,9 @@
 
     <properties>
         <!-- Common variables -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <jdkLevel>1.8</jdkLevel>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <jdkLevel>11</jdkLevel>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
@@ -74,11 +75,11 @@
 
         <!-- Common libraries -->
         <apache.beam.version>2.17.0</apache.beam.version>
-        <hadoop-common.version>2.6.0-cdh5.16.2</hadoop-common.version>
-        <hadoop.version>2.6.0-cdh5.16.2</hadoop.version>
-        <hadoop-core.version>2.6.0-mr1-cdh5.16.2</hadoop-core.version>
-        <hbase.version>1.2.0-cdh5.16.2</hbase.version>
-        <hbase.shaded.client.version>1.2.6</hbase.shaded.client.version>
+        <hadoop-common.version>3.2.4</hadoop-common.version>
+        <hadoop.version>3.2.4</hadoop.version>
+        <hadoop-core.version>3.2.4</hadoop-core.version>
+        <hbase.version>2.5.3-hadoop3</hbase.version>
+        <hbase.shaded.client.version>2.5.3-hadoop3</hbase.shaded.client.version>
         <hive.version>1.2.0</hive.version>
 
         <!-- Logging -->
@@ -88,7 +89,7 @@
         <!-- JSON -->
         <jackson.version>2.11.3</jackson.version>
 
-        <!-- Rest/HTPP-->
+        <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
         <!-- Caching -->
@@ -128,6 +129,7 @@
   -->
     <dependencyManagement>
         <dependencies>
+
             <!-- This project -->
             <dependency>
                 <groupId>org.gbif.kvs</groupId>
@@ -383,11 +385,6 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
             </dependency>
 
             <!-- Logging -->

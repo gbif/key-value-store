@@ -13,6 +13,8 @@
  */
 package org.gbif.kvs.geocode;
 
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Table;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.rest.client.geocode.GeocodeResponse;
@@ -26,7 +28,6 @@ import java.util.Optional;
 
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.AfterClass;
@@ -49,7 +50,7 @@ public class GeocodeKVHBaseStoreTestIT {
 
   private static HBaseTestingUtility utility;
 
-  private static HTable geocodeKvTable;
+  private static Table geocodeKvTable;
 
   private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore;
 
@@ -99,9 +100,11 @@ public class GeocodeKVHBaseStoreTestIT {
    * @return a new HBase table
    * @throws IOException in case of error creating the table
    */
-  private static HTable createTable() throws IOException {
-    return utility.createTable(Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getTableName()),
-                               Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()));
+  private static Table createTable() throws IOException {
+    return utility.createTable(
+            TableName.valueOf(testConfiguration.getHBaseKVStoreConfiguration().getTableName()),
+            testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()
+    );
   }
 
   /**

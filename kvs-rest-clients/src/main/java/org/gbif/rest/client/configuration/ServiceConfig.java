@@ -15,11 +15,14 @@ package org.gbif.rest.client.configuration;
 
 import org.gbif.rest.client.species.NameUsageMatchService;
 
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +30,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 @Configuration
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude = {org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration.class})
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
 @ComponentScan(basePackages = {
         "org.gbif.rest.client.species", "org.gbif.rest.client.grscicoll", "org.gbif.rest.client.geocode"})
@@ -49,5 +52,11 @@ public class ServiceConfig {
         yaml.setResources(new ClassPathResource("application.yml"));
         propertySourcesPlaceholderConfigurer.setProperties(yaml.getObject());
         return propertySourcesPlaceholderConfigurer;
+    }
+
+    @Bean
+    public feign.codec.Decoder feignDecoder() {
+        ObjectFactory<HttpMessageConverters> messageConverters = HttpMessageConverters::new;
+        return new SpringDecoder(messageConverters);
     }
 }
