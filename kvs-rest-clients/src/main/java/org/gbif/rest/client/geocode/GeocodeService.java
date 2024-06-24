@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface GeocodeService {
 
   /**
-   * Gets the list of proposed geo-locations of coordinate.
+   * Gets the list of proposed geolocations of coordinate.
    * @param latitude decimal latitude
    * @param longitude decimal longitude
    * @param uncertaintyMeters coordinate uncertainty in meters

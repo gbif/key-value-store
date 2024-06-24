@@ -23,10 +23,8 @@ import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-
 import java.util.Objects;
 import java.util.function.BiFunction;
-
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
@@ -99,8 +97,11 @@ public class GrscicollLookupServiceIndexer {
         storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // create snapshot
-    String sourceDir = sourceGlob.substring(0, sourceGlob.lastIndexOf("/"));
-    createSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    String sourceDir = null;
+    if (options.getUseSnapshotting()) {
+      sourceDir = sourceGlob.substring(0, sourceGlob.lastIndexOf("/"));
+      createSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    }
 
     // Read the occurrence table
     PCollection<GrscicollLookupRequest> inputRecords =
@@ -177,7 +178,9 @@ public class GrscicollLookupServiceIndexer {
     result.waitUntilFinish();
 
     // delete snapshot
-    deleteSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    if (options.getUseSnapshotting()) {
+      deleteSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    }
   }
 
   private static void createSnapshot(

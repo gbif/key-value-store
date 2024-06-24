@@ -41,4 +41,10 @@ public interface GrSciCollLookupIndexingOptions extends HBaseIndexingOptions {
   String getMetastoreUris();
 
   void setMetastoreUris(String metastoreUris);
+
+  @Description("Whether to use snapshotting")
+  @Default.Boolean(true)
+  Boolean getUseSnapshotting();
+
+  void setUseSnapshotting(Boolean useSnapshotting);
 }

@@ -65,6 +65,39 @@ spark2-submit --class org.gbif.kvs.indexing.geocode.ReverseGeocodeIndexer \
   --restClientCacheMaxSize=64
 ```
 
+On k8s
+
+```bash
+/stackable/spark/bin/spark-submit \
+--master k8s://https://130.225.43.216:6443 \
+--deploy-mode client \
+--conf spark.kubernetes.authenticate.serviceAccountName="dev-spark-client" \
+--conf spark.kubernetes.namespace="uat" \
+--conf spark.executor.instances=6 \
+--conf spark.executor.memory="8g" \
+--conf spark.executor.cores="4" \
+--conf spark.driver.host="spark-shell-gateway" \
+--conf spark.driver.memory="2g" \
+--conf spark.driver.cores="2" \
+--conf spark.driver.port="7078" \
+--conf spark.blockManager.port="7089" \
+--conf spark.driver.bindAddress="0.0.0.0" \
+--conf spark.driver.extraClassPath="/etc/hadoop/conf/:/etc/gbif/:/stackable/spark/extra-jars/*" \
+--conf spark.executor.extraClassPath="/etc/hadoop/conf/:/etc/gbif/:/stackable/spark/extra-jars/*" \
+--conf spark.jars.ivy="/tmp" \
+--conf spark.kubernetes.container.image="docker.stackable.tech/stackable/spark-k8s:3.5.0-stackable23.11.0" \
+--packages com.coxautodata:spark-distcp_2.12:0.2.5 \
+--class org.gbif.kvs.indexing.geocode.ReverseGeocodeIndexer \
+/tmp/kvs-indexing.jar \
+--runner=SparkRunner \
+--hbaseZk=gbif-zookeeper-server-default-0.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-1.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-2.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-3.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-4.gbif-zookeeper-server-default.uat.svc.cluster.local:2282  \
+--sourceGlob=hdfs://gbif-hdfs/data/hdfsview/occurrence/occurrence/*.avro \
+--targetTable=test_geocode_kv \
+--saltedKeyBuckets=5 \
+--baseApiUrl=http://api.gbif-uat.org/v1/ 
+```
+
+
 ## Taxonomic Name Match Indexing
 
 [NameUsageMatchIndexer](src/main/java/org/gbif/kvs/indexing/species/NameUsageMatchIndexer.java) runs a Beam pipeline on Apache Spark.
@@ -188,6 +221,38 @@ spark2-submit --class org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceInde
     --saltedKeyBuckets=3 \
     --apiTimeOut=6000 \
     --restClientCacheMaxSize=64 &> /dev/null &
+```
+
+On k8s
+
+```bash
+/stackable/spark/bin/spark-submit \
+--master k8s://https://130.225.43.216:6443 \
+--deploy-mode client \
+--conf spark.kubernetes.authenticate.serviceAccountName="dev-spark-client" \
+--conf spark.kubernetes.namespace="uat" \
+--conf spark.executor.instances=6 \
+--conf spark.executor.memory="8g" \
+--conf spark.executor.cores="4" \
+--conf spark.driver.host="spark-shell-gateway" \
+--conf spark.driver.memory="2g" \
+--conf spark.driver.cores="2" \
+--conf spark.driver.port="7078" \
+--conf spark.blockManager.port="7089" \
+--conf spark.driver.bindAddress="0.0.0.0" \
+--conf spark.driver.extraClassPath="/etc/hadoop/conf/:/etc/gbif/:/stackable/spark/extra-jars/*" \
+--conf spark.executor.extraClassPath="/etc/hadoop/conf/:/etc/gbif/:/stackable/spark/extra-jars/*" \
+--conf spark.jars.ivy="/tmp" \
+--conf spark.kubernetes.container.image="docker.stackable.tech/stackable/spark-k8s:3.5.0-stackable23.11.0" \
+--packages com.coxautodata:spark-distcp_2.12:0.2.5 \
+--class org.gbif.kvs.indexing.grscicoll.GrscicollLookupServiceIndexer \
+/tmp/kvs-indexing.jar \
+--runner=SparkRunner \
+--hbaseZk=gbif-zookeeper-server-default-0.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-1.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-2.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-3.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-4.gbif-zookeeper-server-default.uat.svc.cluster.local:2282  \
+--sourceGlob=hdfs://gbif-hdfs/data/hdfsview/occurrence/occurrence/*.avro \
+--targetTable=test_grscicoll_lookup_kv \
+--saltedKeyBuckets=5 \
+--baseApiUrl=http://api.gbif-dev.org/v1/ 
 ```
 
 
