@@ -252,7 +252,7 @@ On k8s
 --sourceGlob=hdfs://gbif-hdfs/data/hdfsview/occurrence/occurrence/*.avro \
 --targetTable=test_grscicoll_lookup_kv \
 --saltedKeyBuckets=5 \
---baseApiUrl=http://api.gbif-dev.org/v1/ 
+--baseApiUrl=http://api.gbif.org/v1/ 
 ```
 
 

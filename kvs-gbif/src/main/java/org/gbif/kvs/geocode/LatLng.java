@@ -28,6 +28,12 @@ import lombok.Data;
 @AllArgsConstructor
 public class LatLng implements Serializable, Indexable {
 
+  /**
+   * Default value to use when uncertainty is not provided to avoid serialisation issues.
+   * This dummy value is the circumference of the earth in meters as a negative number.
+   */
+  public static final Double EMPTY_UNCERTAINTY = -40075000d;
+
   private Double latitude;
   private Double longitude;
   private Double uncertaintyMeters;
@@ -89,7 +95,7 @@ public class LatLng implements Serializable, Indexable {
    */
   @Override
   public String getLogicalKey() {
-    if (uncertaintyMeters == null) {
+    if (uncertaintyMeters == null || Objects.equals(EMPTY_UNCERTAINTY, uncertaintyMeters)) {
       return latitude.toString() + '|' + longitude.toString();
     } else {
       return latitude.toString() + '|' + longitude.toString() + '|' + uncertaintyMeters.toString();

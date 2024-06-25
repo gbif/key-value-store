@@ -25,6 +25,7 @@ import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -99,6 +100,7 @@ public class ReverseGeocodeIndexer {
       LatLng.Builder builder = LatLng.builder();
       putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
       putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
+      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, LatLng.EMPTY_UNCERTAINTY);
       return builder.build();
     };
 
@@ -157,7 +159,8 @@ public class ReverseGeocodeIndexer {
                       LatLng latLng = context.element();
                       Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()))
                               .ifPresent( locations -> {
-                                  GeocodeResponse response = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters());
+                                  GeocodeResponse response = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(),
+                                          Objects.equals(latLng.getUncertaintyMeters(), LatLng.EMPTY_UNCERTAINTY) ? null : latLng.getUncertaintyMeters());
                                   byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                   context.output(valueMutator.apply(saltedKey, response));
                               });
@@ -188,4 +191,17 @@ public class ReverseGeocodeIndexer {
       .map(Double::parseDouble)
       .ifPresent(with);
   }
+
+    /**
+     * Reads the double value associated to a term into the consumer 'with'.
+     * @param input Avro record
+     * @param term verbatim field/term
+     * @param with consumer
+     */
+    private static void putIfExistsOrElse(GenericRecord input, Term term, Consumer<Double> with, Double defaultIfNull) {
+        Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
+                .map(Object::toString)
+                .map(Double::parseDouble)
+                .ifPresentOrElse(with, () -> with.accept(defaultIfNull));
+    }
 }
