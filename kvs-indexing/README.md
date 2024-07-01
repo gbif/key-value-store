@@ -1,7 +1,7 @@
 # Key-Value Store: Indexing
 
 [Apache Beam](https://beam.apache.org/) pipelines to build HBase KV stores using GBIF data.
-All pipelines must be run in an (Apache Spark)[https://spark.apache.org/] cluster.
+All pipelines must be run in an [Apache Spark](https://spark.apache.org/) cluster.
 
 ## Build
 
