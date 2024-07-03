@@ -43,21 +43,23 @@ public class NameUsageMatch implements Serializable {
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Diagnostics {
-    private String matchType; //FIXME - should be an enum
+    private MatchType matchType;
     /**
      * Annotations flags to be added based on the rules of interpretation (not part of species/match response)
      * See https://github.com/gbif/pipelines/issues/217
      */
     private List<String> issues;
     private Integer confidence;
-    private String status; //FIXME - should be an enum
+    private String status;
     private String note;
+    private List<NameUsageMatch> alternatives;
   }
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Status {
     private String datasetKey;
+    private String gbifKey;
     private String datasetTitle;
     private String category;
   }
@@ -67,5 +69,20 @@ public class NameUsageMatch implements Serializable {
       private String key;
       private String name;
       private Rank rank;
+  }
+
+  /**
+   * This is a copy of the enum taken from ChecklistBank.
+   * Deliberately copied to avoid a dependency on ChecklistBank.
+   * See link:<a href="https://github.com/CatalogueOfLife/backend/blob/master/api/src/main/java/life/catalogue/api/vocab/MatchType.java">MatchType</a>
+   */
+  public enum MatchType {
+    EXACT,
+    VARIANT,
+    CANONICAL,
+    AMBIGUOUS,
+    NONE,
+    UNSUPPORTED,
+    HIGHERRANK;
   }
 }

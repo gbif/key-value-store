@@ -43,6 +43,7 @@ import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.elastic.ElasticMeterRegistry;
+import lombok.Data;
 
 /**
  * Implementation of a key-value based on HBase.
@@ -58,6 +59,7 @@ import io.micrometer.elastic.ElasticMeterRegistry;
  * @param <V> type of values
  * @param <L> type of values produced by the loader
  */
+@Data
 public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V>, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(HBaseStore.class);

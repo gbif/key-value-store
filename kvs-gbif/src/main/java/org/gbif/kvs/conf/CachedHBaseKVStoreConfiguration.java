@@ -23,7 +23,7 @@ import lombok.Getter;
 
 /** Configuration settings to create a KV Store/Cache for the GBIF species name match. */
 @Getter
-@Builder(setterPrefix = "with")
+@Builder(setterPrefix = "with", builderClassName = "Builder")
 public class CachedHBaseKVStoreConfiguration implements Serializable {
 
   // HBase KV store configuration

@@ -120,7 +120,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-spark</artifactId>
+            <artifactId>beam-runners-spark-3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -142,6 +142,10 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-extensions-sql-hcatalog</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.beam</groupId>
+          <artifactId>beam-sdks-java-io-jdbc</artifactId>
         </dependency>
 
         <!-- hive -->

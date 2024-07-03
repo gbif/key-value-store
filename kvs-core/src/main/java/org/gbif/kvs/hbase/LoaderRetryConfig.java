@@ -13,9 +13,14 @@
  */
 package org.gbif.kvs.hbase;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 /**
  * Exponential backoff randomized retry.
  */
+@Data
+@AllArgsConstructor
 public class LoaderRetryConfig {
 
   private static final int DEFAULT_MAX_ATTEMPTS = 3;
@@ -25,51 +30,28 @@ public class LoaderRetryConfig {
 
   public static LoaderRetryConfig DEFAULT = new LoaderRetryConfig();
 
-
+  /**
+   * Maximum number of attempts/retries.
+   */
   private final Integer maxAttempts;
 
+  /**
+   * Initial interval after first retry.
+   */
   private final Long initialIntervalMillis;
 
+  /**
+   * Exponential backoff multiplier factor.
+   */
   private final Double multiplier;
 
+  /**
+   * Jitter random factor.
+   */
   private final Double randomizationFactor;
-
-  public LoaderRetryConfig(Integer maxAttempts, Long initialIntervalMillis, Double multiplier, Double randomizationFactor) {
-    this.maxAttempts = maxAttempts;
-    this.initialIntervalMillis = initialIntervalMillis;
-    this.multiplier = multiplier;
-    this.randomizationFactor = randomizationFactor;
-  }
 
   private LoaderRetryConfig() {
     this(DEFAULT_MAX_ATTEMPTS, DEFAULT_INITIAL_INTERVAL, DEFAULT_MULTIPLIER, DEFAULT_RANDOMIZATION_FACTOR);
   }
 
-  /**
-   * Maximum number of attempts/retries.
-   */
-  public Integer getMaxAttempts() {
-    return maxAttempts;
-  }
-
-  /**
-   * Initial interval after first retry.
-   */
-  public Long getInitialIntervalMillis() {
-    return initialIntervalMillis;
-  }
-
-  /**
-   * Exponential backoff multiplier factor.
-   */
-  public Double getMultiplier() {
-    return multiplier;
-  }
-
-  /**
-   * Jitter random factor.
-   */
-  public Double getRandomizationFactor() {
-    return randomizationFactor;
-  }
 }

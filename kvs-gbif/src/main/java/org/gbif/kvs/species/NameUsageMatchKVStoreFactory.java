@@ -136,6 +136,15 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
+  public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
+    KeyValueStore<Identification, NameUsageMatch> keyValueStore = restKVStore(RestClientFactory.createNameMatchService(clientConfiguration), () -> {});
+    if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), Identification.class, NameUsageMatch.class);
+    }
+    return keyValueStore;
+  }
+
+
   private static KeyValueStore<Identification, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                             NameUsageMatchService nameUsageMatchService,
                                                                             Command closeHandler) throws IOException {
