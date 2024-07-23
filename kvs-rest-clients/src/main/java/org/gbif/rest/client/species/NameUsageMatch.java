@@ -48,11 +48,11 @@ public class NameUsageMatch implements Serializable {
      * Annotations flags to be added based on the rules of interpretation (not part of species/match response)
      * See https://github.com/gbif/pipelines/issues/217
      */
-    private List<String> issues;
+    private List<String> issues = new ArrayList<String>();
     private Integer confidence;
     private String status;
     private String note;
-    private List<NameUsageMatch> alternatives;
+    private List<NameUsageMatch> alternatives = new ArrayList<NameUsageMatch>();
   }
 
   @Data
