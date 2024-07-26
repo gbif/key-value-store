@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * GBIF Backbone name match and IUCN RedList services.
  */
 @FeignClient(name = "nameUsageService", url = "${nameUsageService.baseApiUrl}")
-public interface NameUsageMatchService {
+public interface NameUsageMatchingService {
 
   @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match", consumes = "application/json")
   NameUsageMatch match(

@@ -21,7 +21,7 @@ import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.NameUsageMatchService;
+import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.util.function.BiFunction;
 
@@ -128,7 +128,7 @@ public class NameUsageMatchIndexer {
                       new SaltedKeyGenerator(
                           storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
 
-                  private transient NameUsageMatchService nameUsageMatchService;
+                  private transient NameUsageMatchingService nameUsageMatchService;
 
                   private transient BiFunction<byte[], NameUsageMatch, Put> valueMutator;
 

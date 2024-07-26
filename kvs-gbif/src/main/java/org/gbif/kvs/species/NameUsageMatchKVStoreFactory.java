@@ -21,7 +21,7 @@ import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.NameUsageMatchService;
+import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.io.IOException;
 import java.util.*;
@@ -119,7 +119,7 @@ public class NameUsageMatchKVStoreFactory {
    */
   public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                                     ClientConfiguration clientConfiguration) throws IOException {
-    NameUsageMatchService
+    NameUsageMatchingService
             nameUsageMatchService = RestClientFactory.createNameMatchService(clientConfiguration);
 
     KeyValueStore<Identification, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
@@ -146,7 +146,7 @@ public class NameUsageMatchKVStoreFactory {
 
 
   private static KeyValueStore<Identification, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                            NameUsageMatchService nameUsageMatchService,
+                                                                            NameUsageMatchingService nameUsageMatchService,
                                                                             Command closeHandler) throws IOException {
 
     return HBaseStore.<Identification, NameUsageMatch, NameUsageMatch>builder()
@@ -179,7 +179,7 @@ public class NameUsageMatchKVStoreFactory {
    * Matches the provided identification to a backbone concept, first using any well known taxon/name ID and then the name strings, and then
    * decorates the response with the IUCN status.
    */
-  public static NameUsageMatch match(NameUsageMatchService nameUsageMatchService, Identification identification) {
+  public static NameUsageMatch match(NameUsageMatchingService nameUsageMatchService, Identification identification) {
     return nameUsageMatchService.match(
         null,
         identification.getTaxonID(),
@@ -206,7 +206,7 @@ public class NameUsageMatchKVStoreFactory {
   /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(NameUsageMatchService nameUsageMatchService,
+  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(NameUsageMatchingService nameUsageMatchService,
                                                                            Command closeHandler) {
     return new KeyValueStore<Identification, NameUsageMatch>() {
 

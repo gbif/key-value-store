@@ -365,7 +365,6 @@
                 <scope>provided</scope>
             </dependency>
 
-
             <!-- Hadoop and HBase tests -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -474,6 +473,4 @@
 
         </dependencies>
     </dependencyManagement>
-
-
 </project>

@@ -27,5 +27,6 @@ import lombok.Getter;
 public class ClientConfiguration implements Serializable {
   private final String baseApiUrl;
   private final Long timeOut;
+  private final Long connectTimeout;
   private final Long fileCacheMaxSizeMb;
 }

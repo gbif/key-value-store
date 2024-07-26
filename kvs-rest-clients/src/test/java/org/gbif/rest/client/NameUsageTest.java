@@ -15,13 +15,13 @@ package org.gbif.rest.client;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatch;
-import org.gbif.rest.client.species.NameUsageMatchService;
+import org.gbif.rest.client.species.NameUsageMatchingService;
 
 public class NameUsageTest {
 
     public static void main(String[] args) {
 
-        String baseApiUrl = "http://backbonebuild-vh.gbif.org:9101";
+        String baseApiUrl = "http://backbonebuild-vh.gbif.org:9101/";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
@@ -29,15 +29,16 @@ public class NameUsageTest {
                         .withTimeOut(60L)
                         .withFileCacheMaxSizeMb(64L).build();
 
-        NameUsageMatchService nameMatchService = RestClientFactory.createNameMatchService(
+        NameUsageMatchingService nameMatchService = RestClientFactory.createNameMatchService(
                 clientConfiguration
         );
-        NameUsageMatch match = nameMatchService.match(null,
+        NameUsageMatch match = nameMatchService.match(
                 "",
                 "",
                 "",
                 "",
-                "Acacia acuminata",
+                "Vanessa atalanta (Linnaeus,1758)",
+                "",
                 "",
                 "",
                 "",
@@ -52,6 +53,7 @@ public class NameUsageTest {
                 "",
                 true,
                 true);
+
 
         System.out.println(match);
 
