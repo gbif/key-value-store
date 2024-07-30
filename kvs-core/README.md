@@ -1,4 +1,4 @@
-#kvs-core
+# kvs-core
 This module contains the main abstractions and utilities use by KV stores.
 
 A [KeyValueStore](src/main/java/org/gbif/kvs/KeyValueStore.java) is generic stores that allow the retrieval of data based on a known key.
