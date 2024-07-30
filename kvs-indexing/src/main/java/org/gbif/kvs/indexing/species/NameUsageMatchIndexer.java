@@ -19,7 +19,7 @@ import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.kvs.species.NameUsageMatchRequest;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
@@ -130,7 +130,7 @@ public class NameUsageMatchIndexer {
 
                   private transient NameUsageMatchingService nameUsageMatchService;
 
-                  private transient BiFunction<byte[], NameUsageMatch, Put> valueMutator;
+                  private transient BiFunction<byte[], NameUsageMatchResponse, Put> valueMutator;
 
                   @DoFn.Setup
                   public void start() {
@@ -145,7 +145,7 @@ public class NameUsageMatchIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       NameUsageMatchRequest request = context.element();
-                      NameUsageMatch nameUsageMatch = NameUsageMatchKVStoreFactory
+                      NameUsageMatchResponse nameUsageMatch = NameUsageMatchKVStoreFactory
                               .match(nameUsageMatchService, request);
 
                       byte[] saltedKey = keyGenerator.computeKey(request.getLogicalKey());

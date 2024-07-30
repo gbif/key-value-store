@@ -15,7 +15,7 @@ package org.gbif.rest.client;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.kvs.species.NameUsageMatchRequest;
-import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
 public class NameUsageTest {
@@ -34,7 +34,7 @@ public class NameUsageTest {
                 clientConfiguration
         );
 
-        NameUsageMatch match = nameMatchService.match(NameUsageMatchRequest.builder().withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
+        NameUsageMatchResponse match = nameMatchService.match(NameUsageMatchRequest.builder().withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
 
 
 //        NameUsageMatch match = nameMatchService.match(

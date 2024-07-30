@@ -25,5 +25,5 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface NameUsageMatchingService {
 
   @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match", consumes = "application/json")
-  NameUsageMatch match(@SpringQueryMap NameUsageMatchRequest identification);
+  NameUsageMatchResponse match(@SpringQueryMap NameUsageMatchRequest identification);
 }

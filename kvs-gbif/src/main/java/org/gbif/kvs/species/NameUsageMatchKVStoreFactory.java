@@ -19,7 +19,7 @@ import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.io.IOException;
@@ -73,12 +73,12 @@ public class NameUsageMatchKVStoreFactory {
    * @param columnQualifier HBase column qualifier in which values are stored
    * @return a Result to NameUsageMatch mapping function
    */
-  public static Function<Result, NameUsageMatch> resultMapper(byte[] columnFamily, byte[] columnQualifier) {
+  public static Function<Result, NameUsageMatchResponse> resultMapper(byte[] columnFamily, byte[] columnQualifier) {
     return result ->  {
         try {
            byte[] value = result.getValue(columnFamily, columnQualifier);
            if (Objects.nonNull(value)) {
-            return MAPPER.readValue(value, NameUsageMatch.class);
+            return MAPPER.readValue(value, NameUsageMatchResponse.class);
            }
            return null;
         } catch (Exception ex) {
@@ -88,13 +88,13 @@ public class NameUsageMatchKVStoreFactory {
   }
 
   /**
-   * Creates a mutator function that maps a key and a list of {@link NameUsageMatch} into a {@link Put}.
+   * Creates a mutator function that maps a key and a list of {@link NameUsageMatchResponse} into a {@link Put}.
    *
    * @param columnFamily HBase column in which values are stored
    * @param jsonColumnQualifier HBase column qualifier in which json responses are stored
    * @return a mapper from a key NameUsageMatch responses into HBase Puts
    */
-  public static BiFunction<byte[], NameUsageMatch, Put> valueMutator(byte[] columnFamily, byte[] jsonColumnQualifier) {
+  public static BiFunction<byte[], NameUsageMatchResponse, Put> valueMutator(byte[] columnFamily, byte[] jsonColumnQualifier) {
     return (key, nameUsageMatch) -> {
       try {
         if (Objects.nonNull(nameUsageMatch) ) {
@@ -116,12 +116,12 @@ public class NameUsageMatchKVStoreFactory {
    * @return a new KV Store
    * @throws IOException if the KV Store cannot be created
    */
-  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                                    ClientConfiguration clientConfiguration) throws IOException {
+  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
+                                                                                                   ClientConfiguration clientConfiguration) throws IOException {
     NameUsageMatchingService
             nameUsageMatchService = RestClientFactory.createNameMatchService(clientConfiguration);
 
-    KeyValueStore<NameUsageMatchRequest, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
+    KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
                                                                         hbaseKVStore(configuration, nameUsageMatchService, () -> {}) : restKVStore(
             nameUsageMatchService, () -> {});
     if (Objects.nonNull(configuration.getCacheCapacity())) {
@@ -129,26 +129,26 @@ public class NameUsageMatchKVStoreFactory {
           keyValueStore,
           configuration.getCacheCapacity(),
           NameUsageMatchRequest.class,
-          NameUsageMatch.class,
+          NameUsageMatchResponse.class,
           Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }
 
-  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
-    KeyValueStore<NameUsageMatchRequest, NameUsageMatch> keyValueStore = restKVStore(RestClientFactory.createNameMatchService(clientConfiguration), () -> {});
+  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
+    KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> keyValueStore = restKVStore(RestClientFactory.createNameMatchService(clientConfiguration), () -> {});
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
-      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), NameUsageMatchRequest.class, NameUsageMatch.class);
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), NameUsageMatchRequest.class, NameUsageMatchResponse.class);
     }
     return keyValueStore;
   }
 
 
-  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                            NameUsageMatchingService nameUsageMatchService,
-                                                                                            Command closeHandler) throws IOException {
+  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
+                                                                                           NameUsageMatchingService nameUsageMatchService,
+                                                                                           Command closeHandler) throws IOException {
 
-    return HBaseStore.<NameUsageMatchRequest, NameUsageMatch, NameUsageMatch>builder()
+    return HBaseStore.<NameUsageMatchRequest, NameUsageMatchResponse, NameUsageMatchResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
@@ -178,19 +178,19 @@ public class NameUsageMatchKVStoreFactory {
    * Matches the provided identification to a backbone concept, first using any well known taxon/name ID and then the name strings, and then
    * decorates the response with the IUCN status.
    */
-  public static NameUsageMatch match(NameUsageMatchingService nameUsageMatchService, NameUsageMatchRequest identification) {
+  public static NameUsageMatchResponse match(NameUsageMatchingService nameUsageMatchService, NameUsageMatchRequest identification) {
     return nameUsageMatchService.match(identification);
   }
 
   /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> restKVStore(NameUsageMatchingService nameUsageMatchService,
-                                                                                           Command closeHandler) {
-    return new KeyValueStore<NameUsageMatchRequest, NameUsageMatch>() {
+  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> restKVStore(NameUsageMatchingService nameUsageMatchService,
+                                                                                          Command closeHandler) {
+    return new KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse>() {
 
       @Override
-      public NameUsageMatch get(NameUsageMatchRequest identification) {
+      public NameUsageMatchResponse get(NameUsageMatchRequest identification) {
         try {
           return match(nameUsageMatchService, identification);
         } catch (Exception ex) {

@@ -23,14 +23,14 @@ import lombok.ToString;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ToString
-public class NameUsageMatch implements Serializable {
+public class NameUsageMatchResponse implements Serializable {
 
   private boolean synonym;
   private RankedName usage;
   private RankedName acceptedUsage;
   private List<RankedName> classification = new ArrayList<>();
-  private List<NameUsageMatch> alternatives = new ArrayList<>();
-  private NameUsageMatch.Diagnostics diagnostics = new NameUsageMatch.Diagnostics();
+  private List<NameUsageMatchResponse> alternatives = new ArrayList<>();
+  private NameUsageMatchResponse.Diagnostics diagnostics = new NameUsageMatchResponse.Diagnostics();
   /**
    * Status information from external sources like IUCN Red List.
    */
@@ -48,7 +48,7 @@ public class NameUsageMatch implements Serializable {
     private Integer confidence;
     private String status;
     private String note;
-    private List<NameUsageMatch> alternatives = new ArrayList<NameUsageMatch>();
+    private List<NameUsageMatchResponse> alternatives = new ArrayList<NameUsageMatchResponse>();
   }
 
   @Data
