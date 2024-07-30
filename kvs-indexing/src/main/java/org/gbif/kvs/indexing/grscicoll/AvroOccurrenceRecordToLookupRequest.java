@@ -17,14 +17,13 @@ import org.gbif.api.vocabulary.Country;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 
 /** Utility to convert HBase occurrence records into Identification objects. */
 class AvroOccurrenceRecordToLookupRequest
@@ -42,7 +41,8 @@ class AvroOccurrenceRecordToLookupRequest
   /** Translates an HBase record/result into a Identification object. */
   @Override
   public GrscicollLookupRequest apply(GenericRecord input) {
-    GrscicollLookupRequest.Builder builder = GrscicollLookupRequest.builder();
+    GrscicollLookupRequest.GrscicollLookupRequestBuilder builder =
+            GrscicollLookupRequest.builder();
 
     putVerbatimIfExists(input, DwcTerm.institutionCode, builder::withInstitutionCode);
     putVerbatimIfExists(input, DwcTerm.ownerInstitutionCode, builder::withOwnerInstitutionCode);

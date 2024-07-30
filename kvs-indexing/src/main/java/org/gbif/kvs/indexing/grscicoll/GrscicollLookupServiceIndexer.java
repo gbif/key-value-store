@@ -13,7 +13,6 @@
  */
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
@@ -116,7 +115,7 @@ public class GrscicollLookupServiceIndexer {
     PCollection<GrscicollLookupRequest> distinctRequests =
         inputRecords.apply(
             Distinct.<GrscicollLookupRequest, String>withRepresentativeValueFn(
-                    GrscicollLookupRequest::getLogicalKey)
+                            GrscicollLookupRequest::getLogicalKey)
                 .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
@@ -151,16 +150,7 @@ public class GrscicollLookupServiceIndexer {
                     try {
                       GrscicollLookupRequest req = context.element();
                       GrscicollLookupResponse lookupResponse =
-                          lookupService.lookup(
-                              req.getInstitutionCode(),
-                              req.getOwnerInstitutionCode(),
-                              req.getInstitutionId(),
-                              req.getCollectionCode(),
-                              req.getCollectionId(),
-                              req.getDatasetKey(),
-                              req.getCountry() != null
-                                  ? Country.fromIsoCode(req.getCountry())
-                                  : null, false);
+                          lookupService.lookup(req);
                       if (Objects.nonNull(lookupResponse)) {
                         byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, lookupResponse));

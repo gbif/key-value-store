@@ -15,6 +15,7 @@ package org.gbif.rest.client;
 
 import org.gbif.api.model.collections.lookup.Match.MatchType;
 import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 
@@ -27,7 +28,7 @@ public class GrscicollLookupTest {
   public void clientTest() {
     ClientConfiguration config =
         ClientConfiguration.builder()
-                .withTimeOut(60L)
+                .withTimeOut(60000L)
                 .withFileCacheMaxSizeMb(64L)
                 .withBaseApiUrl("https://api.gbif-uat.org/v1/")
                 .build();
@@ -35,9 +36,7 @@ public class GrscicollLookupTest {
     GrscicollLookupService lookupService = RestClientFactory.createGrscicollLookupService(config);
 
     GrscicollLookupResponse response =
-        lookupService.lookup(
-                "K", null, null,
-                null, null, null, null, true);
+        lookupService.lookup(GrscicollLookupRequest.builder().withInstitutionCode("K").build());
     Assert.assertEquals(MatchType.FUZZY, response.getInstitutionMatch().getMatchType());
   }
 }

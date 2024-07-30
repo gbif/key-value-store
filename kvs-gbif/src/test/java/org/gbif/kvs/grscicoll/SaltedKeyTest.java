@@ -26,14 +26,14 @@ public class SaltedKeyTest {
   public void cacheKeyTest() {
     SaltedKeyGenerator keyGenerator = new SaltedKeyGenerator(10);
 
-    GrscicollLookupRequest req = new GrscicollLookupRequest();
-    req.setInstitutionId("http://biocol.org/urn:lsid:biocol.org:col:15605");
-    req.setInstitutionCode("MeiseBG");
-    req.setCollectionCode("BR");
-    req.setCollectionId("gbif:ih:irn:124997");
-    req.setDatasetKey("b740eaa0-0679-41dc-acb7-990d562dfa37");
-    //    req.setOwnerInstitutionCode("NULL");
-    req.setCountry(Country.BELGIUM.getIso2LetterCode());
+    GrscicollLookupRequest req = GrscicollLookupRequest.builder()
+      .withInstitutionId("http://biocol.org/urn:lsid:biocol.org:col:15605")
+      .withInstitutionCode("MeiseBG")
+      .withCollectionCode("BR")
+      .withCollectionId("gbif:ih:irn:124997")
+      .withDatasetKey("b740eaa0-0679-41dc-acb7-990d562dfa37")
+      .withCountry(Country.BELGIUM.getIso2LetterCode())
+      .build();
 
     byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
     System.out.println(new String(saltedKey));

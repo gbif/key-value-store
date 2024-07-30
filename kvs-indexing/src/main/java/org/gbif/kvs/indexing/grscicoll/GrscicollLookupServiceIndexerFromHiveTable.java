@@ -13,7 +13,6 @@
  */
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
@@ -144,17 +143,8 @@ public class GrscicollLookupServiceIndexerFromHiveTable {
                       GrscicollLookupRequest req =
                           HiveUtils.convertToGrSciCollRequest(record, schema);
 
-                      GrscicollLookupResponse lookupResponse =
-                          lookupService.lookup(
-                              req.getInstitutionCode(),
-                              req.getOwnerInstitutionCode(),
-                              req.getInstitutionId(),
-                              req.getCollectionCode(),
-                              req.getCollectionId(),
-                              req.getDatasetKey(),
-                              req.getCountry() != null
-                                  ? Country.fromIsoCode(req.getCountry())
-                                  : null, false);
+                      GrscicollLookupResponse lookupResponse = lookupService.lookup(req);
+
                       if (Objects.nonNull(lookupResponse)) {
                         byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, lookupResponse));

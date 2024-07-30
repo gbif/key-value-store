@@ -10,6 +10,9 @@
   <artifactId>kvs-workflows</artifactId>
   <packaging>jar</packaging>
 
+  <name>KeyValue Store :: Workflow</name>
+  <description>Oozie workflows</description>
+
   <dependencies>
     <dependency>
       <groupId>org.gbif.kvs</groupId>

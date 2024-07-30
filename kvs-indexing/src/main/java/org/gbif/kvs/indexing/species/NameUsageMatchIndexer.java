@@ -16,11 +16,11 @@ package org.gbif.kvs.indexing.species;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
-import org.gbif.kvs.species.Identification;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatch;
+import org.gbif.kvs.species.NameUsageMatchRequest;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.util.function.BiFunction;
@@ -105,24 +105,24 @@ public class NameUsageMatchIndexer {
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Read the occurrence table
-    PCollection<Identification> inputRecords =
+    PCollection<NameUsageMatchRequest> inputRecords =
       pipeline.apply(AvroIO.parseGenericRecords(new AvroOccurrenceRecordToNameUsageRequest())
-          .withCoder(AvroCoder.of(Identification.class))
+          .withCoder(AvroCoder.of(NameUsageMatchRequest.class))
           .from(sourceGlob)
       );
 
     // Select distinct names
-    PCollection<Identification> distinctNames =
+    PCollection<NameUsageMatchRequest> distinctNames =
         inputRecords
             .apply(
-                Distinct.<Identification, String>withRepresentativeValueFn(Identification::getLogicalKey)
+                Distinct.<NameUsageMatchRequest, String>withRepresentativeValueFn(NameUsageMatchRequest::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform name lookup
     distinctNames
         .apply(
             ParDo.of(
-                new DoFn<Identification, Mutation>() {
+                new DoFn<NameUsageMatchRequest, Mutation>() {
 
                   private final SaltedKeyGenerator keyGenerator =
                       new SaltedKeyGenerator(
@@ -144,7 +144,7 @@ public class NameUsageMatchIndexer {
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
-                      Identification request = context.element();
+                      NameUsageMatchRequest request = context.element();
                       NameUsageMatch nameUsageMatch = NameUsageMatchKVStoreFactory
                               .match(nameUsageMatchService, request);
 

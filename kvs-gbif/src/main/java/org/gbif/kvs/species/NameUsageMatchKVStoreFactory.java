@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package org.gbif.kvs.species;
-
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -117,39 +116,39 @@ public class NameUsageMatchKVStoreFactory {
    * @return a new KV Store
    * @throws IOException if the KV Store cannot be created
    */
-  public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                                    ClientConfiguration clientConfiguration) throws IOException {
+  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> nameUsageMatchKVStore(CachedHBaseKVStoreConfiguration configuration,
+                                                                                                    ClientConfiguration clientConfiguration) throws IOException {
     NameUsageMatchingService
             nameUsageMatchService = RestClientFactory.createNameMatchService(clientConfiguration);
 
-    KeyValueStore<Identification, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
+    KeyValueStore<NameUsageMatchRequest, NameUsageMatch> keyValueStore = Objects.nonNull(configuration.getHBaseKVStoreConfiguration()) ?
                                                                         hbaseKVStore(configuration, nameUsageMatchService, () -> {}) : restKVStore(
             nameUsageMatchService, () -> {});
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(
           keyValueStore,
           configuration.getCacheCapacity(),
-          Identification.class,
+          NameUsageMatchRequest.class,
           NameUsageMatch.class,
           Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
     }
     return keyValueStore;
   }
 
-  public static KeyValueStore<Identification, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
-    KeyValueStore<Identification, NameUsageMatch> keyValueStore = restKVStore(RestClientFactory.createNameMatchService(clientConfiguration), () -> {});
+  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> nameUsageMatchKVStore(ClientConfiguration clientConfiguration) {
+    KeyValueStore<NameUsageMatchRequest, NameUsageMatch> keyValueStore = restKVStore(RestClientFactory.createNameMatchService(clientConfiguration), () -> {});
     if (Objects.nonNull(clientConfiguration.getFileCacheMaxSizeMb())) {
-      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), Identification.class, NameUsageMatch.class);
+      return KeyValueCache.cache(keyValueStore, clientConfiguration.getFileCacheMaxSizeMb(), NameUsageMatchRequest.class, NameUsageMatch.class);
     }
     return keyValueStore;
   }
 
 
-  private static KeyValueStore<Identification, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                            NameUsageMatchingService nameUsageMatchService,
-                                                                            Command closeHandler) throws IOException {
+  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
+                                                                                            NameUsageMatchingService nameUsageMatchService,
+                                                                                            Command closeHandler) throws IOException {
 
-    return HBaseStore.<Identification, NameUsageMatch, NameUsageMatch>builder()
+    return HBaseStore.<NameUsageMatchRequest, NameUsageMatch, NameUsageMatch>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
         .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
@@ -179,39 +178,19 @@ public class NameUsageMatchKVStoreFactory {
    * Matches the provided identification to a backbone concept, first using any well known taxon/name ID and then the name strings, and then
    * decorates the response with the IUCN status.
    */
-  public static NameUsageMatch match(NameUsageMatchingService nameUsageMatchService, Identification identification) {
-    return nameUsageMatchService.match(
-        null,
-        identification.getTaxonID(),
-        identification.getTaxonConceptID(),
-        identification.getScientificNameID(),
-        identification.getScientificName(),
-        identification.getRank(),
-        identification.getScientificNameAuthorship(),
-        identification.getSpecificEpithet(),
-        identification.getInfraspecificEpithet(),
-        identification.getKingdom(),
-        identification.getPhylum(),
-        identification.getClazz(),
-        identification.getOrder(),
-        identification.getFamily(),
-        identification.getGenus(),
-        null,
-        null,
-        null,
-        false,
-        false);
+  public static NameUsageMatch match(NameUsageMatchingService nameUsageMatchService, NameUsageMatchRequest identification) {
+    return nameUsageMatchService.match(identification);
   }
 
   /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<Identification, NameUsageMatch> restKVStore(NameUsageMatchingService nameUsageMatchService,
-                                                                           Command closeHandler) {
-    return new KeyValueStore<Identification, NameUsageMatch>() {
+  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatch> restKVStore(NameUsageMatchingService nameUsageMatchService,
+                                                                                           Command closeHandler) {
+    return new KeyValueStore<NameUsageMatchRequest, NameUsageMatch>() {
 
       @Override
-      public NameUsageMatch get(Identification identification) {
+      public NameUsageMatch get(NameUsageMatchRequest identification) {
         try {
           return match(nameUsageMatchService, identification);
         } catch (Exception ex) {

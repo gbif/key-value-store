@@ -14,6 +14,7 @@
 package org.gbif.rest.client;
 
 import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.kvs.species.NameUsageMatchRequest;
 import org.gbif.rest.client.species.NameUsageMatch;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
@@ -21,38 +22,42 @@ public class NameUsageTest {
 
     public static void main(String[] args) {
 
-        String baseApiUrl = "http://backbonebuild-vh.gbif.org:9101/";
+        String baseApiUrl = "http://localhost:9999/";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
                         .withBaseApiUrl(baseApiUrl)
-                        .withTimeOut(60L)
+                        .withTimeOut(60000L)
                         .withFileCacheMaxSizeMb(64L).build();
 
         NameUsageMatchingService nameMatchService = RestClientFactory.createNameMatchService(
                 clientConfiguration
         );
-        NameUsageMatch match = nameMatchService.match(
-                "",
-                "",
-                "",
-                "",
-                "Vanessa atalanta (Linnaeus,1758)",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                true,
-                true);
+
+        NameUsageMatch match = nameMatchService.match(NameUsageMatchRequest.builder().withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
+
+
+//        NameUsageMatch match = nameMatchService.match(
+//                "",
+//                "",
+//                "",
+//                "",
+//                "Vanessa atalanta (Linnaeus,1758)",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                "",
+//                true,
+//                true);
 
 
         System.out.println(match);

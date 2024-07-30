@@ -18,14 +18,13 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
-import org.gbif.kvs.geocode.LatLng;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.kvs.geocode.GeocodeRequest;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -96,30 +95,30 @@ public class ReverseGeocodeIndexer {
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Retrieve just the latitude and longitude from the Avro record
-    SerializableFunction<GenericRecord, LatLng> recordToLatLng = input -> {
-      LatLng.Builder builder = LatLng.builder();
+    SerializableFunction<GenericRecord, GeocodeRequest> recordToLatLng = input -> {
+      GeocodeRequest.GeocodeRequestBuilder builder = GeocodeRequest.builder();
       putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
       putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
-      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, LatLng.EMPTY_UNCERTAINTY);
+      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, GeocodeRequest.EMPTY_UNCERTAINTY);
       return builder.build();
     };
 
     // Read the occurrence table
-    PCollection<LatLng> inputRecords =
+    PCollection<GeocodeRequest> inputRecords =
       pipeline.apply(AvroIO.parseGenericRecords(recordToLatLng)
-          .withCoder(AvroCoder.of(LatLng.class))
+          .withCoder(AvroCoder.of(GeocodeRequest.class))
           .from(sourceGlob)
       );
 
     // Select distinct coordinates
-    PCollection<LatLng> distinctCoordinates =
+    PCollection<GeocodeRequest> distinctCoordinates =
         inputRecords
             .apply(
                 ParDo.of(
-                    new DoFn<LatLng, LatLng>() {
+                    new DoFn<GeocodeRequest, GeocodeRequest>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        LatLng latLng = context.element();
+                        GeocodeRequest latLng = context.element();
                         if (latLng.isValid()) {
                           context.output(latLng);
                         }
@@ -127,14 +126,14 @@ public class ReverseGeocodeIndexer {
                     }))
             .apply(
                 // Selects distinct values
-                Distinct.<LatLng, String>withRepresentativeValueFn(LatLng::getLogicalKey)
+                Distinct.<GeocodeRequest, String>withRepresentativeValueFn(GeocodeRequest::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
     distinctCoordinates
         .apply(
             ParDo.of(
-                new DoFn<LatLng, Mutation>() {
+                new DoFn<GeocodeRequest, Mutation>() {
 
                   private final SaltedKeyGenerator keyGenerator =
                       new SaltedKeyGenerator(
@@ -156,11 +155,10 @@ public class ReverseGeocodeIndexer {
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
-                      LatLng latLng = context.element();
-                      Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()))
+                      GeocodeRequest latLng = context.element();
+                      Optional.ofNullable(geocodeService.reverse(latLng))
                               .ifPresent( locations -> {
-                                  GeocodeResponse response = geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(),
-                                          Objects.equals(latLng.getUncertaintyMeters(), LatLng.EMPTY_UNCERTAINTY) ? null : latLng.getUncertaintyMeters());
+                                  GeocodeResponse response = geocodeService.reverse(latLng);
                                   byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                   context.output(valueMutator.apply(saltedKey, response));
                               });

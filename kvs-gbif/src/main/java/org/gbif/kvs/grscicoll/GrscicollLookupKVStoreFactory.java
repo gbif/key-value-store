@@ -13,7 +13,6 @@
  */
 package org.gbif.kvs.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -122,7 +121,7 @@ public class GrscicollLookupKVStoreFactory {
    * @throws IOException if the Rest client can't be created
    */
   public static KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> simpleGrscicollLookupKVStore(CachedHBaseKVStoreConfiguration configuration,
-                                                                            ClientConfiguration grSciCollClientConfiguration) throws IOException {
+                                                                                                            ClientConfiguration grSciCollClientConfiguration) throws IOException {
     GrscicollLookupService lookupService =  RestClientFactory.createGrscicollLookupService(grSciCollClientConfiguration);
     return simpleGrscicollLookupKVStore(configuration, lookupService, () -> {});
   }
@@ -157,11 +156,12 @@ public class GrscicollLookupKVStoreFactory {
   public static KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> simpleGrscicollLookupKVStore(CachedHBaseKVStoreConfiguration configuration) throws IOException {
     KeyValueStore<GrscicollLookupRequest, GrscicollLookupResponse> keyValueStore = HBaseStore.<GrscicollLookupRequest, GrscicollLookupResponse, GrscicollLookupResponse>builder()
         .withHBaseStoreConfiguration(configuration.getHBaseKVStoreConfiguration())
-      .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
+        .withLoaderRetryConfiguration(configuration.getLoaderRetryConfig())
         .withResultMapper(
             resultMapper(
                 Bytes.toBytes(configuration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                Bytes.toBytes(configuration.getValueColumnQualifier())))
+                Bytes.toBytes(configuration.getValueColumnQualifier()))
+        )
         .build();
     if (Objects.nonNull(configuration.getCacheCapacity())) {
       return KeyValueCache.cache(
@@ -194,15 +194,7 @@ public class GrscicollLookupKVStoreFactory {
         .withLoader(
             req -> {
               try {
-                return lookupService.lookup(
-                    req.getInstitutionCode(),
-                    req.getOwnerInstitutionCode(),
-                    req.getInstitutionId(),
-                    req.getCollectionCode(),
-                    req.getCollectionId(),
-                    req.getDatasetKey(),
-                    req.getCountry() != null ? Country.fromIsoCode(req.getCountry()) : null,
-                    false);
+                return lookupService.lookup(req);
               } catch (Exception ex) {
                 throw logAndThrow(ex, "Error contacting lookup service");
               }
@@ -219,16 +211,7 @@ public class GrscicollLookupKVStoreFactory {
 
       @Override
       public GrscicollLookupResponse get(GrscicollLookupRequest key) {
-        return lookupService.lookup(
-            key.getInstitutionCode(),
-            key.getOwnerInstitutionCode(),
-            key.getInstitutionId(),
-            key.getCollectionCode(),
-            key.getCollectionId(),
-            key.getDatasetKey(),
-            key.getCountry() != null ? Country.fromIsoCode(key.getCountry()) : null,
-            false
-        );
+        return lookupService.lookup(key);
       }
 
       @Override

@@ -14,6 +14,7 @@
 package org.gbif.kvs.hbase;
 
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.Keyed;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.metrics.CacheMetrics;
 import org.gbif.kvs.metrics.ElasticMetricsConfig;
@@ -46,7 +47,7 @@ import io.micrometer.elastic.ElasticMeterRegistry;
  * @param <K> type of key elements
  * @param <V> type of values
  */
-public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore<K, V>, Closeable {
+public class ReadOnlyHBaseStore<K extends Keyed, V> implements KeyValueStore<K, V>, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReadOnlyHBaseStore.class);
 
@@ -133,7 +134,7 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
    * @param <V> type of values to store
    * @return a new instance of a HBaseKVStore.Builder
    */
-  public static <K extends Indexable, V> Builder<K, V> builder() {
+  public static <K extends Keyed, V> Builder<K, V> builder() {
     return new Builder<>();
   }
 
@@ -143,7 +144,7 @@ public class ReadOnlyHBaseStore<K extends Indexable, V> implements KeyValueStore
    * @param <K> type of key elements
    * @param <V> type of values to store
    */
-  public static class Builder<K extends Indexable, V> {
+  public static class Builder<K extends Keyed, V> {
     private HBaseKVStoreConfiguration configuration;
     private Function<Result, V> resultMapper;
     private ElasticMetricsConfig metricsConfig;

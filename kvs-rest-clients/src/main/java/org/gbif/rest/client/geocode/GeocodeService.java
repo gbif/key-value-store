@@ -13,10 +13,11 @@
  */
 package org.gbif.rest.client.geocode;
 
+import org.gbif.kvs.geocode.GeocodeRequest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -27,14 +28,9 @@ public interface GeocodeService {
 
   /**
    * Gets the list of proposed geolocations of coordinate.
-   * @param latitude decimal latitude
-   * @param longitude decimal longitude
-   * @param uncertaintyMeters coordinate uncertainty in meters
+   * @param latLng  the latitude and longitude
    * @return a list of proposed locations, an empty list if no proposals were found
    */
   @RequestMapping(method = RequestMethod.GET, value = "geocode/reverse")
-  GeocodeResponse reverse(
-          @RequestParam("lat") Double latitude,
-          @RequestParam("lng") Double longitude,
-          @RequestParam("uncertaintyMeters") Double uncertaintyMeters);
+  GeocodeResponse reverse(@SpringQueryMap GeocodeRequest latLng);
 }

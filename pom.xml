@@ -14,6 +14,7 @@
     <version>2.0-SNAPSHOT</version>
 
     <modules>
+        <module>kvs-common</module>
         <module>kvs-core</module>
         <module>kvs-rest-clients</module>
         <module>kvs-gbif</module>
@@ -73,9 +74,6 @@
         <dwc-api.version>1.35</dwc-api.version>
         <gbif-parsers.version>0.60</gbif-parsers.version>
 
-        <!-- GBIF name parser - required for enums -->
-        <gbif-name-parser.version>3.11.0</gbif-name-parser.version>
-
         <!-- Common libraries -->
         <apache.beam.version>2.51.0</apache.beam.version>
         <hadoop-common.version>3.2.4</hadoop-common.version>
@@ -132,6 +130,11 @@
     <dependencyManagement>
         <dependencies>
             <!-- This project -->
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>kvs-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.gbif.kvs</groupId>
                 <artifactId>kvs-core</artifactId>

@@ -13,10 +13,7 @@
  */
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
-
 import java.util.List;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -25,6 +22,7 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.thrift.TException;
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 
 public class HiveUtils {
 

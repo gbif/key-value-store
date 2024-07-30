@@ -13,20 +13,19 @@
  */
 package org.gbif.kvs.geocode;
 
-import org.gbif.kvs.hbase.Indexable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-
 /** Geographic Coordinate: latitude and longitude. */
 @Data
-@Builder(setterPrefix = "with", builderClassName = "Builder")
+@SuperBuilder(setterPrefix = "with")
 @AllArgsConstructor
-public class LatLng implements Serializable, Indexable {
+public class GeocodeRequest implements Keyed, Serializable {
 
   /**
    * Default value to use when uncertainty is not provided to avoid serialisation issues.
@@ -34,23 +33,9 @@ public class LatLng implements Serializable, Indexable {
    */
   public static final Double EMPTY_UNCERTAINTY = -40075000d;
 
-  private Double latitude;
-  private Double longitude;
-  private Double uncertaintyMeters;
-
-  public LatLng() {}
-
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
-
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
-
-  public void setUncertaintyMeters(Double uncertaintyMeters) {
-    this.uncertaintyMeters = uncertaintyMeters;
-  }
+  protected Double latitude;
+  protected Double longitude;
+  protected Double uncertaintyMeters;
 
   /**
    * Factory method.
@@ -58,8 +43,8 @@ public class LatLng implements Serializable, Indexable {
    * @param longitude decimal longitude
    * @return a new instance of LatLng
    */
-  public static LatLng create(Double latitude, Double longitude) {
-    return new LatLng(latitude, longitude, null);
+  public static GeocodeRequest create(Double latitude, Double longitude) {
+    return new GeocodeRequest(latitude, longitude, null);
   }
 
   /**
@@ -69,8 +54,8 @@ public class LatLng implements Serializable, Indexable {
    * @param uncertaintyMeters uncertainty in metres
    * @return a new instance of LatLng
    */
-  public static LatLng create(Double latitude, Double longitude, Double uncertaintyMeters) {
-    return new LatLng(latitude, longitude, uncertaintyMeters);
+  public static GeocodeRequest create(Double latitude, Double longitude, Double uncertaintyMeters) {
+    return new GeocodeRequest(latitude, longitude, uncertaintyMeters);
   }
 
   /**

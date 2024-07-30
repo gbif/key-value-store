@@ -13,14 +13,10 @@
  */
 package org.gbif.rest.client.species;
 
-import org.gbif.nameparser.api.Rank;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import lombok.Data;
 import lombok.ToString;
 
@@ -68,7 +64,7 @@ public class NameUsageMatch implements Serializable {
   public static class RankedName {
       private String key;
       private String name;
-      private Rank rank;
+      private String rank;
       private String code;
   }
 

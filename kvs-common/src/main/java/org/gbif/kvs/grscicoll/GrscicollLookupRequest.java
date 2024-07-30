@@ -13,42 +13,39 @@
  */
 package org.gbif.kvs.grscicoll;
 
-import org.gbif.kvs.hbase.Indexable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
 import java.util.Optional;
 
-import org.apache.avro.reflect.Nullable;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(setterPrefix = "with", builderClassName = "Builder")
-public class GrscicollLookupRequest implements Serializable, Indexable {
+@SuperBuilder(setterPrefix = "with")
+public class GrscicollLookupRequest implements Keyed, Serializable {
 
-  @Nullable String institutionCode;
-  @Nullable String ownerInstitutionCode;
-  @Nullable String institutionId;
-  @Nullable String collectionCode;
-  @Nullable String collectionId;
-  @Nullable String datasetKey;
-  @Nullable String country;
+  protected String institutionCode;
+  protected String ownerInstitutionCode;
+  protected String institutionId;
+  protected String collectionCode;
+  protected String collectionId;
+  protected String datasetKey;
+  protected String country;
 
   @Override
   public String getLogicalKey() {
     return
-        parseStringValue(institutionCode)
-            + parseStringValue(ownerInstitutionCode)
-            + parseStringValue(institutionId)
-            + parseStringValue(collectionCode)
-            + parseStringValue(collectionId)
-            + parseStringValue(datasetKey)
-            + parseStringValue(country);
+            parseStringValue(institutionCode)
+                    + parseStringValue(ownerInstitutionCode)
+                    + parseStringValue(institutionId)
+                    + parseStringValue(collectionCode)
+                    + parseStringValue(collectionId)
+                    + parseStringValue(datasetKey)
+                    + parseStringValue(country);
   }
 
   private String parseStringValue(String rawValue) {

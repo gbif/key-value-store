@@ -52,7 +52,7 @@ public class GeocodeKVHBaseStoreTestIT {
 
   private static Table geocodeKvTable;
 
-  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore;
+  private static KeyValueStore<GeocodeRequest, GeocodeResponse> geocodeKeyValueStore;
 
   // Used to store and retrieve JSON values stored in HBase
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -65,7 +65,7 @@ public class GeocodeKVHBaseStoreTestIT {
   //-- End of shared elements
 
   //--- Elements of parameterized tests
-  private final LatLng latLng;
+  private final GeocodeRequest latLng;
 
   private final GeocodeResponse geocodeResponse;
 
@@ -82,7 +82,7 @@ public class GeocodeKVHBaseStoreTestIT {
    * @param latLng coordinate to test
    * @param countryCode expected country code
    */
-  public GeocodeKVHBaseStoreTestIT(LatLng latLng, String countryCode) {
+  public GeocodeKVHBaseStoreTestIT(GeocodeRequest latLng, String countryCode) {
     this.latLng = latLng;
     this.geocodeResponse = Optional.ofNullable(countryCode).map( isoCode -> {
                               GeocodeResponse.Location location = new GeocodeResponse.Location();
@@ -112,7 +112,7 @@ public class GeocodeKVHBaseStoreTestIT {
    * @return a new Geocode KV store
    * @throws IOException if something went wrong creating the store
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
+  private static KeyValueStore<GeocodeRequest, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(testConfiguration.getGeocodeKVStoreConfiguration(),
                                                       new GeocodeTestService(), () -> {});
   }

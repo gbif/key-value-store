@@ -29,7 +29,10 @@
     </build>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.gbif.kvs</groupId>
+            <artifactId>kvs-common</artifactId>
+        </dependency>
         <!-- GBIF -->
         <dependency>
             <groupId>org.gbif</groupId>
@@ -89,13 +92,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-
-        <!-- needed for Rank enum -->
-        <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>name-parser-api</artifactId>
-            <version>${gbif-name-parser.version}</version>
         </dependency>
 
         <!-- Utils -->

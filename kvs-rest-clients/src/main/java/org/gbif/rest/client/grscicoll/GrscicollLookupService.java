@@ -13,12 +13,11 @@
  */
 package org.gbif.rest.client.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
-
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -28,13 +27,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface GrscicollLookupService {
 
   @RequestMapping(method = RequestMethod.GET, value = "grscicoll/lookup")
-  GrscicollLookupResponse lookup(
-          @RequestParam("institutionCode") String institutionCode,
-          @RequestParam("ownerInstitutionCode") String ownerInstitutionCode,
-          @RequestParam("institutionId") String institutionId,
-          @RequestParam("collectionCode") String collectionCode,
-          @RequestParam("collectionId") String collectionId,
-          @RequestParam("datasetKey") String datasetKey,
-          @RequestParam("country") Country country,
-          @RequestParam("verbose") boolean verbose);
+  GrscicollLookupResponse lookup(@SpringQueryMap GrscicollLookupRequest request);
 }

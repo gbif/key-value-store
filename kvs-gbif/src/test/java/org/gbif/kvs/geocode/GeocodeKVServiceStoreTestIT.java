@@ -34,12 +34,12 @@ public class GeocodeKVServiceStoreTestIT {
 
   //-- Static elements shared for all tests
 
-  private static KeyValueStore<LatLng,GeocodeResponse> geocodeKeyValueStore;
+  private static KeyValueStore<GeocodeRequest,GeocodeResponse> geocodeKeyValueStore;
 
   //-- End of shared elements
 
   //--- Elements of parameterized tests
-  private final LatLng latLng;
+  private final GeocodeRequest latLng;
 
   private final String countryCode;
 
@@ -56,7 +56,7 @@ public class GeocodeKVServiceStoreTestIT {
    * @param latLng coordinate to test
    * @param countryCode expected country code
    */
-  public GeocodeKVServiceStoreTestIT(LatLng latLng, String countryCode) {
+  public GeocodeKVServiceStoreTestIT(GeocodeRequest latLng, String countryCode) {
     this.latLng = latLng;
     this.countryCode = countryCode;
   }
@@ -66,7 +66,7 @@ public class GeocodeKVServiceStoreTestIT {
    * @return a new Geocode KV store
    * @throws IOException if something went wrong creating the store
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
+  private static KeyValueStore<GeocodeRequest, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(CachedHBaseKVStoreConfiguration.builder().build(),
                                                       new GeocodeTestService(), () -> {});
   }
