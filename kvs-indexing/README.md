@@ -34,7 +34,7 @@ create 'grscicoll_lookup_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1
 ```
 
 For multi taxonomy support, a kv table is created per taxonomy
-```
+```bash
 create 'name_usage_gbif_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
 
 create 'name_usage_xcol_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'FAST_DIFF', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
