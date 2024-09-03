@@ -35,7 +35,7 @@ public class GeocodeTestService implements GeocodeService {
    */
   @Override
   public GeocodeResponse reverse(GeocodeRequest latLng) {
-    return new GeocodeResponse(COUNTRY_CENTROIDS.findByCoordinate(latLng.getLatitude(), latLng.getLongitude()).map(country -> {
+    return new GeocodeResponse(COUNTRY_CENTROIDS.findByCoordinate(latLng.getLat(), latLng.getLng()).map(country -> {
               GeocodeResponse.Location location = new GeocodeResponse.Location();
                 location.setName(country.getName());
                 location.setIsoCountryCode2Digit(country.getIsoCode());

@@ -13,23 +13,28 @@
  */
 package org.gbif.rest.client;
 
+import org.gbif.kvs.geocode.GeocodeRequest;
+import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.geocode.*;
+
 public class GeocodeTest {
+
     public static void main(String[] args) {
 
-//        String baseApiUrl = "https://api.gbif.org/v1/";
-//
-//        ClientConfiguration clientConfiguration =
-//                ClientConfiguration.builder()
-//                        .withBaseApiUrl(baseApiUrl)
-//                        .withTimeOut(60L)
-//                        .withFileCacheMaxSizeMb(64L).build();
-//
-//        GeocodeService geocodeService = RestClientFactory.createGeocodeService(
-//                clientConfiguration
-//        );
-//        GeocodeResponse response = geocodeService.reverse(LatLng.builder().withLatitude(39.1).withLongitude(147.2).withUncertaintyMeters(0.0).build());
-//        System.out.println(response);
+        String baseApiUrl = "https://api.gbif.org/v1/";
 
+        ClientConfiguration clientConfiguration =
+                ClientConfiguration.builder()
+                        .withBaseApiUrl(baseApiUrl)
+                        .withTimeOut(60L)
+                        .withFileCacheMaxSizeMb(64L).build();
 
+        GeocodeService geocodeService = RestClientFactory.createGeocodeService(
+                clientConfiguration
+        );
+
+        GeocodeResponse response = geocodeService.reverse(GeocodeRequest.builder().withLat(39.1)
+                .withLng(147.2).withUncertaintyMeters(0.0).build());
+        System.out.println(response);
     }
 }

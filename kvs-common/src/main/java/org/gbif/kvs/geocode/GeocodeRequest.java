@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import org.gbif.kvs.Keyed;
-
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -27,14 +26,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public class GeocodeRequest implements Keyed, Serializable {
 
-  /**
-   * Default value to use when uncertainty is not provided to avoid serialisation issues.
-   * This dummy value is the circumference of the earth in meters as a negative number.
-   */
-  public static final Double EMPTY_UNCERTAINTY = -40075000d;
-
-  protected Double latitude;
-  protected Double longitude;
+  protected Double lat;
+  protected Double lng;
   protected Double uncertaintyMeters;
 
   /**
@@ -65,12 +58,12 @@ public class GeocodeRequest implements Keyed, Serializable {
    * @return true if the coordinate is valid, false otherwise
    */
   public boolean isValid() {
-    return Objects.nonNull(latitude)
-        && Objects.nonNull(longitude)
-        && latitude <= 90.0
-        && latitude >= -90
-        && longitude <= 180
-        && longitude >= -180;
+    return Objects.nonNull(lat)
+        && Objects.nonNull(lng)
+        && lat <= 90.0
+        && lat >= -90
+        && lng <= 180
+        && lng >= -180;
   }
 
   /**
@@ -80,10 +73,10 @@ public class GeocodeRequest implements Keyed, Serializable {
    */
   @Override
   public String getLogicalKey() {
-    if (uncertaintyMeters == null || Objects.equals(EMPTY_UNCERTAINTY, uncertaintyMeters)) {
-      return latitude.toString() + '|' + longitude.toString();
+    if (uncertaintyMeters == null) {
+      return lat.toString() + '|' + lng.toString();
     } else {
-      return latitude.toString() + '|' + longitude.toString() + '|' + uncertaintyMeters.toString();
+      return lat.toString() + '|' + lng.toString() + '|' + uncertaintyMeters.toString();
     }
   }
 }

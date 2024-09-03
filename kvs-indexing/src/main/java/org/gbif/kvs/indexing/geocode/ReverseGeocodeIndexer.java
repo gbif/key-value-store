@@ -54,6 +54,12 @@ import org.slf4j.LoggerFactory;
 public class ReverseGeocodeIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
+  /**
+   * Default value to use when uncertainty is not provided to avoid serialisation issues.
+   * This dummy value is the circumference of the earth in meters as a negative number.
+   * Avoiding using 0.0 as it is a valid value, sort of.
+   */
+  public static final Double EMPTY_UNCERTAINTY = -40075000d;
 
   public static void main(String[] args) {
     GeocodeIndexingOptions options =
@@ -97,9 +103,9 @@ public class ReverseGeocodeIndexer {
     // Retrieve just the latitude and longitude from the Avro record
     SerializableFunction<GenericRecord, GeocodeRequest> recordToLatLng = input -> {
       GeocodeRequest.GeocodeRequestBuilder builder = GeocodeRequest.builder();
-      putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
-      putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
-      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, GeocodeRequest.EMPTY_UNCERTAINTY);
+      putIfExists(input, DwcTerm.decimalLatitude, builder::withLat);
+      putIfExists(input, DwcTerm.decimalLongitude, builder::withLng);
+      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, EMPTY_UNCERTAINTY);
       return builder.build();
     };
 
