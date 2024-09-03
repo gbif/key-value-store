@@ -67,5 +67,6 @@ public class GeocodeResponse implements Serializable {
       private String isoCountryCode2Digit;
       private Double distance;
       private Double distanceMeters;
+
     }
 }
