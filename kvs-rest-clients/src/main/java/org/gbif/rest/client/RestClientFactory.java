@@ -14,6 +14,7 @@
 package org.gbif.rest.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import feign.Feign;
 import feign.MethodMetadata;
 import feign.Request;
@@ -22,6 +23,7 @@ import feign.form.spring.SpringFormEncoder;
 import feign.jackson.JacksonDecoder;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.species.NameUsageMatchingService;
@@ -85,10 +87,18 @@ public class RestClientFactory {
      * Creates a new client instance.
      */
     private static <T> T build(Class<T> clazz, ClientConfiguration clientConfiguration) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(
+                new SimpleModule().addDeserializer(
+                        GeocodeResponse.class,
+                        new GeocodeResponse.GeocodeDeserializer()
+                )
+        );
+
         Feign.Builder builder =
                 Feign.builder()
                         .encoder(new SpringFormEncoder())
-                        .decoder(new JacksonDecoder(new ObjectMapper()))
+                        .decoder(new JacksonDecoder(objectMapper))
                         .contract(ClientContract.withDefaultProcessors())
                         .options(
                                 new Request.Options(

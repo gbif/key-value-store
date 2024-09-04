@@ -66,7 +66,6 @@ public class GeocodeKVStoreFactory {
     return new RuntimeException(throwable);
   }
 
-
   /**
    * Returns a function that maps HBase results into single String values.
    *

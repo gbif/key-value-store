@@ -43,6 +43,16 @@ public class GeocodeResponse implements Serializable {
     @JsonProperty("locations")
     private List<Location> locations;
 
+    public static class GeocodeDeserializer extends JsonDeserializer<GeocodeResponse> {
+
+        @Override
+        public GeocodeResponse deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+            List<GeocodeResponse.Location> locations = jsonParser
+                    .readValueAs(new TypeReference<List<GeocodeResponse.Location>>(){});
+            return new GeocodeResponse(locations);
+        }
+    }
+
     /**
      * Models the response content of the {@link GeocodeService}.
      */
