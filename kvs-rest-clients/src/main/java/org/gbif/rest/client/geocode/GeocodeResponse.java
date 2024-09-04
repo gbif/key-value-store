@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -37,28 +38,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(using = GeocodeResponse.GeocodeDeserializer.class)
 public class GeocodeResponse implements Serializable {
+
+    @JsonProperty("locations")
     private List<Location> locations;
-
-    public static class GeocodeDeserializer extends JsonDeserializer<GeocodeResponse> {
-
-        @Override
-        public GeocodeResponse deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
-            List<Location> locations = jsonParser.readValueAs(new TypeReference<List<Location>>(){});
-            return new GeocodeResponse(locations);
-        }
-    }
 
     /**
      * Models the response content of the {@link GeocodeService}.
      */
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Location implements Serializable {
 
       private static final long serialVersionUID = -9137655613118727430L;
-
       private String id;
       private String type;
       private String source;
@@ -67,6 +62,5 @@ public class GeocodeResponse implements Serializable {
       private String isoCountryCode2Digit;
       private Double distance;
       private Double distanceMeters;
-
     }
 }

@@ -37,10 +37,10 @@ public class GeocodeTestService implements GeocodeService {
   public GeocodeResponse reverse(GeocodeRequest latLng) {
     return new GeocodeResponse(COUNTRY_CENTROIDS.findByCoordinate(latLng.getLat(), latLng.getLng()).map(country -> {
               GeocodeResponse.Location location = new GeocodeResponse.Location();
-                location.setName(country.getName());
-                location.setIsoCountryCode2Digit(country.getIsoCode());
-                location.setType("Political");
-                location.setSource("GBIF test data");
+              location.setName(country.getName());
+              location.setIsoCountryCode2Digit(country.getIsoCode());
+              location.setType("Political");
+              location.setSource("GBIF test data");
               return Collections.singletonList(location);
             }).orElse(Collections.emptyList()));
   }
