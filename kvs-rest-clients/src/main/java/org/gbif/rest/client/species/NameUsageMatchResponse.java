@@ -61,6 +61,7 @@ public class NameUsageMatchResponse implements Serializable {
     private String gbifKey;
     private String datasetAlias;
     private String status;
+    private String statusCode;
     private String sourceId;
   }
 
