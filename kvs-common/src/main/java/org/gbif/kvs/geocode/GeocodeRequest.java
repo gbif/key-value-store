@@ -13,12 +13,14 @@
  */
 package org.gbif.kvs.geocode;
 
+import org.gbif.kvs.Keyed;
+
+import java.io.Serializable;
+import java.util.Objects;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-import org.gbif.kvs.Keyed;
-import java.io.Serializable;
-import java.util.Objects;
 
 /** Geographic Coordinate: latitude and longitude. */
 @Data

@@ -14,8 +14,8 @@
 package org.gbif.rest.client;
 
 import org.gbif.api.model.collections.lookup.Match.MatchType;
-import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 

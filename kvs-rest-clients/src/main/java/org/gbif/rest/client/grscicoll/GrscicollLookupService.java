@@ -14,6 +14,7 @@
 package org.gbif.rest.client.grscicoll;
 
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -18,10 +18,10 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
+import org.gbif.kvs.geocode.GeocodeRequest;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.kvs.geocode.GeocodeRequest;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 

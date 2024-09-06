@@ -13,21 +13,18 @@
  */
 package org.gbif.rest.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import feign.Feign;
-import feign.MethodMetadata;
-import feign.Request;
-import feign.Util;
-import feign.form.spring.SpringFormEncoder;
-import feign.jackson.JacksonDecoder;
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -36,10 +33,15 @@ import org.springframework.cloud.openfeign.annotation.RequestParamParameterProce
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import feign.Feign;
+import feign.MethodMetadata;
+import feign.Request;
+import feign.Util;
+import feign.form.spring.SpringFormEncoder;
+import feign.jackson.JacksonDecoder;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;

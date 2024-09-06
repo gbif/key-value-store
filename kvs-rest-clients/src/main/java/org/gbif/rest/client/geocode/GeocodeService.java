@@ -14,6 +14,7 @@
 package org.gbif.rest.client.geocode;
 
 import org.gbif.kvs.geocode.GeocodeRequest;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;

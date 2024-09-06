@@ -13,12 +13,13 @@
  */
 package org.gbif.kvs.cache;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.gbif.kvs.KeyValueStore;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 /**
  * In-memory caffeine cache for {@link KeyValueStore}. Wraps an instance of a KeyValueStore in a

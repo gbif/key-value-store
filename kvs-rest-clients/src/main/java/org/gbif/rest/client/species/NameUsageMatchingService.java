@@ -13,6 +13,7 @@
  */
 package org.gbif.rest.client.species;
 import org.gbif.kvs.species.NameUsageMatchRequest;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;

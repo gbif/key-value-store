@@ -13,9 +13,9 @@
  */
 package org.gbif.rest.client.geocode.test;
 
+import org.gbif.kvs.geocode.GeocodeRequest;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.kvs.geocode.GeocodeRequest;
 
 import java.util.Collections;
 

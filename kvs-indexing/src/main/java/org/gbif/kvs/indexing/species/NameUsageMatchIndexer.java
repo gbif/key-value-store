@@ -17,10 +17,10 @@ import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
 import org.gbif.kvs.species.NameUsageMatchKVStoreFactory;
+import org.gbif.kvs.species.NameUsageMatchRequest;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatchResponse;
-import org.gbif.kvs.species.NameUsageMatchRequest;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.util.function.BiFunction;

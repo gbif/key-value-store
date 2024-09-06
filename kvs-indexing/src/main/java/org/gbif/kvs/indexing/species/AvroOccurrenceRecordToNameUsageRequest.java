@@ -15,13 +15,13 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.kvs.species.NameUsageMatchRequest;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.transforms.SerializableFunction;
-import org.gbif.kvs.species.NameUsageMatchRequest;
 
 /** Utility to convert HBase occurrence records into Identification objects. */
 class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<GenericRecord, NameUsageMatchRequest> {

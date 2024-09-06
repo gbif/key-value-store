@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.*;
 
 @Data
@@ -60,14 +59,16 @@ public class NameUsageMatchResponse implements Serializable {
   public static class Status {
     private String datasetKey;
     private String gbifKey;
-    private String datasetTitle;
-    private String category;
+    private String datasetAlias;
+    private String status;
+    private String sourceId;
   }
 
   @Data
   public static class Usage {
     private String key;
     private String name;
+    private String canonicalName;
     private String authorship;
     private String rank;
     private String code;

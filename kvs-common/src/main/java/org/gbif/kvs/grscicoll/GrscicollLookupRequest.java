@@ -13,14 +13,15 @@
  */
 package org.gbif.kvs.grscicoll;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
 import java.util.Optional;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @AllArgsConstructor
