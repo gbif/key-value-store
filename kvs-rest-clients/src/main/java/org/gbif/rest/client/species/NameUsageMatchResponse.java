@@ -68,6 +68,7 @@ public class NameUsageMatchResponse implements Serializable {
   public static class Usage {
     private String key;
     private String name;
+    private String authorship;
     private String rank;
     private String code;
     private String uninomial;
