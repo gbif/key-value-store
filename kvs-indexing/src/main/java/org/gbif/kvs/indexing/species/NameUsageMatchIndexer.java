@@ -145,8 +145,7 @@ public class NameUsageMatchIndexer {
                   public void processElement(ProcessContext context) {
                     try {
                       NameUsageMatchRequest request = context.element();
-                      NameUsageMatchResponse nameUsageMatch = NameUsageMatchKVStoreFactory
-                              .match(nameUsageMatchService, request);
+                      NameUsageMatchResponse nameUsageMatch = nameUsageMatchService.match(request);
 
                       byte[] saltedKey = keyGenerator.computeKey(request.getLogicalKey());
                       context.output(valueMutator.apply(saltedKey, nameUsageMatch));

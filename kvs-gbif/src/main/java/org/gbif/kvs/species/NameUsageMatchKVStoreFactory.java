@@ -165,9 +165,9 @@ public class NameUsageMatchKVStoreFactory {
         .withLoader(
             identification -> {
               try {
-                return match(nameUsageMatchService, identification);
+                return nameUsageMatchService.match(identification);
               } catch (Exception ex) {
-                throw logAndThrow(ex, "Error contacting the species math service");
+                throw logAndThrow(ex, "Error contacting the species match service");
               }
             })
          .withCloseHandler(closeHandler)
@@ -175,24 +175,16 @@ public class NameUsageMatchKVStoreFactory {
   }
 
   /**
-   * Matches the provided identification to a backbone concept, first using any well known taxon/name ID and then the name strings, and then
-   * decorates the response with the IUCN status.
-   */
-  public static NameUsageMatchResponse match(NameUsageMatchingService nameUsageMatchService, NameUsageMatchRequest identification) {
-    return nameUsageMatchService.match(identification);
-  }
-
-  /**
   * Builds a KV Store backed by the rest client.
   */
-  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> restKVStore(NameUsageMatchingService nameUsageMatchService,
+  private static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> restKVStore(final NameUsageMatchingService nameUsageMatchService,
                                                                                           Command closeHandler) {
     return new KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse>() {
 
       @Override
       public NameUsageMatchResponse get(NameUsageMatchRequest identification) {
         try {
-          return match(nameUsageMatchService, identification);
+          return nameUsageMatchService.match(identification);
         } catch (Exception ex) {
           throw logAndThrow(ex, "Error contacting the species math service");
         }
