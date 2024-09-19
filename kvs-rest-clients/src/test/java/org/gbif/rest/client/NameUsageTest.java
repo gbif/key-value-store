@@ -13,8 +13,8 @@
  */
 package org.gbif.rest.client;
 
-import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.kvs.species.NameUsageMatchRequest;
+import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
@@ -22,7 +22,7 @@ public class NameUsageTest {
 
     public static void main(String[] args) {
 
-        String baseApiUrl = "http://localhost:9999/";
+        String baseApiUrl = "http://localhost:8080/";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
@@ -34,7 +34,9 @@ public class NameUsageTest {
                 clientConfiguration
         );
 
-        NameUsageMatchResponse match = nameMatchService.match(NameUsageMatchRequest.builder().withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
+        NameUsageMatchResponse match = nameMatchService.match(NameUsageMatchRequest
+                .builder()
+                .withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
 
 
 //        NameUsageMatch match = nameMatchService.match(
