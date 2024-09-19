@@ -27,4 +27,7 @@ public interface NameUsageMatchingService {
 
   @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match", consumes = "application/json")
   NameUsageMatchResponse match(@SpringQueryMap NameUsageMatchRequest identification);
+
+  @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match/metadata", consumes = "application/json")
+  Metadata getMetadata();
 }
