@@ -22,10 +22,14 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ToString
+@SuperBuilder(setterPrefix = "with")
+@NoArgsConstructor
+@AllArgsConstructor
 public class NameUsageMatchResponse implements Serializable {
 
   private boolean synonym;
@@ -41,6 +45,9 @@ public class NameUsageMatchResponse implements Serializable {
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
+  @Builder(setterPrefix = "with")
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class Diagnostics {
     private MatchType matchType;
     /**
@@ -57,6 +64,9 @@ public class NameUsageMatchResponse implements Serializable {
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
+  @Builder(setterPrefix = "with")
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class Status {
     private String datasetKey;
     private String gbifKey;
@@ -67,6 +77,9 @@ public class NameUsageMatchResponse implements Serializable {
   }
 
   @Data
+  @Builder(setterPrefix = "with")
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class Usage {
     private String key;
     private String name;
@@ -112,6 +125,9 @@ public class NameUsageMatchResponse implements Serializable {
   }
 
   @Data
+  @Builder(setterPrefix = "with")
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class Authorship {
     private List<String> authors = new ArrayList();
     private List<String> exAuthors = new ArrayList();
@@ -119,6 +135,9 @@ public class NameUsageMatchResponse implements Serializable {
   }
 
   @Data
+  @Builder(setterPrefix = "with")
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class RankedName {
       private String key;
       private String name;
