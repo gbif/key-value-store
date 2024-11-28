@@ -18,7 +18,6 @@ import org.gbif.kvs.Keyed;
 import java.io.Serializable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,8 +29,8 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class NameUsageMatchRequest implements Keyed, Serializable {
 
-    protected String usageKey;
     protected String checklistKey;
+    protected String usageKey;
     protected String taxonID;
     protected String taxonConceptID;
     protected String scientificNameID;
@@ -55,7 +54,7 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
 
     @Override
     public String getLogicalKey() {
-        return Stream.of(scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, subgenus, species,
+        return Stream.of(checklistKey, scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, subgenus, species,
                         scientificName, genericName, specificEpithet, infraspecificEpithet, authorship, rank)
                 .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
     }

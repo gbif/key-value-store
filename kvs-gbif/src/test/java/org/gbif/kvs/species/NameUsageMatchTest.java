@@ -22,8 +22,9 @@ public class NameUsageMatchTest {
   @Test
   public void testKey() {
     assertEquals(
-            "A|B|C|1|2|3|4|5|6|6a|6b|7|8|9|10|11|GENUS",
+            "Z|A|B|C|1|2|3|4|5|6|6a|6b|7|8|9|10|11|GENUS",
             (NameUsageMatchRequest.builder()
+                    .withChecklistKey("Z")
                     .withScientificNameID("A")
                     .withTaxonConceptID("B")
                     .withTaxonID("C")
