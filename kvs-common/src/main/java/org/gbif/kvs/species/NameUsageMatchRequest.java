@@ -31,6 +31,7 @@ import lombok.experimental.SuperBuilder;
 public class NameUsageMatchRequest implements Keyed, Serializable {
 
     protected String usageKey;
+    protected String checklistKey;
     protected String taxonID;
     protected String taxonConceptID;
     protected String scientificNameID;
