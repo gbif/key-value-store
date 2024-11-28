@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.gbif</groupId>
         <artifactId>motherpom</artifactId>
-        <version>58</version>
+        <version>59</version>
     </parent>
 
     <groupId>org.gbif.kvs</groupId>
@@ -76,8 +76,8 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>1.17.0-SNAPSHOT</gbif-api.version>
-        <dwc-api.version>1.49-H3-SNAPSHOT</dwc-api.version>
+        <gbif-api.version>2.0.0</gbif-api.version>
+        <dwc-api.version>2.0.0</dwc-api.version>
         <gbif-parsers.version>0.63</gbif-parsers.version>
 
         <!-- Common libraries -->
