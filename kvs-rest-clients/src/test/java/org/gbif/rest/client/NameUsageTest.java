@@ -22,7 +22,7 @@ public class NameUsageTest {
 
     public static void main(String[] args) {
 
-        String baseApiUrl = "http://localhost:8080/";
+        String baseApiUrl = "https://api.gbif-dev2.org/";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
@@ -38,31 +38,6 @@ public class NameUsageTest {
                 .builder()
                 .withScientificName("Vanessa atalanta (Linnaeus,1758)").build());
 
-
-//        NameUsageMatch match = nameMatchService.match(
-//                "",
-//                "",
-//                "",
-//                "",
-//                "Vanessa atalanta (Linnaeus,1758)",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                "",
-//                true,
-//                true);
-
-
         System.out.println(match);
-
     }
 }

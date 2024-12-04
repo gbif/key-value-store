@@ -18,6 +18,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * GBIF Backbone name match and IUCN RedList services.
@@ -29,5 +30,5 @@ public interface NameUsageMatchingService {
   NameUsageMatchResponse match(@SpringQueryMap NameUsageMatchRequest identification);
 
   @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match/metadata", consumes = "application/json")
-  Metadata getMetadata();
+  Metadata getMetadata(@RequestParam(value = "checklistKey", required = false) String checklistKey);
 }
