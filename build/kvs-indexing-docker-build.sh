@@ -1,7 +1,7 @@
 #Simple script for pushing a image containing the named modules build artifact
 MODULE="kvs-indexing"
 
-POM_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+POM_VERSION=$1
 
 IMAGE=docker.gbif.org/${MODULE}:${POM_VERSION}
 IMAGE_LATEST=docker.gbif.org/${MODULE}:latest
