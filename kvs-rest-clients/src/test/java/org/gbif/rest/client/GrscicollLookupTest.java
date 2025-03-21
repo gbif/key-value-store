@@ -13,7 +13,6 @@
  */
 package org.gbif.rest.client;
 
-import org.gbif.api.model.collections.lookup.Match.MatchType;
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
@@ -37,6 +36,6 @@ public class GrscicollLookupTest {
 
     GrscicollLookupResponse response =
         lookupService.lookup(GrscicollLookupRequest.builder().withInstitutionCode("K").build());
-    Assert.assertEquals(MatchType.FUZZY, response.getInstitutionMatch().getMatchType());
+    Assert.assertEquals(GrscicollLookupResponse.MatchType.FUZZY, response.getInstitutionMatch().getMatchType());
   }
 }

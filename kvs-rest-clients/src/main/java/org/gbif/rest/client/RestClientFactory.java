@@ -24,7 +24,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -169,7 +168,10 @@ public class RestClientFactory {
                 // Prepend path from class annotation if specified
                 if (classAnnotation.value().length > 0) {
                     String pathValue = emptyToNull(classAnnotation.value()[0]);
-                    data.template().uri(StringUtils.prependIfMissing(pathValue, "/"));
+                    if (pathValue != null && !pathValue.endsWith("/")) {
+                        pathValue = pathValue + "/";
+                    }
+                    data.template().uri(pathValue);
                 }
             }
         }

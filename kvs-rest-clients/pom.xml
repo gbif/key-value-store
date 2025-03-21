@@ -33,21 +33,6 @@
             <groupId>org.gbif.kvs</groupId>
             <artifactId>kvs-common</artifactId>
         </dependency>
-        <!-- GBIF -->
-        <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>gbif-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <!-- Logging -->
         <dependency>
