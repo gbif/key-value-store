@@ -64,7 +64,7 @@ pipeline {
           configFileProvider(
                   [configFile(fileId: 'org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig1387378707709',
                           variable: 'MAVEN_SETTINGS_XML')]) {
-              git 'https://github.com/gbif/occurrence.git'
+              git 'https://github.com/gbif/key-value-store.git'
               sh 'mvn -s $MAVEN_SETTINGS_XML -B -Denforcer.skip=true release:prepare release:perform $RELEASE_ARGS'
           }
       }
