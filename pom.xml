@@ -19,7 +19,6 @@
         <module>kvs-rest-clients</module>
         <module>kvs-gbif</module>
         <module>kvs-indexing</module>
-        <module>kvs-workflows</module>
     </modules>
 
     <name>KeyValue Store :: Parent</name>
