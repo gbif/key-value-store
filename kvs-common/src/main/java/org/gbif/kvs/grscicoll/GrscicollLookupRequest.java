@@ -27,6 +27,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder(setterPrefix = "with")
+@lombok.EqualsAndHashCode
 public class GrscicollLookupRequest implements Keyed, Serializable {
 
   protected String institutionCode;
