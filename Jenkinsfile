@@ -110,5 +110,5 @@ def getDockerVersion() {
     if (params.RELEASE && params.RELEASE_VERSION != '') {
         return inputVersion
     }
-    return "${POM_VERSION}".substring(0, "${POM_VERSION}".indexOf("-SNAPSHOT"))
+    return "${POM_VERSION}"
 }
