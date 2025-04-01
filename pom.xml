@@ -79,8 +79,8 @@
 
         <!-- GBIF libraries -->
         <gbif-api.version>2.0.5-multitaxonomy-SNAPSHOT</gbif-api.version>
-        <dwc-api.version>1.35</dwc-api.version>
-        <gbif-parsers.version>0.60</gbif-parsers.version>
+        <dwc-api.version>2.0.0</dwc-api.version>
+        <gbif-parsers.version>0.63</gbif-parsers.version>
 
         <!-- Common libraries -->
         <apache.beam.version>2.51.0</apache.beam.version>
@@ -89,7 +89,6 @@
         <hadoop-core.version>3.2.4</hadoop-core.version>
         <hbase.version>2.5.3-hadoop3</hbase.version>
         <hbase.shaded.client.version>2.5.3-hadoop3</hbase.shaded.client.version>
-        <hive.version>1.2.0</hive.version>
 
         <!-- Logging -->
         <slf4j.version>1.7.5</slf4j.version>
@@ -119,6 +118,7 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
+<!--        <guava.version>27.0.1-jre</guava.version>-->
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -126,10 +126,14 @@
         <!-- Plugins -->
         <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
 
+        <!-- Trino -->
+        <trino-jdbc.version>414</trino-jdbc.version>
+
         <!-- Spark -->
-        <spark.version>3.4.0</spark.version>
+        <spark.version>3.5.2</spark.version>
         <scala.tools.version>2.12</scala.tools.version>
     </properties>
+
 
     <!--
     All dependencies of all modules are listed here with the project-wide default version.  Only when necessary
@@ -231,34 +235,11 @@
                 <version>${apache.beam.version}</version>
             </dependency>
 
-            <!-- hive -->
+          <!-- trino -->
             <dependency>
-                <groupId>org.apache.hive.hcatalog</groupId>
-                <artifactId>hive-hcatalog-core</artifactId>
-                <version>${hive.version}</version>
-                <exclusions>
-                    <!-- Excluded because it contains a shaded version of Avro -->
-                    <exclusion>
-                        <groupId>org.apache.hive</groupId>
-                        <artifactId>hive-exec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-metastore</artifactId>
-                <version>${hive.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-exec</artifactId>
-                <version>${hive.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-common</artifactId>
-                <version>${hive.version}</version>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-jdbc</artifactId>
+            <version>${trino-jdbc.version}</version>
             </dependency>
 
             <!-- Metrics -->
@@ -271,6 +252,12 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-core</artifactId>
                 <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${metrics.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Hadoop -->
@@ -326,6 +313,14 @@
                 </exclusions>
             </dependency>
 
+            <!-- spark -->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.tools.version}</artifactId>
+                <version>${spark.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
             <!-- Shaded client use by Apache Beam IO libraries -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -376,6 +371,7 @@
                 <scope>provided</scope>
             </dependency>
 
+
             <!-- Hadoop and HBase tests -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -402,6 +398,11 @@
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
+<!--          <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava</artifactId>-->
+<!--            <version>${guava.version}</version>-->
+<!--          </dependency>-->
 
             <!-- Logging -->
             <dependency>
