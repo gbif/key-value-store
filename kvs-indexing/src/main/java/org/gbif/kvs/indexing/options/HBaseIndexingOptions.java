@@ -25,6 +25,11 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setHbaseZk(String hbaseZk);
 
+  @Description("HBase Zookeeper node")
+  String getHbaseZkNode();
+
+  void setHbaseZkNode(String hbaseZkNode);
+
   @Description("Avro source glob to scan and extract values")
   String getSourceGlob();
 
