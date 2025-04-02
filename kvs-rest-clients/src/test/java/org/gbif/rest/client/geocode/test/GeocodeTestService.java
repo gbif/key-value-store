@@ -13,11 +13,11 @@
  */
 package org.gbif.rest.client.geocode.test;
 
+import org.gbif.kvs.geocode.GeocodeRequest;
+import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.Location;
 
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Test service that uses a list of centroids of known countries.
@@ -29,24 +29,19 @@ public class GeocodeTestService implements GeocodeService {
   /**
    * Performs the Geocode lookup using the tests centroids data.
    * If the coordinate is not found in the test data, return an empty list.
-   * @param latitude decimal latitude
-   * @param longitude decimal longitude
+   *
+   * @param latLng the latitude and longitude to reverse geocode
    * @return a List with a single Geocode response, and empty List if the coordinate do not resolve to a country
    */
   @Override
-  public List<Location> reverse(Double latitude, Double longitude, Double uncertaintyMeters) {
-    return COUNTRY_CENTROIDS.findByCoordinate(latitude, longitude).map(country -> {
-              Location location = new Location();
-                location.setName(country.getName());
-                location.setIsoCountryCode2Digit(country.getIsoCode());
-                location.setType("Political");
-                location.setSource("GBIF test data");
+  public GeocodeResponse reverse(GeocodeRequest latLng) {
+    return new GeocodeResponse(COUNTRY_CENTROIDS.findByCoordinate(latLng.getLat(), latLng.getLng()).map(country -> {
+              GeocodeResponse.Location location = new GeocodeResponse.Location();
+              location.setName(country.getName());
+              location.setIsoCountryCode2Digit(country.getIsoCode());
+              location.setType("Political");
+              location.setSource("GBIF test data");
               return Collections.singletonList(location);
-            }).orElse(Collections.emptyList());
-  }
-
-  @Override
-  public void close() {
-      //DO NOTHING
+            }).orElse(Collections.emptyList()));
   }
 }

@@ -56,10 +56,10 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setSaltedKeyBuckets(int saltedKeyBuckets);
 
-  @Description("GBIF API connection time-out")
-  long getApiTimeOut();
+  @Description("GBIF API connection time-out in seconds")
+  Integer getApiTimeOut();
 
-  void setApiTimeOut(long apiTimeOut);
+  void setApiTimeOut(Integer apiTimeOut);
 
   @Description("Rest/HTTP client file-cache max size")
   long getRestClientCacheMaxSize();

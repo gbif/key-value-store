@@ -14,6 +14,7 @@
 package org.gbif.kvs.hbase;
 
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.Keyed;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.metrics.CacheMetrics;
 import org.gbif.kvs.metrics.ElasticMetricsConfig;
@@ -48,7 +49,7 @@ import lombok.Data;
 /**
  * Implementation of a key-value based on HBase.
  * This implementation base its implementation on loader function that no necessarily produces values as the one provided by the KV store.
- *   - A loader function provides instances of data (L) from {@link Indexable} key elements.
+ *   - A loader function provides instances of data (L) from {@link Keyed} key elements.
  *   - A valueMutator is used to convert values of L data into HBase Put mutation.
  *   - A resultMapper function converts HBase {@link Result} into value V.
  *
@@ -60,7 +61,7 @@ import lombok.Data;
  * @param <L> type of values produced by the loader
  */
 @Data
-public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V>, Closeable {
+public class HBaseStore<K extends Keyed, V, L> implements KeyValueStore<K, V>, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(HBaseStore.class);
 
@@ -137,7 +138,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
   private V store(byte[] key, L value) {
     try (Table table = connection.getTable(tableName)) {
       Put put = valueMutator.apply(key, value);
-      if(Objects.nonNull(put)) {
+      if (Objects.nonNull(put)) {
         table.put(valueMutator.apply(key, value));
         metrics.incInserts();
         return Optional.ofNullable(valueMapper.apply(value)).orElse(null);
@@ -192,7 +193,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
    * @param <V> type of values to store
    * @return a new instance of a HBaseKVStore.Builder
    */
-  public static <K extends Indexable, V, L> Builder<K, V, L> builder() {
+  public static <K extends Keyed, V, L> Builder<K, V, L> builder() {
     return new Builder<>();
   }
 
@@ -202,7 +203,7 @@ public class HBaseStore<K extends Indexable, V, L> implements KeyValueStore<K, V
    * @param <K> type of key elements
    * @param <V> type of values to store
    */
-  public static class Builder<K extends Indexable, V, L> {
+  public static class Builder<K extends Keyed, V, L> {
     private HBaseKVStoreConfiguration configuration;
     private LoaderRetryConfig loaderRetryConfig;
     private BiFunction<byte[], L, Put> valueMutator;
