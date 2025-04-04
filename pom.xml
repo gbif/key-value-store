@@ -370,7 +370,6 @@
                 <scope>provided</scope>
             </dependency>
 
-
             <!-- Hadoop and HBase tests -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -397,11 +396,6 @@
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
-<!--          <dependency>-->
-<!--            <groupId>com.google.guava</groupId>-->
-<!--            <artifactId>guava</artifactId>-->
-<!--            <version>${guava.version}</version>-->
-<!--          </dependency>-->
 
             <!-- Logging -->
             <dependency>

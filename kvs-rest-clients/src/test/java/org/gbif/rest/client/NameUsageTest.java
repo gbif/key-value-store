@@ -27,7 +27,7 @@ public class NameUsageTest {
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
                         .withBaseApiUrl(baseApiUrl)
-                        .withTimeOut(60000L)
+                        .withTimeOutMillisec(60_000L)
                         .withFileCacheMaxSizeMb(64L).build();
 
         NameUsageMatchingService nameMatchService = RestClientFactory.createNameMatchService(

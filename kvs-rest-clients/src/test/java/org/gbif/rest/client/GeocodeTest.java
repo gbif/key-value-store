@@ -26,7 +26,7 @@ public class GeocodeTest {
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
                         .withBaseApiUrl(baseApiUrl)
-                        .withTimeOut(60L)
+                        .withTimeOutMillisec(60_000L)
                         .withFileCacheMaxSizeMb(64L).build();
 
         GeocodeService geocodeService = RestClientFactory.createGeocodeService(

@@ -56,7 +56,7 @@ public interface HBaseIndexingOptions extends PipelineOptions {
 
   void setSaltedKeyBuckets(int saltedKeyBuckets);
 
-  @Description("GBIF API connection time-out")
+  @Description("GBIF API connection time-out in seconds")
   long getApiTimeOut();
 
   void setApiTimeOut(long apiTimeOut);

@@ -76,7 +76,7 @@ public class NameUsageMatchIndexer {
   public static ClientConfiguration nameUsageClientConfiguration(NameUsageMatchIndexingOptions options) {
     return ClientConfiguration.builder()
       .withBaseApiUrl(options.getNameUsageBaseApiUrl())
-      .withTimeOut(options.getNameUsageApiTimeOut())
+      .withTimeOutMillisec(options.getNameUsageApiTimeOut())
       .withFileCacheMaxSizeMb(options.getNameUsageRestClientCacheMaxSize())
       .build();
   }

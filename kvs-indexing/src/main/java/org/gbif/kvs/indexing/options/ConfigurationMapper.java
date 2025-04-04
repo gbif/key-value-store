@@ -49,7 +49,7 @@ public class ConfigurationMapper {
   public static ClientConfiguration clientConfiguration(HBaseIndexingOptions options) {
     return ClientConfiguration.builder()
             .withBaseApiUrl(options.getBaseApiUrl())
-            .withTimeOut(options.getApiTimeOut())
+            .withTimeOutMillisec(options.getApiTimeOut() * 1000)
             .withFileCacheMaxSizeMb(options.getRestClientCacheMaxSize())
             .build();
   }

@@ -26,7 +26,7 @@ public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
 
   void setNameUsageBaseApiUrl(String nameUsageBaseApiUrl);
 
-  @Description("GBIF NameUsageSearchResponse API connection time-out")
+  @Description("GBIF NameUsageSearchResponse API connection time-out in seconds")
   long getNameUsageApiTimeOut();
 
   void setNameUsageApiTimeOut(long nameUsageApiTimeOut);

@@ -54,8 +54,8 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  */
 public class RestClientFactory {
 
-    private static final long DEFAULT_CONNECT_TIMEOUT_MILLIS = 10_000;
-    private static final long DEFAULT_READ_TIMEOUT_MILLIS = 60_000;
+    private static final long DEFAULT_CONNECT_TIMEOUT_MILLISECONDS = 10_000L;
+    private static final long DEFAULT_READ_TIMEOUT_MILLISECONDS = 60_000L;
 
     /**
      * Creates a new instance of the NameUsageMatchService using the provided clientConfiguration.
@@ -103,13 +103,13 @@ public class RestClientFactory {
                         .contract(ClientContract.withDefaultProcessors())
                         .options(
                                 new Request.Options(
-                                        clientConfiguration.getConnectTimeout() != null
-                                                ? clientConfiguration.getConnectTimeout()
-                                                : DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                                        clientConfiguration.getConnectTimeoutMillisec() != null
+                                                ? clientConfiguration.getConnectTimeoutMillisec()
+                                                : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
                                         TimeUnit.MILLISECONDS,
-                                        clientConfiguration.getTimeOut()!= null
-                                                ? clientConfiguration.getTimeOut()
-                                                : DEFAULT_READ_TIMEOUT_MILLIS,
+                                        clientConfiguration.getTimeOutMillisec() != null
+                                                ? clientConfiguration.getTimeOutMillisec()
+                                                : DEFAULT_READ_TIMEOUT_MILLISECONDS,
                                         TimeUnit.MILLISECONDS,
                                         true))
                         .decode404();
