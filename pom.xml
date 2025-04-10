@@ -99,6 +99,8 @@
         <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
+        <feign.version>13.5</feign.version>
+
         <!-- Caching -->
         <cache2k.version>2.0.0.Final</cache2k.version>
         <caffeine.version>2.9.2</caffeine.version>
@@ -304,6 +306,18 @@
                         <artifactId>log4j</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Feign -->
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-jackson</artifactId>
+                <version>${feign.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-httpclient</artifactId>
+                <version>${feign.version}</version>
             </dependency>
 
             <!-- spark -->
