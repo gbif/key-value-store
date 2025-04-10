@@ -26,4 +26,5 @@ public class ClientConfiguration implements Serializable {
   private final Integer timeOutMillisec;
   private final Integer connectTimeoutMillisec;
   private final Integer maxConnections;
+  private final Long fileCacheMaxSizeMb;
 }
