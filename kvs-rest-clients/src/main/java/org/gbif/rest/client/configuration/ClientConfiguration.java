@@ -15,10 +15,7 @@ package org.gbif.rest.client.configuration;
 
 import java.io.Serializable;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @EqualsAndHashCode
@@ -26,7 +23,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ClientConfiguration implements Serializable {
   private final String baseApiUrl;
-  private final Long timeOutMillisec;
-  private final Long connectTimeoutMillisec;
-  private final Long fileCacheMaxSizeMb;
+  private final Integer timeOutMillisec;
+  private final Integer connectTimeoutMillisec;
+  private final Integer maxConnections;
 }

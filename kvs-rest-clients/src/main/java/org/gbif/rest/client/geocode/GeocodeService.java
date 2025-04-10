@@ -15,16 +15,14 @@ package org.gbif.rest.client.geocode;
 
 import org.gbif.kvs.geocode.GeocodeRequest;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.SpringQueryMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
+import feign.Headers;
+import feign.QueryMap;
+import feign.RequestLine;
 
 /**
  * GBIF Geocode Service client.
  */
-@FeignClient(name = "geocode", url = "${geocode.baseApiUrl}")
+//@FeignClient(name = "geocode", url = "${geocode.baseApiUrl}")
 public interface GeocodeService {
 
   /**
@@ -32,6 +30,10 @@ public interface GeocodeService {
    * @param latLng  the latitude and longitude
    * @return a list of proposed locations, an empty list if no proposals were found
    */
-  @RequestMapping(method = RequestMethod.GET, value = "geocode/reverse")
-  GeocodeResponse reverse(@SpringQueryMap GeocodeRequest latLng);
+  @RequestLine("GET geocode/reverse")  // Adjust the endpoint as needed
+  @Headers({
+          "Content-Type: application/json",
+          "Accept: application/json"
+  })
+  GeocodeResponse reverse(@QueryMap GeocodeRequest latLng);
 }

@@ -77,7 +77,7 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>2.0.5-multitaxonomy-SNAPSHOT</gbif-api.version>
+        <gbif-api.version>2.2.0-multitaxonomy-SNAPSHOT</gbif-api.version>
         <dwc-api.version>2.0.0</dwc-api.version>
         <gbif-parsers.version>0.63</gbif-parsers.version>
 
@@ -99,10 +99,6 @@
         <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
-        <!-- Spring / Feign-->
-        <spring-cloud-starter-openfeign.version>3.1.9</spring-cloud-starter-openfeign.version>
-        <spring-boot.version>2.7.18</spring-boot.version>
-
         <!-- Caching -->
         <cache2k.version>2.0.0.Final</cache2k.version>
         <caffeine.version>2.9.2</caffeine.version>
@@ -117,7 +113,6 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
-<!--        <guava.version>27.0.1-jre</guava.version>-->
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -132,7 +127,6 @@
         <spark.version>3.5.2</spark.version>
         <scala.tools.version>2.12</scala.tools.version>
     </properties>
-
 
     <!--
     All dependencies of all modules are listed here with the project-wide default version.  Only when necessary
@@ -234,11 +228,11 @@
                 <version>${apache.beam.version}</version>
             </dependency>
 
-          <!-- trino -->
+            <!-- trino -->
             <dependency>
-            <groupId>io.trino</groupId>
-            <artifactId>trino-jdbc</artifactId>
-            <version>${trino-jdbc.version}</version>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-jdbc</artifactId>
+                <version>${trino-jdbc.version}</version>
             </dependency>
 
             <!-- Metrics -->

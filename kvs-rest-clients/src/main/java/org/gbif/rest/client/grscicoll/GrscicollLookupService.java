@@ -15,18 +15,20 @@ package org.gbif.rest.client.grscicoll;
 
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.SpringQueryMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import feign.Headers;
+import feign.QueryMap;
+import feign.RequestLine;
 
 
 /**
  * GrSciColl lookup service
  */
-@FeignClient(name = "grscicoll", url = "${grscicoll.baseApiUrl}")
 public interface GrscicollLookupService {
 
-  @RequestMapping(method = RequestMethod.GET, value = "grscicoll/lookup")
-  GrscicollLookupResponse lookup(@SpringQueryMap GrscicollLookupRequest request);
+  @RequestLine("GET grscicoll/lookup")  // Adjust the endpoint as needed
+  @Headers({
+        "Content-Type: application/json",
+        "Accept: application/json"
+  })
+  GrscicollLookupResponse lookup(@QueryMap GrscicollLookupRequest request);
 }
