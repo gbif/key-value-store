@@ -38,6 +38,8 @@ public class NameUsageMatchResponse implements Serializable {
   private List<RankedName> classification = new ArrayList<>();
   private List<NameUsageMatchResponse> alternatives = new ArrayList<>();
   private NameUsageMatchResponse.Diagnostics diagnostics = new NameUsageMatchResponse.Diagnostics();
+  private Long left;
+  private Long right;
   /**
    * Status information from external sources like IUCN Red List.
    */
