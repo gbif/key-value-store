@@ -19,23 +19,43 @@ import org.gbif.rest.client.geocode.GeocodeService;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
+import org.springframework.cloud.openfeign.support.SpringMvcContract;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import feign.*;
-import feign.httpclient.ApacheHttpClient;
+import feign.Feign;
+import feign.MethodMetadata;
+import feign.Request;
+import feign.Util;
+import feign.form.spring.SpringFormEncoder;
 import feign.jackson.JacksonDecoder;
-import feign.jackson.JacksonEncoder;
+
+import static feign.Util.checkState;
+import static feign.Util.emptyToNull;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
 /**
  * Factory class to create instances of the GBIF REST API clients.
+ * This is a simplified way of creating clients largely for test purposes.
+ * Clients can also be created using the ClientBuilder in the gbif-common-ws module
+ * which provides more configuration options.
  */
 public class RestClientFactory {
+
+    private static final long DEFAULT_CONNECT_TIMEOUT_MILLISECONDS = 10_000L;
+    private static final long DEFAULT_READ_TIMEOUT_MILLISECONDS = 60_000L;
 
     /**
      * Creates a new instance of the NameUsageMatchService using the provided clientConfiguration.
@@ -68,7 +88,6 @@ public class RestClientFactory {
      * Creates a new client instance.
      */
     private static <T> T build(Class<T> clazz, ClientConfiguration clientConfiguration) {
-
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(
                 new SimpleModule().addDeserializer(
@@ -77,36 +96,84 @@ public class RestClientFactory {
                 )
         );
 
-        // Configure connection pool
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(
-                clientConfiguration.getMaxConnections() !=null ? clientConfiguration.getMaxConnections() : 5); // total pool size
-        connectionManager.setDefaultMaxPerRoute(clientConfiguration.getMaxConnections() !=null ? clientConfiguration.getMaxConnections() : 5); // max per route
+        Feign.Builder builder =
+                Feign.builder()
+                        .encoder(new SpringFormEncoder())
+                        .decoder(new JacksonDecoder(objectMapper))
+                        .contract(ClientContract.withDefaultProcessors())
+                        .options(
+                                new Request.Options(
+                                        clientConfiguration.getConnectTimeoutMillisec() != null
+                                                ? clientConfiguration.getConnectTimeoutMillisec()
+                                                : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
+                                        TimeUnit.MILLISECONDS,
+                                        clientConfiguration.getTimeOutMillisec() != null
+                                                ? clientConfiguration.getTimeOutMillisec()
+                                                : DEFAULT_READ_TIMEOUT_MILLISECONDS,
+                                        TimeUnit.MILLISECONDS,
+                                        true))
+                        .decode404();
+        return builder.target(clazz, clientConfiguration.getBaseApiUrl());
+    }
 
-        // Configure timeouts
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(
-                        clientConfiguration.getConnectTimeoutMillisec() != null ?
-                                clientConfiguration.getConnectTimeoutMillisec() :  60000) // 60 seconds
-                .setSocketTimeout(clientConfiguration.getTimeOutMillisec() != null ?
-                        clientConfiguration.getTimeOutMillisec() :  60000) // 60 seconds
-                .build();
+    static class ClientContract extends SpringMvcContract {
 
-        // Build HTTP client
-        CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+        private ClientContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors) {
+            super(annotatedParameterProcessors);
+        }
 
-        // Feign client with Apache HTTP client
-        Client feignClient = new ApacheHttpClient(httpClient);
+        public static ClientContract withDefaultProcessors() {
+            return new ClientContract(
+                    Arrays.asList(
+                            new PathVariableParameterProcessor(),
+                            new RequestParamParameterProcessor(),
+                            new RequestHeaderParameterProcessor(),
+                            new QueryMapParameterProcessor()));
+        }
 
-        return Feign.builder()
-                .client(feignClient)
-                .encoder(new JacksonEncoder())
-                .decoder(new JacksonDecoder(objectMapper))
-                .logger(new Logger.ErrorLogger())
-                .logLevel(Logger.Level.BASIC)
-                .target(clazz, clientConfiguration.getBaseApiUrl());
+        @Override
+        public List<MethodMetadata> parseAndValidateMetadata(final Class<?> targetType) {
+            checkState(
+                    targetType.getTypeParameters().length == 0,
+                    "Parameterized types unsupported: %s",
+                    targetType.getSimpleName());
+            final Map<String, MethodMetadata> result = new LinkedHashMap<>();
+
+            for (final Method method : targetType.getMethods()) {
+                if (method.getDeclaringClass() == Object.class
+                        || (method.getModifiers() & Modifier.STATIC) != 0
+                        || Util.isDefault(method)
+                        // skip default methods which related to generic inheritance
+                        // also default methods are considered as "unsupported operations"
+                        || method.toString().startsWith("public default")
+                        // skip not annotated methods (consider as "not implemented")
+                        || method.getAnnotations().length == 0) {
+                    continue;
+                }
+                final MethodMetadata metadata = this.parseAndValidateMetadata(targetType, method);
+                checkState(
+                        !result.containsKey(metadata.configKey()),
+                        "Overrides unsupported: %s",
+                        metadata.configKey());
+                result.put(metadata.configKey(), metadata);
+            }
+
+            return new ArrayList<>(result.values());
+        }
+
+        @Override
+        protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
+            RequestMapping classAnnotation = findMergedAnnotation(clz, RequestMapping.class);
+            if (classAnnotation != null) {
+                // Prepend path from class annotation if specified
+                if (classAnnotation.value().length > 0) {
+                    String pathValue = emptyToNull(classAnnotation.value()[0]);
+                    if (pathValue != null && !pathValue.endsWith("/")) {
+                        pathValue = pathValue + "/";
+                    }
+                    data.template().uri(pathValue);
+                }
+            }
+        }
     }
 }

@@ -1,34 +1,7 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.kvs.SaltedKeyGenerator;
-import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
-import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
-import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
-import org.gbif.kvs.indexing.options.ConfigurationMapper;
-import org.gbif.rest.client.RestClientFactory;
-import org.gbif.rest.client.configuration.ClientConfiguration;
-import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
-import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-import org.gbif.utils.PreconditionUtils;
-import org.gbif.utils.file.properties.PropertiesUtil;
-
-import java.util.Objects;
-import java.util.Properties;
-import java.util.function.BiFunction;
-
+import com.google.common.base.Strings;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.beam.runners.spark.SparkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
@@ -48,10 +21,20 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-
-import com.google.common.base.Strings;
-
-import lombok.extern.slf4j.Slf4j;
+import org.gbif.kvs.SaltedKeyGenerator;
+import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
+import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
+import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
+import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.RestClientFactory;
+import org.gbif.rest.client.configuration.ClientConfiguration;
+import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
+import org.gbif.rest.client.grscicoll.GrscicollLookupService;
+import org.gbif.utils.PreconditionUtils;
+import org.gbif.utils.file.properties.PropertiesUtil;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.BiFunction;
 
 @Slf4j
 public class GrscicollPipelineWorkflow {
@@ -81,7 +64,7 @@ public class GrscicollPipelineWorkflow {
     options.setHbaseZkNode(properties.getProperty("hbaseZkNode"));
 
     options.setBaseApiUrl(properties.getProperty("apiBaseUrl"));
-    options.setApiTimeOut(Integer.parseInt(properties.getProperty("apiTimeOut")));
+    options.setApiTimeOut(Long.parseLong(properties.getProperty("apiTimeOut")));
     options.setRestClientCacheMaxSize(
         Long.parseLong(properties.getProperty("apiRestClientCacheMaxSize")));
     return options;

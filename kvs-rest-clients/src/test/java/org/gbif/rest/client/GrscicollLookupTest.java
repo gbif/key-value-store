@@ -27,6 +27,8 @@ public class GrscicollLookupTest {
   public void clientTest() {
     ClientConfiguration config =
         ClientConfiguration.builder()
+                .withTimeOutMillisec(60_000L)
+                .withFileCacheMaxSizeMb(64L)
                 .withBaseApiUrl("https://api.gbif-uat.org/v1/")
                 .build();
 

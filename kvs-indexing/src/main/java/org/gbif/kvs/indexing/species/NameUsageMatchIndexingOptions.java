@@ -27,9 +27,9 @@ public interface NameUsageMatchIndexingOptions extends HBaseIndexingOptions {
   void setNameUsageBaseApiUrl(String nameUsageBaseApiUrl);
 
   @Description("GBIF NameUsageSearchResponse API connection time-out in seconds")
-  Integer getNameUsageApiTimeOut();
+  long getNameUsageApiTimeOut();
 
-  void setNameUsageApiTimeOut(Integer nameUsageApiTimeOut);
+  void setNameUsageApiTimeOut(long nameUsageApiTimeOut);
 
   @Description("NameUsageSearchResponse Rest/HTTP client file-cache max size")
   long getNameUsageRestClientCacheMaxSize();
