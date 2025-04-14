@@ -13,6 +13,12 @@
  */
 package org.gbif.rest.client;
 
+import feign.httpclient.ApacheHttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
@@ -21,6 +27,9 @@ import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.http.HttpClient;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -54,8 +63,8 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  */
 public class RestClientFactory {
 
-    private static final long DEFAULT_CONNECT_TIMEOUT_MILLISECONDS = 10_000L;
-    private static final long DEFAULT_READ_TIMEOUT_MILLISECONDS = 60_000L;
+    private static final Integer DEFAULT_CONNECT_TIMEOUT_MILLISECONDS = 10_000;
+    private static final Integer DEFAULT_READ_TIMEOUT_MILLISECONDS = 60_000;
 
     /**
      * Creates a new instance of the NameUsageMatchService using the provided clientConfiguration.
@@ -98,6 +107,19 @@ public class RestClientFactory {
 
         Feign.Builder builder =
                 Feign.builder()
+                        .client(new ApacheHttpClient(newMultithreadedClient(
+                                5,
+                                5,
+                                clientConfiguration.getConnectTimeoutMillisec() != null
+                                        ? clientConfiguration.getConnectTimeoutMillisec()
+                                        : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
+                                clientConfiguration.getTimeOutMillisec() != null
+                                        ? clientConfiguration.getTimeOutMillisec()
+                                        : DEFAULT_READ_TIMEOUT_MILLISECONDS,
+                                clientConfiguration.getTimeOutMillisec() != null
+                                        ? clientConfiguration.getTimeOutMillisec()
+                                        : DEFAULT_READ_TIMEOUT_MILLISECONDS
+                        )))
                         .encoder(new SpringFormEncoder())
                         .decoder(new JacksonDecoder(objectMapper))
                         .contract(ClientContract.withDefaultProcessors())
@@ -114,6 +136,31 @@ public class RestClientFactory {
                                         true))
                         .decode404();
         return builder.target(clazz, clientConfiguration.getBaseApiUrl());
+    }
+
+    /**
+     * Creates a Http multithreaded client.
+     */
+    static CloseableHttpClient newMultithreadedClient(Integer maxConnections,
+                                                      Integer maxPerRoute,
+                                                      Integer socketTimeout,
+                                                      Integer connectionTimeout,
+                                                      Integer connectionRequestTimeout) {
+        return HttpClients.custom()
+                .setMaxConnTotal(maxConnections)
+                .setMaxConnPerRoute(maxPerRoute)
+                .setDefaultSocketConfig(
+                        SocketConfig.custom().setSoTimeout(socketTimeout).build())
+                .setDefaultConnectionConfig(
+                        ConnectionConfig.custom()
+                                .setCharset(Charset.forName(StandardCharsets.UTF_8.name()))
+                                .build())
+                .setDefaultRequestConfig(
+                        RequestConfig.custom()
+                                .setConnectTimeout(connectionTimeout)
+                                .setConnectionRequestTimeout(connectionRequestTimeout)
+                                .build())
+                .build();
     }
 
     static class ClientContract extends SpringMvcContract {

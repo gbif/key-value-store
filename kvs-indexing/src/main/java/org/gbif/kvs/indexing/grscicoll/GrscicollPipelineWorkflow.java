@@ -64,7 +64,7 @@ public class GrscicollPipelineWorkflow {
     options.setHbaseZkNode(properties.getProperty("hbaseZkNode"));
 
     options.setBaseApiUrl(properties.getProperty("apiBaseUrl"));
-    options.setApiTimeOut(Long.parseLong(properties.getProperty("apiTimeOut")));
+    options.setApiTimeOut(Integer.parseInt(properties.getProperty("apiTimeOut")));
     options.setRestClientCacheMaxSize(
         Long.parseLong(properties.getProperty("apiRestClientCacheMaxSize")));
     return options;

@@ -26,7 +26,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ClientConfiguration implements Serializable {
   private final String baseApiUrl;
-  private final Long timeOutMillisec;
-  private final Long connectTimeoutMillisec;
+  private final Integer timeOutMillisec;
+  private final Integer connectTimeoutMillisec;
   private final Long fileCacheMaxSizeMb;
 }
