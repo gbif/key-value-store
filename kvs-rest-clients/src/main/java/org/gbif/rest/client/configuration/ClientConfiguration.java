@@ -28,5 +28,6 @@ public class ClientConfiguration implements Serializable {
   private final String baseApiUrl;
   private final Integer timeOutMillisec;
   private final Integer connectTimeoutMillisec;
+  private final Integer maxConnections;
   private final Long fileCacheMaxSizeMb;
 }

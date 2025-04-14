@@ -27,11 +27,9 @@ import org.gbif.rest.client.species.NameUsageMatchingService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.http.HttpClient;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
@@ -46,7 +44,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import feign.Feign;
 import feign.MethodMetadata;
-import feign.Request;
 import feign.Util;
 import feign.form.spring.SpringFormEncoder;
 import feign.jackson.JacksonDecoder;
@@ -108,8 +105,12 @@ public class RestClientFactory {
         Feign.Builder builder =
                 Feign.builder()
                         .client(new ApacheHttpClient(newMultithreadedClient(
-                                5,
-                                5,
+                                clientConfiguration.getMaxConnections() != null
+                                        ? clientConfiguration.getMaxConnections()
+                                        : 5,
+                                clientConfiguration.getMaxConnections() != null
+                                        ? clientConfiguration.getMaxConnections()
+                                        : 5,
                                 clientConfiguration.getConnectTimeoutMillisec() != null
                                         ? clientConfiguration.getConnectTimeoutMillisec()
                                         : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
@@ -123,17 +124,6 @@ public class RestClientFactory {
                         .encoder(new SpringFormEncoder())
                         .decoder(new JacksonDecoder(objectMapper))
                         .contract(ClientContract.withDefaultProcessors())
-                        .options(
-                                new Request.Options(
-                                        clientConfiguration.getConnectTimeoutMillisec() != null
-                                                ? clientConfiguration.getConnectTimeoutMillisec()
-                                                : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
-                                        TimeUnit.MILLISECONDS,
-                                        clientConfiguration.getTimeOutMillisec() != null
-                                                ? clientConfiguration.getTimeOutMillisec()
-                                                : DEFAULT_READ_TIMEOUT_MILLISECONDS,
-                                        TimeUnit.MILLISECONDS,
-                                        true))
                         .decode404();
         return builder.target(clazz, clientConfiguration.getBaseApiUrl());
     }
