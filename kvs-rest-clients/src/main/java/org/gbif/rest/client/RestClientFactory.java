@@ -107,10 +107,10 @@ public class RestClientFactory {
                         .client(new ApacheHttpClient(newMultithreadedClient(
                                 clientConfiguration.getMaxConnections() != null
                                         ? clientConfiguration.getMaxConnections()
-                                        : 5,
+                                        : 3,
                                 clientConfiguration.getMaxConnections() != null
                                         ? clientConfiguration.getMaxConnections()
-                                        : 5,
+                                        : 3,
                                 clientConfiguration.getConnectTimeoutMillisec() != null
                                         ? clientConfiguration.getConnectTimeoutMillisec()
                                         : DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
