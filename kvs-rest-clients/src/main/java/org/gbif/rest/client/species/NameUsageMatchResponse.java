@@ -124,6 +124,7 @@ public class NameUsageMatchResponse implements Serializable {
     private boolean isIndetermined;
     private boolean isPhraseName;
     private String terminalEpithet;
+    private String formattedName;
   }
 
   @Data
