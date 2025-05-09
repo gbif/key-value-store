@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gbif.kvs.hbase;
+package org.gbif.kvs;
 
-/** Objects that can be indexed in a HBase KV store. */
-public interface Indexable {
+/** Objects that can be indexed in a KV store. */
+public interface Keyed {
 
   /**
    * Generates a logical key as a String.
-   * @return a byte[] as a logical key
+   * @return a String as a logical key
    */
   String getLogicalKey();
 }

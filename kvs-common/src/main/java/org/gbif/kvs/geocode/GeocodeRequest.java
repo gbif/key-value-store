@@ -13,38 +13,24 @@
  */
 package org.gbif.kvs.geocode;
 
-import org.gbif.kvs.hbase.Indexable;
+import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
 import java.util.Objects;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 /** Geographic Coordinate: latitude and longitude. */
 @Data
-@Builder(setterPrefix = "with", builderClassName = "Builder")
+@SuperBuilder(setterPrefix = "with")
 @AllArgsConstructor
-public class LatLng implements Serializable, Indexable {
+public class GeocodeRequest implements Keyed, Serializable {
 
-  private Double latitude;
-  private Double longitude;
-  private Double uncertaintyMeters;
-
-  public LatLng() {}
-
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
-
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
-
-  public void setUncertaintyMeters(Double uncertaintyMeters) {
-    this.uncertaintyMeters = uncertaintyMeters;
-  }
+  protected Double lat;
+  protected Double lng;
+  protected Double uncertaintyMeters;
 
   /**
    * Factory method.
@@ -52,8 +38,8 @@ public class LatLng implements Serializable, Indexable {
    * @param longitude decimal longitude
    * @return a new instance of LatLng
    */
-  public static LatLng create(Double latitude, Double longitude) {
-    return new LatLng(latitude, longitude, null);
+  public static GeocodeRequest create(Double latitude, Double longitude) {
+    return new GeocodeRequest(latitude, longitude, null);
   }
 
   /**
@@ -63,8 +49,8 @@ public class LatLng implements Serializable, Indexable {
    * @param uncertaintyMeters uncertainty in metres
    * @return a new instance of LatLng
    */
-  public static LatLng create(Double latitude, Double longitude, Double uncertaintyMeters) {
-    return new LatLng(latitude, longitude, uncertaintyMeters);
+  public static GeocodeRequest create(Double latitude, Double longitude, Double uncertaintyMeters) {
+    return new GeocodeRequest(latitude, longitude, uncertaintyMeters);
   }
 
   /**
@@ -74,12 +60,12 @@ public class LatLng implements Serializable, Indexable {
    * @return true if the coordinate is valid, false otherwise
    */
   public boolean isValid() {
-    return Objects.nonNull(latitude)
-        && Objects.nonNull(longitude)
-        && latitude <= 90.0
-        && latitude >= -90
-        && longitude <= 180
-        && longitude >= -180;
+    return Objects.nonNull(lat)
+        && Objects.nonNull(lng)
+        && lat <= 90.0
+        && lat >= -90
+        && lng <= 180
+        && lng >= -180;
   }
 
   /**
@@ -90,9 +76,9 @@ public class LatLng implements Serializable, Indexable {
   @Override
   public String getLogicalKey() {
     if (uncertaintyMeters == null) {
-      return latitude.toString() + '|' + longitude.toString();
+      return lat.toString() + '|' + lng.toString();
     } else {
-      return latitude.toString() + '|' + longitude.toString() + '|' + uncertaintyMeters.toString();
+      return lat.toString() + '|' + lng.toString() + '|' + uncertaintyMeters.toString();
     }
   }
 }

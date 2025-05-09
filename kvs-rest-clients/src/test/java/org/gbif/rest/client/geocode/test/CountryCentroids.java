@@ -52,7 +52,6 @@ public class CountryCentroids {
     countries = loadCountriesData(CountryCentroids.class.getClassLoader().getResource(COUNTRIES_FILE).getFile());
   }
 
-
   /**
    *
    * @return the list of loaded countries
@@ -123,10 +122,9 @@ public class CountryCentroids {
   @ToString
   @AllArgsConstructor
   public static class Country {
-    private final String isoCode;
-    private final Double latitude;
-    private final Double longitude;
-    private final String name;
+      private String isoCode;
+      private Double latitude;
+      private Double longitude;
+      private String name;
   }
-
 }

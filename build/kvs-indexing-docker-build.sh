@@ -13,7 +13,7 @@ echo "Pushing Docker image to the repository"
 docker push ${IMAGE}
 
 if [[ $IS_M2RELEASEBUILD = true ]]; then
-  echo "Updated latest tag poiting to the newly released ${IMAGE}"
+  echo "Updated latest tag pointing to the newly released ${IMAGE}"
   docker tag ${IMAGE} ${IMAGE_LATEST}
   docker push ${IMAGE_LATEST}
 fi

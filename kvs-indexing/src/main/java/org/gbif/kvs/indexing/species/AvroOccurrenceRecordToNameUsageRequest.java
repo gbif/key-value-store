@@ -15,7 +15,7 @@ package org.gbif.kvs.indexing.species;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.kvs.species.Identification;
+import org.gbif.kvs.species.NameUsageMatchRequest;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -24,7 +24,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 
 /** Utility to convert HBase occurrence records into Identification objects. */
-class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<GenericRecord, Identification> {
+class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<GenericRecord, NameUsageMatchRequest> {
 
   // each UnknownTerm is prefixed differently
   private static final String VERBATIM_TERM_PREFIX = "v_";
@@ -38,8 +38,8 @@ class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<Gen
    * Translates an HBase record/result into a Identification object.
    */
   @Override
-  public Identification apply(GenericRecord input) {
-    Identification.Builder builder = Identification.builder();
+  public NameUsageMatchRequest apply(GenericRecord input) {
+    NameUsageMatchRequest.NameUsageMatchRequestBuilder builder = NameUsageMatchRequest.builder();
 
     // Interpret common
     putIfExists(input, DwcTerm.kingdom, builder::withKingdom);
@@ -52,7 +52,7 @@ class AvroOccurrenceRecordToNameUsageRequest implements SerializableFunction<Gen
     putIfExists(input, DwcTerm.genericName, builder::withGenericName);
     putIfExists(input, DwcTerm.specificEpithet, builder::withScientificName);
     putIfExists(input, DwcTerm.infraspecificEpithet, builder::withInfraspecificEpithet);
-    putIfExists(input, DwcTerm.scientificNameAuthorship, builder::withScientificNameAuthorship);
+    putIfExists(input, DwcTerm.scientificNameAuthorship, builder::withAuthorship);
     putIfExists(input, DwcTerm.taxonRank, builder::withRank);
     putIfExists(input, DwcTerm.verbatimTaxonRank, builder::withVerbatimRank); // will end up ignored if rank exists
 

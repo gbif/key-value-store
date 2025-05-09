@@ -16,7 +16,6 @@ package org.gbif.kvs.geocode;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.rest.client.geocode.GeocodeResponse;
-import org.gbif.rest.client.geocode.Location;
 import org.gbif.rest.client.geocode.test.GeocodeTestService;
 
 import java.io.IOException;
@@ -53,7 +52,7 @@ public class GeocodeKVHBaseStoreTestIT {
 
   private static Table geocodeKvTable;
 
-  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore;
+  private static KeyValueStore<GeocodeRequest, GeocodeResponse> geocodeKeyValueStore;
 
   // Used to store and retrieve JSON values stored in HBase
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -66,7 +65,7 @@ public class GeocodeKVHBaseStoreTestIT {
   //-- End of shared elements
 
   //--- Elements of parameterized tests
-  private final LatLng latLng;
+  private final GeocodeRequest latLng;
 
   private final GeocodeResponse geocodeResponse;
 
@@ -83,10 +82,10 @@ public class GeocodeKVHBaseStoreTestIT {
    * @param latLng coordinate to test
    * @param countryCode expected country code
    */
-  public GeocodeKVHBaseStoreTestIT(LatLng latLng, String countryCode) {
+  public GeocodeKVHBaseStoreTestIT(GeocodeRequest latLng, String countryCode) {
     this.latLng = latLng;
     this.geocodeResponse = Optional.ofNullable(countryCode).map( isoCode -> {
-                              Location location = new Location();
+                              GeocodeResponse.Location location = new GeocodeResponse.Location();
                               location.setIsoCountryCode2Digit(countryCode);
                               GeocodeResponse geocodeResponse = new GeocodeResponse();
                               geocodeResponse.setLocations(Collections.singletonList(location));
@@ -102,8 +101,10 @@ public class GeocodeKVHBaseStoreTestIT {
    * @throws IOException in case of error creating the table
    */
   private static Table createTable() throws IOException {
-    return utility.createTable(TableName.valueOf(testConfiguration.getHBaseKVStoreConfiguration().getTableName()),
-                               Bytes.toBytes(testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()));
+    return utility.createTable(
+            TableName.valueOf(testConfiguration.getHBaseKVStoreConfiguration().getTableName()),
+            testConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()
+    );
   }
 
   /**
@@ -111,7 +112,7 @@ public class GeocodeKVHBaseStoreTestIT {
    * @return a new Geocode KV store
    * @throws IOException if something went wrong creating the store
    */
-  private static KeyValueStore<LatLng, GeocodeResponse> geocodeKeyValueStore() throws IOException {
+  private static KeyValueStore<GeocodeRequest, GeocodeResponse> geocodeKeyValueStore() throws IOException {
     return GeocodeKVStoreFactory.simpleGeocodeKVStore(testConfiguration.getGeocodeKVStoreConfiguration(),
                                                       new GeocodeTestService(), () -> {});
   }
