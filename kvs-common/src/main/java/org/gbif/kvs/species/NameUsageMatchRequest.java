@@ -13,6 +13,7 @@
  */
 package org.gbif.kvs.species;
 
+import feign.Param;
 import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
@@ -43,7 +44,7 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
     protected String infraspecificEpithet;
     protected String kingdom;
     protected String phylum;
-    protected String clazz;
+    @Param("class") protected String clazz;
     protected String order;
     protected String family;
     protected String genus;
@@ -54,8 +55,9 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
 
     @Override
     public String getLogicalKey() {
-        return Stream.of(checklistKey, scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order, family, genus, subgenus, species,
-                        scientificName, genericName, specificEpithet, infraspecificEpithet, authorship, rank)
+        return Stream.of(checklistKey, scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order,
+                        family, genus, subgenus, species, scientificName, genericName, specificEpithet,
+                        infraspecificEpithet, authorship, rank)
                 .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
     }
 }
