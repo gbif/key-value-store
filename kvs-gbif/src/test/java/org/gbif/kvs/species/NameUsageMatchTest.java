@@ -22,7 +22,7 @@ public class NameUsageMatchTest {
   @Test
   public void testKey() {
     assertEquals(
-            "Z|A|B|C|1|2|3|4|5|6|6a|6b|7|8|9|10|11|GENUS",
+            "Z|A|B|C|1|2|3|4|4a|5|5a|5b|5c|6|6a|6b|7|8|9|10|11|GENUS",
             (NameUsageMatchRequest.builder()
                     .withChecklistKey("Z")
                     .withScientificNameID("A")
@@ -32,7 +32,11 @@ public class NameUsageMatchTest {
                     .withPhylum("2")
                     .withClazz("3")
                     .withOrder("4")
+                    .withSuperfamily("4a")
                     .withFamily("5")
+                    .withSubfamily("5a")
+                    .withTribe("5b")
+                    .withSubtribe("5c")
                     .withGenus("6")
                     .withSubgenus("6a")
                     .withSpecies("6b")

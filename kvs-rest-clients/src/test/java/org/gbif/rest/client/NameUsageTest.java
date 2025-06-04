@@ -18,11 +18,13 @@ import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.rest.client.species.NameUsageMatchingService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class NameUsageTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        String baseApiUrl = "https://api.gbif-uat.org/";
+        String baseApiUrl = "http://localhost:8080";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()
@@ -34,10 +36,60 @@ public class NameUsageTest {
                 clientConfiguration
         );
 
-        NameUsageMatchResponse match = nameMatchService.match(NameUsageMatchRequest
+//        NameUsageMatchRequest numr = NameUsageMatchRequest
+//                .builder()
+//                .withChecklistKey("checklistKey")
+//                .withTaxonID("taxonID")
+//                .withTaxonConceptID("taxonConceptID")
+//                .withScientificNameID("scientificNameID")
+//                .withUsageKey("usageKey")
+//                .withKingdom("kingdom")
+//                .withPhylum("phylum")
+//                .withClazz("class")
+//                .withOrder("order")
+//                .withFamily("family")
+//                .withGenus("genus")
+//                .withSubgenus("subgenus")
+//                .withSpecies("species")
+//                .withScientificName("scientificName")
+//                .withScientificNameAuthorship("scientificNameAuthorship")
+//                .withTaxonRank("taxonRank")
+//                .withVerbatimTaxonRank("verbatimRank")
+//                .withGenericName("genericName")
+//                .withSpecificEpithet("specificEpithet")
+//                .withInfraspecificEpithet("infraspecificEpithet")
+//                .withStrict(true)
+//                .withVerbose(true)
+//                .build();
+//
+//        NameUsageMatchResponse match = nameMatchService.match(numr);
+//        System.out.println(match);
+
+
+        NameUsageMatchRequest numr = NameUsageMatchRequest
+                .builder()
+                .withPhylum("Mollusca")
+                .withClazz("Cephalopoda").build();
+
+        System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(numr));
+
+        NameUsageMatchResponse match = nameMatchService.match(numr);
+
+
+
+        System.out.println(match);
+
+        NameUsageMatchResponse match2 = nameMatchService.match(NameUsageMatchRequest
                 .builder()
                 .withScientificName("Pogona barbata").build());
 
-        System.out.println(match);
+        System.out.println(match2);
+
+//        NameUsageMatchResponse match3 = nameMatchService.match(NameUsageMatchRequest
+//                .builder()
+//                .withChecklistKey("2d59e5db-57ad-41ff-97d6-11f5fb264527")
+//                .withScientificName("Carcharodon carcharias").build());
+//
+//        System.out.println(match3);
     }
 }

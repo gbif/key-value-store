@@ -16,7 +16,9 @@ package org.gbif.rest.client.species;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
