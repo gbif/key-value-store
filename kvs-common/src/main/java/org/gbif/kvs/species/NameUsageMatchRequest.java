@@ -13,12 +13,13 @@
  */
 package org.gbif.kvs.species;
 
-import feign.Param;
 import org.gbif.kvs.Keyed;
 
 import java.io.Serializable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import feign.Param;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,7 +47,11 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
     protected String phylum;
     @Param("class") protected String clazz;
     protected String order;
+    protected String superfamily;
     protected String family;
+    protected String subfamily;
+    protected String tribe;
+    protected String subtribe;
     protected String genus;
     protected String subgenus;
     protected String species;
@@ -56,7 +61,8 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
     @Override
     public String getLogicalKey() {
         return Stream.of(checklistKey, scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order,
-                        family, genus, subgenus, species, scientificName, genericName, specificEpithet,
+                        superfamily, family, subfamily, tribe, subtribe, genus, subgenus, species,
+                        scientificName, genericName, specificEpithet,
                         infraspecificEpithet, scientificNameAuthorship, taxonRank)
                 .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
     }
