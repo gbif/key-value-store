@@ -91,6 +91,7 @@ public class NameUsageMatchResponse implements Serializable {
     private String specificEpithet;
     private String infraspecificEpithet;
     private String type;
+    private String formattedName;
   }
 
   @Data
