@@ -40,9 +40,9 @@ public class NameUsageMatchTest {
                     .withGenericName("8")
                     .withSpecificEpithet("9")
                     .withInfraspecificEpithet("10")
-                    .withAuthorship("11")
-                    .withVerbatimRank("I will be ignored")
-                    .withRank("GENUS")
+                    .withScientificNameAuthorship("11")
+                    .withVerbatimTaxonRank("I will be ignored")
+                    .withTaxonRank("GENUS")
                     .build()
                     .getLogicalKey())
     );

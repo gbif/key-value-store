@@ -36,9 +36,9 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
     protected String taxonConceptID;
     protected String scientificNameID;
     protected String scientificName;
-    protected String authorship;
-    protected String rank;
-    protected String verbatimRank;
+    protected String scientificNameAuthorship;
+    protected String taxonRank;
+    protected String verbatimTaxonRank;
     protected String genericName;
     protected String specificEpithet;
     protected String infraspecificEpithet;
@@ -57,7 +57,7 @@ public class NameUsageMatchRequest implements Keyed, Serializable {
     public String getLogicalKey() {
         return Stream.of(checklistKey, scientificNameID, taxonConceptID, taxonID, kingdom, phylum, clazz, order,
                         family, genus, subgenus, species, scientificName, genericName, specificEpithet,
-                        infraspecificEpithet, authorship, rank)
+                        infraspecificEpithet, scientificNameAuthorship, taxonRank)
                 .map(s -> s == null ? "" : s.trim()).collect(Collectors.joining("|"));
     }
 }
