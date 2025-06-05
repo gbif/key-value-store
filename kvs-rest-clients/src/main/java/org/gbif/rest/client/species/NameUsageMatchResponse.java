@@ -88,7 +88,7 @@ public class NameUsageMatchResponse implements Serializable {
     private String rank;
     private String code;
     private String status;
-    private String genus;
+    private String genericName;
     private String infragenericEpithet;
     private String specificEpithet;
     private String infraspecificEpithet;
