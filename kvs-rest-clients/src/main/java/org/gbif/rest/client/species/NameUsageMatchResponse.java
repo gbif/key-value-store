@@ -68,8 +68,8 @@ public class NameUsageMatchResponse implements Serializable {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class Status {
+    private String clbDatasetKey;
     private String datasetKey;
-    private String gbifKey;
     private String datasetAlias;
     private String status;
     private String statusCode;
