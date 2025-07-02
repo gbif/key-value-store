@@ -94,7 +94,7 @@
         <logback.version>1.2.3</logback.version>
 
         <!-- JSON -->
-        <jackson.version>2.13.5</jackson.version>
+        <jackson.version>2.15.0</jackson.version>
 
         <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
