@@ -83,7 +83,7 @@
 
         <!-- Common libraries -->
         <apache.beam.version>2.34.0</apache.beam.version>
-        <hadoop-common.version>3.2.4</hadoop-common.version>
+        <hadoop-common.version>3.4.0</hadoop-common.version>
         <hadoop.version>3.2.4</hadoop.version>
         <hadoop-core.version>3.2.4</hadoop-core.version>
         <hbase.version>2.5.3-hadoop3</hbase.version>
