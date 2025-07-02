@@ -13,20 +13,17 @@
  */
 package org.gbif.kvs.indexing.grscicoll;
 
-import org.gbif.api.vocabulary.Country;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.grscicoll.GrscicollLookupKVStoreFactory;
 import org.gbif.kvs.grscicoll.GrscicollLookupRequest;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.grscicoll.GrscicollLookupResponse;
 import org.gbif.rest.client.grscicoll.GrscicollLookupService;
-import org.gbif.rest.client.grscicoll.retrofit.GrscicollLookupServiceSyncClient;
 
-import java.io.IOException;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 import org.apache.beam.runners.spark.SparkRunner;
@@ -101,8 +98,11 @@ public class GrscicollLookupServiceIndexer {
         storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // create snapshot
-    String sourceDir = sourceGlob.substring(0, sourceGlob.lastIndexOf("/"));
-    createSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    String sourceDir = null;
+    if (options.getUseSnapshotting()) {
+      sourceDir = sourceGlob.substring(0, sourceGlob.lastIndexOf("/"));
+      createSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    }
 
     // Read the occurrence table
     PCollection<GrscicollLookupRequest> inputRecords =
@@ -115,7 +115,7 @@ public class GrscicollLookupServiceIndexer {
     PCollection<GrscicollLookupRequest> distinctRequests =
         inputRecords.apply(
             Distinct.<GrscicollLookupRequest, String>withRepresentativeValueFn(
-                    GrscicollLookupRequest::getLogicalKey)
+                            GrscicollLookupRequest::getLogicalKey)
                 .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
@@ -135,7 +135,7 @@ public class GrscicollLookupServiceIndexer {
                   @Setup
                   public void start() {
                     lookupService =
-                        new GrscicollLookupServiceSyncClient(grSciCollClientConfiguration);
+                        RestClientFactory.createGrscicollLookupService(grSciCollClientConfiguration);
                     valueMutator =
                         GrscicollLookupKVStoreFactory.valueMutator(
                             Bytes.toBytes(
@@ -150,35 +150,13 @@ public class GrscicollLookupServiceIndexer {
                     try {
                       GrscicollLookupRequest req = context.element();
                       GrscicollLookupResponse lookupResponse =
-                          lookupService.lookup(
-                              req.getInstitutionCode(),
-                              req.getOwnerInstitutionCode(),
-                              req.getInstitutionId(),
-                              req.getCollectionCode(),
-                              req.getCollectionId(),
-                              req.getDatasetKey() != null
-                                  ? UUID.fromString(req.getDatasetKey())
-                                  : null,
-                              req.getCountry() != null
-                                  ? Country.fromIsoCode(req.getCountry())
-                                  : null);
+                          lookupService.lookup(req);
                       if (Objects.nonNull(lookupResponse)) {
                         byte[] saltedKey = keyGenerator.computeKey(req.getLogicalKey());
                         context.output(valueMutator.apply(saltedKey, lookupResponse));
                       }
                     } catch (Exception ex) {
                       LOG.error("Error performing Geocode lookup", ex);
-                    }
-                  }
-
-                  @Teardown
-                  public void tearDown() {
-                    if (Objects.nonNull(lookupService)) {
-                      try {
-                        lookupService.close();
-                      } catch (IOException ex) {
-                        LOG.error("Error closing lookup service", ex);
-                      }
                     }
                   }
                 }))
@@ -192,7 +170,9 @@ public class GrscicollLookupServiceIndexer {
     result.waitUntilFinish();
 
     // delete snapshot
-    deleteSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    if (options.getUseSnapshotting()) {
+      deleteSnapshot(hBaseConfiguration, sourceDir, options.getJobName());
+    }
   }
 
   private static void createSnapshot(

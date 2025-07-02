@@ -3,7 +3,7 @@
     <parent>
         <artifactId>key-value-store</artifactId>
         <groupId>org.gbif.kvs</groupId>
-        <version>2.0.1-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -49,10 +49,10 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                             </transformers>
                             <relocations>
-                              <relocation>
+                                <relocation>
                                 <pattern>org.apache.beam.vendor.guava.v32_1_2_jre</pattern>
                                 <shadedPattern>bg.org.apache.beam.vendor.guava.v32_1_2_jre</shadedPattern>
-                              </relocation>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -66,6 +66,10 @@
         <!-- GBIF -->
         <dependency>
             <groupId>org.gbif</groupId>
+            <artifactId>gbif-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
             <artifactId>dwc-api</artifactId>
         </dependency>
         <dependency>
@@ -74,6 +78,10 @@
         </dependency>
 
         <!-- This project -->
+        <dependency>
+            <groupId>org.gbif.kvs</groupId>
+            <artifactId>kvs-common</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.gbif.kvs</groupId>
             <artifactId>kvs-core</artifactId>
@@ -142,13 +150,6 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-shaded-client</artifactId>
-        </dependency>
-
-        <!-- Rest client responses handling-->
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>retrofit</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- Logging -->

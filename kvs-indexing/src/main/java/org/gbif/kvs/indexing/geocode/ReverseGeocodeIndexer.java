@@ -18,12 +18,12 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.SaltedKeyGenerator;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
-import org.gbif.kvs.geocode.LatLng;
+import org.gbif.kvs.geocode.GeocodeRequest;
 import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
-import org.gbif.rest.client.geocode.retrofit.GeocodeServiceSyncClient;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -54,6 +54,12 @@ import org.slf4j.LoggerFactory;
 public class ReverseGeocodeIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
+  /**
+   * Default value to use when uncertainty is not provided to avoid serialisation issues.
+   * This dummy value is the circumference of the earth in meters as a negative number.
+   * Avoiding using 0.0 as it is a valid value, sort of.
+   */
+  public static final Double EMPTY_UNCERTAINTY = -40075000d;
 
   public static void main(String[] args) {
     GeocodeIndexingOptions options =
@@ -95,29 +101,30 @@ public class ReverseGeocodeIndexer {
     Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
 
     // Retrieve just the latitude and longitude from the Avro record
-    SerializableFunction<GenericRecord, LatLng> recordToLatLng = input -> {
-      LatLng.Builder builder = LatLng.builder();
-      putIfExists(input, DwcTerm.decimalLatitude, builder::withLatitude);
-      putIfExists(input, DwcTerm.decimalLongitude, builder::withLongitude);
+    SerializableFunction<GenericRecord, GeocodeRequest> recordToLatLng = input -> {
+      GeocodeRequest.GeocodeRequestBuilder builder = GeocodeRequest.builder();
+      putIfExists(input, DwcTerm.decimalLatitude, builder::withLat);
+      putIfExists(input, DwcTerm.decimalLongitude, builder::withLng);
+      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, EMPTY_UNCERTAINTY);
       return builder.build();
     };
 
     // Read the occurrence table
-    PCollection<LatLng> inputRecords =
+    PCollection<GeocodeRequest> inputRecords =
       pipeline.apply(AvroIO.parseGenericRecords(recordToLatLng)
-          .withCoder(AvroCoder.of(LatLng.class))
+          .withCoder(AvroCoder.of(GeocodeRequest.class))
           .from(sourceGlob)
       );
 
     // Select distinct coordinates
-    PCollection<LatLng> distinctCoordinates =
+    PCollection<GeocodeRequest> distinctCoordinates =
         inputRecords
             .apply(
                 ParDo.of(
-                    new DoFn<LatLng, LatLng>() {
+                    new DoFn<GeocodeRequest, GeocodeRequest>() {
                       @ProcessElement
                       public void processElement(ProcessContext context) {
-                        LatLng latLng = context.element();
+                        GeocodeRequest latLng = context.element();
                         if (latLng.isValid()) {
                           context.output(latLng);
                         }
@@ -125,14 +132,14 @@ public class ReverseGeocodeIndexer {
                     }))
             .apply(
                 // Selects distinct values
-                Distinct.<LatLng, String>withRepresentativeValueFn(LatLng::getLogicalKey)
+                Distinct.<GeocodeRequest, String>withRepresentativeValueFn(GeocodeRequest::getLogicalKey)
                     .withRepresentativeType(TypeDescriptor.of(String.class)));
 
     // Perform Geocode lookup
     distinctCoordinates
         .apply(
             ParDo.of(
-                new DoFn<LatLng, Mutation>() {
+                new DoFn<GeocodeRequest, Mutation>() {
 
                   private final SaltedKeyGenerator keyGenerator =
                       new SaltedKeyGenerator(
@@ -144,7 +151,7 @@ public class ReverseGeocodeIndexer {
 
                   @Setup
                   public void start() {
-                    geocodeService = new GeocodeServiceSyncClient(geocodeClientConfiguration);
+                    geocodeService = RestClientFactory.createGeocodeService(geocodeClientConfiguration);
                     valueMutator =
                         GeocodeKVStoreFactory.valueMutator(
                             Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
@@ -154,10 +161,10 @@ public class ReverseGeocodeIndexer {
                   @ProcessElement
                   public void processElement(ProcessContext context) {
                     try {
-                      LatLng latLng = context.element();
-                      Optional.ofNullable(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()))
+                      GeocodeRequest latLng = context.element();
+                      Optional.ofNullable(geocodeService.reverse(latLng))
                               .ifPresent( locations -> {
-                                  GeocodeResponse response = new GeocodeResponse(geocodeService.reverse(latLng.getLatitude(), latLng.getLongitude(), latLng.getUncertaintyMeters()));
+                                  GeocodeResponse response = geocodeService.reverse(latLng);
                                   byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
                                   context.output(valueMutator.apply(saltedKey, response));
                               });
@@ -188,4 +195,17 @@ public class ReverseGeocodeIndexer {
       .map(Double::parseDouble)
       .ifPresent(with);
   }
+
+    /**
+     * Reads the double value associated to a term into the consumer 'with'.
+     * @param input Avro record
+     * @param term verbatim field/term
+     * @param with consumer
+     */
+    private static void putIfExistsOrElse(GenericRecord input, Term term, Consumer<Double> with, Double defaultIfNull) {
+        Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
+                .map(Object::toString)
+                .map(Double::parseDouble)
+                .ifPresentOrElse(with, () -> with.accept(defaultIfNull));
+    }
 }

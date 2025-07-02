@@ -11,13 +11,14 @@
     <groupId>org.gbif.kvs</groupId>
     <artifactId>key-value-store</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>3.0-SNAPSHOT</version>
 
     <modules>
+        <module>kvs-common</module>
         <module>kvs-core</module>
-        <module>kvs-indexing</module>
         <module>kvs-rest-clients</module>
         <module>kvs-gbif</module>
+        <module>kvs-indexing</module>
     </modules>
 
     <name>KeyValue Store :: Parent</name>
@@ -28,7 +29,7 @@
         <connection>scm:git:git@github.com:gbif/key-value-store.git</connection>
         <url>https://github.com/gbif/key-value-store</url>
         <developerConnection>scm:git:git@github.com:gbif/key-value-store.git</developerConnection>
-      <tag>HEAD</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
@@ -76,8 +77,8 @@
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <!-- GBIF libraries -->
-        <gbif-api.version>2.0.0</gbif-api.version>
-        <dwc-api.version>2.0.0</dwc-api.version>
+        <gbif-api.version>2.1.9</gbif-api.version>
+        <dwc-api.version>2.1.1</dwc-api.version>
         <gbif-parsers.version>0.63</gbif-parsers.version>
 
         <!-- Common libraries -->
@@ -93,13 +94,14 @@
         <logback.version>1.2.3</logback.version>
 
         <!-- JSON -->
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.13.5</jackson.version>
 
-        <!-- Rest/HTPP-->
-        <retrofit.version>2.8.0</retrofit.version>
-        <okhttp.version>3.14.7</okhttp.version>
-        <okio.version>2.0.0</okio.version>
+        <!-- Rest/HTTP-->
         <mockwebserver.version>3.11.0</mockwebserver.version>
+
+        <!-- Spring / Feign-->
+        <spring-cloud-starter-openfeign.version>3.1.9</spring-cloud-starter-openfeign.version>
+        <feign.version>13.5</feign.version>
 
         <!-- Caching -->
         <cache2k.version>2.0.0.Final</cache2k.version>
@@ -115,7 +117,7 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
-        <guava.version>27.0.1-jre</guava.version>
+<!--        <guava.version>27.0.1-jre</guava.version>-->
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -139,6 +141,11 @@
     <dependencyManagement>
         <dependencies>
             <!-- This project -->
+            <dependency>
+                <groupId>org.gbif.kvs</groupId>
+                <artifactId>kvs-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.gbif.kvs</groupId>
                 <artifactId>kvs-core</artifactId>
@@ -185,6 +192,23 @@
                 <version>${gbif-parsers.version}</version>
             </dependency>
 
+            <!-- Feign -->
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-core</artifactId>
+                <version>${feign.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-jackson</artifactId>
+                <version>${feign.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-httpclient</artifactId>
+                <version>${feign.version}</version>
+            </dependency>
+
             <!-- Beam -->
             <dependency>
                 <groupId>org.apache.beam</groupId>
@@ -221,18 +245,18 @@
                 <artifactId>beam-sdks-java-extensions-sql-hcatalog</artifactId>
                 <version>${apache.beam.version}</version>
             </dependency>
-          <dependency>
+            <dependency>
                 <groupId>org.apache.beam</groupId>
                 <artifactId>beam-sdks-java-io-jdbc</artifactId>
                 <version>${apache.beam.version}</version>
-          </dependency>
+            </dependency>
 
-          <!-- trino -->
-          <dependency>
+            <!-- trino -->
+            <dependency>
             <groupId>io.trino</groupId>
             <artifactId>trino-jdbc</artifactId>
             <version>${trino-jdbc.version}</version>
-          </dependency>
+            </dependency>
 
             <!-- Metrics -->
             <dependency>
@@ -363,7 +387,6 @@
                 <scope>provided</scope>
             </dependency>
 
-
             <!-- Hadoop and HBase tests -->
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -390,11 +413,6 @@
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
-          <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-          </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -406,28 +424,6 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
-            </dependency>
-
-            <!-- Http clients -->
-            <dependency>
-                <groupId>com.squareup.retrofit2</groupId>
-                <artifactId>retrofit</artifactId>
-                <version>${retrofit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.retrofit2</groupId>
-                <artifactId>converter-jackson</artifactId>
-                <version>${retrofit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okio</groupId>
-                <artifactId>okio</artifactId>
-                <version>${okio.version}</version>
             </dependency>
 
             <!-- Json -->
@@ -446,16 +442,16 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
-          <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-scala_2.12</artifactId>
-            <version>${jackson.version}</version>
-          </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-scala_2.12</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
 
             <!-- Caching -->
             <dependency>
@@ -499,6 +495,4 @@
 
         </dependencies>
     </dependencyManagement>
-
-
 </project>

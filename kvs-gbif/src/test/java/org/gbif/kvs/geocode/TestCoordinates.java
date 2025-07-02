@@ -22,11 +22,11 @@ import java.util.Collection;
 public class TestCoordinates {
 
   static final Collection<Object[]> COORDINATES = Arrays.asList(new Object[][] {
-      { LatLng.create(48.019573, 66.923684, null), "KZ" },
-      { LatLng.create(35.937496, 14.375416, null), "MT" },
-      { LatLng.create(-16.290154, -63.588653, null), "BO" },
-      { LatLng.create(36.93, 13.37, null), null },
-      { LatLng.create(-17.79125, 25.707917, 30_000.0), "ZM", "ZW" }
+      { GeocodeRequest.create(48.019573, 66.923684, null), "KZ" },
+      { GeocodeRequest.create(35.937496, 14.375416, null), "MT" },
+      { GeocodeRequest.create(-16.290154, -63.588653, null), "BO" },
+      { GeocodeRequest.create(36.93, 13.37, null), null },
+      { GeocodeRequest.create(-17.79125, 25.707917, 30_000.0), "ZM", "ZW" }
   });
 
   /**

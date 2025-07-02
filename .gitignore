@@ -173,3 +173,4 @@ local.properties
 hs_err_pid*
 
 /.idea/
+/kvs-indexing/src/main/java/org/gbif/kvs/indexing/species/DebugPipeline.java

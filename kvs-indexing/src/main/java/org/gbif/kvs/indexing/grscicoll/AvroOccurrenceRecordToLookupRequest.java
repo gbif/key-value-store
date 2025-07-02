@@ -42,7 +42,8 @@ class AvroOccurrenceRecordToLookupRequest
   /** Translates an HBase record/result into a Identification object. */
   @Override
   public GrscicollLookupRequest apply(GenericRecord input) {
-    GrscicollLookupRequest.Builder builder = GrscicollLookupRequest.builder();
+    GrscicollLookupRequest.GrscicollLookupRequestBuilder builder =
+            GrscicollLookupRequest.builder();
 
     putVerbatimIfExists(input, DwcTerm.institutionCode, builder::withInstitutionCode);
     putVerbatimIfExists(input, DwcTerm.ownerInstitutionCode, builder::withOwnerInstitutionCode);

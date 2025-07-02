@@ -13,8 +13,6 @@
  */
 package org.gbif.rest.client.grscicoll;
 
-import org.gbif.api.model.collections.lookup.Match.MatchType;
-import org.gbif.api.model.collections.lookup.Match.Reason;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -23,8 +21,6 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
-
-import static org.gbif.api.model.collections.lookup.Match.Status;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -46,6 +42,34 @@ public class GrscicollLookupResponse implements Serializable {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class EntityMatchedResponse implements Serializable {
     private UUID key;
+  }
+
+  public enum MatchType {
+    EXACT,
+    FUZZY,
+    EXPLICIT_MAPPING,
+    NONE;
+  }
+
+  public enum Reason {
+    CODE_MATCH,
+    IDENTIFIER_MATCH,
+    ALTERNATIVE_CODE_MATCH,
+    NAME_MATCH,
+    KEY_MATCH,
+    DIFFERENT_OWNER,
+    BELONGS_TO_INSTITUTION_MATCHED,
+    INST_COLL_MISMATCH,
+    COUNTRY_MATCH
+  }
+
+  public enum Status {
+    ACCEPTED,
+    AMBIGUOUS,
+    AMBIGUOUS_EXPLICIT_MAPPINGS,
+    AMBIGUOUS_OWNER,
+    AMBIGUOUS_INSTITUTION_MISMATCH,
+    DOUBTFUL;
   }
 
 }
