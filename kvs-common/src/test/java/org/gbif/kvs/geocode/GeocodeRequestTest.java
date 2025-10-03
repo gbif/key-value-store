@@ -7,6 +7,15 @@ import static org.junit.Assert.*;
 public class GeocodeRequestTest {
 
     @Test
+    public void testEqualsAndHashCode_sameValues2() {
+        GeocodeRequest req1 = new GeocodeRequest(10.0, 20.0, null);
+        GeocodeRequest req2 = new GeocodeRequest(10.0, 20.0, null);
+
+        assertEquals("Objects with the same field values should be equal", req1, req2);
+        assertEquals("Hash codes should match for equal objects", req1.hashCode(), req2.hashCode());
+    }
+
+    @Test
     public void testEqualsAndHashCode_sameValues() {
         GeocodeRequest req1 = new GeocodeRequest(10.0, 20.0, 5.0);
         GeocodeRequest req2 = new GeocodeRequest(10.0, 20.0, 5.0);
