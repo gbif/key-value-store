@@ -100,7 +100,7 @@
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
         <!-- Spring / Feign-->
-        <feign.version>13.5</feign.version>
+        <feign.version>13.6</feign.version>
 
         <!-- Caching -->
         <cache2k.version>2.0.0.Final</cache2k.version>
