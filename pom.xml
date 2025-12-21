@@ -11,7 +11,7 @@
     <groupId>org.gbif.kvs</groupId>
     <artifactId>key-value-store</artifactId>
     <packaging>pom</packaging>
-    <version>3.1-SNAPSHOT</version>
+    <version>3.1-reducedeps-SNAPSHOT</version>
 
     <modules>
         <module>kvs-common</module>
@@ -68,9 +68,9 @@
 
     <properties>
         <!-- Common variables -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <jdkLevel>11</jdkLevel>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <jdkLevel>17</jdkLevel>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
@@ -100,7 +100,6 @@
         <mockwebserver.version>3.11.0</mockwebserver.version>
 
         <!-- Spring / Feign-->
-        <spring-cloud-starter-openfeign.version>3.1.9</spring-cloud-starter-openfeign.version>
         <feign.version>13.5</feign.version>
 
         <!-- Caching -->
@@ -117,7 +116,6 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
-<!--        <guava.version>27.0.1-jre</guava.version>-->
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -206,6 +204,11 @@
             <dependency>
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-httpclient</artifactId>
+                <version>${feign.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-form</artifactId>
                 <version>${feign.version}</version>
             </dependency>
 
