@@ -24,8 +24,7 @@ public class NameUsageTest {
 
     public static void main(String[] args) throws Exception {
 
-//        String baseApiUrl = "http://localhost:8080";
-        String baseApiUrl = "http://api.gbif.org";
+        String baseApiUrl = "http://localhost:8080";
 
         ClientConfiguration clientConfiguration =
                 ClientConfiguration.builder()

@@ -12,19 +12,23 @@
  * limitations under the License.
  */
 package org.gbif.rest.client.species;
-import feign.Param;
-import feign.QueryMap;
-import feign.RequestLine;
 import org.gbif.kvs.species.NameUsageMatchRequest;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * GBIF Backbone name match and IUCN RedList services.
  */
+@FeignClient(name = "nameUsageService", url = "${nameUsageService.baseApiUrl}")
 public interface NameUsageMatchingService {
 
-  @RequestLine("GET /v2/species/match")
-  NameUsageMatchResponse match(@QueryMap NameUsageMatchRequest identification);
+  @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match", consumes = "application/json")
+  NameUsageMatchResponse match(@SpringQueryMap NameUsageMatchRequest identification);
 
-  @RequestLine("GET /v2/species/match/metadata?checklistKey={checklistKey}")
-  Metadata getMetadata(@Param("checklistKey") String checklistKey);
+  @RequestMapping(method = RequestMethod.GET, value = "/v2/species/match/metadata", consumes = "application/json")
+  Metadata getMetadata(@RequestParam(value = "checklistKey", required = false) String checklistKey);
 }
