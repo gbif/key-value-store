@@ -13,6 +13,8 @@
  */
 package org.gbif.kvs.geocode;
 
+import org.gbif.geocode.api.model.Location;
+import org.gbif.geocode.api.model.LocationEncoder;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
@@ -24,10 +26,12 @@ import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -77,8 +81,18 @@ public class GeocodeKVStoreFactory {
     return result ->  {
       try {
         byte[] value = result.getValue(columnFamily, columnQualifier);
-        if(Objects.nonNull(value)) {
-          return MAPPER.readValue(value, GeocodeResponse.class);
+        if (Objects.nonNull(value)) {
+          List<Location> locations = LocationEncoder.decode(value);
+          GeocodeResponse geocodeResponse = new GeocodeResponse();
+          geocodeResponse.setLocations(locations.stream().map(l -> GeocodeResponse.Location.builder()
+                          .id(l.getId())
+                          .type(l.getType())
+                          .name(l.getTitle())
+                          .isoCountryCode2Digit(l.getIsoCountryCode2Digit())
+                          .distance(l.getDistance())
+                          .distanceMeters(l.getDistanceMeters())
+                          .build()).collect(Collectors.toList()));
+          return geocodeResponse;
         }
         return null;
       } catch (Exception ex) {
@@ -97,11 +111,24 @@ public class GeocodeKVStoreFactory {
    * @return a mapper from a key geocode responses into HBase Puts
    */
   public static BiFunction<byte[], GeocodeResponse, Put> valueMutator(byte[] columnFamily, byte[] jsonColumnQualifier) {
-    return (key, geocodeResponses) -> {
+    return (key, geocodeResponse) -> {
       try {
-        if (Objects.nonNull(geocodeResponses) && Objects.nonNull(geocodeResponses.getLocations())) {
+        if (Objects.nonNull(geocodeResponse) && Objects.nonNull(geocodeResponse.getLocations())) {
           Put put = new Put(key);
-          put.addColumn(columnFamily, jsonColumnQualifier, MAPPER.writeValueAsBytes(geocodeResponses));
+          put.addColumn(columnFamily, jsonColumnQualifier,
+                  LocationEncoder.encode(geocodeResponse.getLocations().stream()
+                          .map(
+                                  l -> new org.gbif.geocode.api.model.Location(
+                                          l.getId(),
+                                          l.getType(),
+                                          null,
+                                          l.getName(),
+                                          l.getIsoCountryCode2Digit(),
+                                          l.getDistance(),
+                                          l.getDistanceMeters()
+                                  )
+                          ).collect(Collectors.toList()))
+          );
           return put;
         }
         return null;

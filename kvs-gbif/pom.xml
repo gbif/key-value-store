@@ -141,6 +141,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
+        <!-- geocode -->
+        <dependency>
+            <groupId>org.gbif.geocode</groupId>
+            <artifactId>geocode-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
