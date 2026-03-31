@@ -80,6 +80,7 @@
         <gbif-api.version>2.1.9</gbif-api.version>
         <dwc-api.version>2.1.1</dwc-api.version>
         <gbif-parsers.version>0.63</gbif-parsers.version>
+        <geocode-api.version>2.0.3</geocode-api.version>
 
         <!-- Common libraries -->
         <apache.beam.version>2.34.0</apache.beam.version>
@@ -117,7 +118,6 @@
         <!-- Utils -->
         <findbugs-jsr305.version>3.0.2</findbugs-jsr305.version>
         <lombok.version>1.18.24</lombok.version>
-<!--        <guava.version>27.0.1-jre</guava.version>-->
 
         <!-- Test -->
         <junit.version>4.13.1</junit.version>
@@ -190,6 +190,13 @@
                 <groupId>org.gbif</groupId>
                 <artifactId>gbif-parsers</artifactId>
                 <version>${gbif-parsers.version}</version>
+            </dependency>
+
+            <!-- geocode -->
+            <dependency>
+                <groupId>org.gbif.geocode</groupId>
+                <artifactId>geocode-api</artifactId>
+                <version>${geocode-api.version}</version>
             </dependency>
 
             <!-- Feign -->
