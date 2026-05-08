@@ -1,3 +1,5 @@
+@Library('gbif-common-jenkins-pipelines') _
+
 pipeline {
   agent any
   tools {
@@ -60,7 +62,7 @@ pipeline {
           }
       }
       environment {
-          RELEASE_ARGS = createReleaseArgs(params.RELEASE_VERSION, params.DEVELOPMENT_VERSION, params.DRY_RUN_RELEASE)
+          RELEASE_ARGS = utils.createReleaseArgs(params.RELEASE_VERSION, params.DEVELOPMENT_VERSION, params.DRY_RUN_RELEASE)
       }
       steps {
           configFileProvider(
@@ -74,7 +76,7 @@ pipeline {
 
     stage('Build and push Docker image') {
       environment {
-          VERSION = getDockerVersion()
+          VERSION = utils.getReleaseVersion(params.RELEASE_VERSION, POM_VERSION)
       }
       steps {
         sh 'build/kvs-indexing-docker-build.sh ${VERSION}'
@@ -91,26 +93,4 @@ pipeline {
         echo 'KVS execution failed!'
     }
   }
-}
-
-def createReleaseArgs(inputVersion, inputDevVersion, inputDryrun) {
-    def args = ""
-    if (inputVersion != '') {
-        args += " -DreleaseVersion=" + inputVersion
-    }
-    if (inputDevVersion != '') {
-        args += " -DdevelopmentVersion=" + inputDevVersion
-    }
-    if (inputDryrun) {
-        args += " -DdryRun=true"
-    }
-
-    return args
-}
-
-def getDockerVersion() {
-    if (params.RELEASE && params.RELEASE_VERSION != '') {
-        return inputVersion
-    }
-    return "${POM_VERSION}"
 }
