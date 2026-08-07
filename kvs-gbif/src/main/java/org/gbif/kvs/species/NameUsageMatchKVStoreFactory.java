@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 package org.gbif.kvs.species;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.gbif.kvs.KeyValueStore;
+import org.gbif.kvs.cache.CaffeineCache;
 import org.gbif.kvs.cache.KeyValueCache;
 import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
+import org.gbif.kvs.conf.CachedRestKVStoreConfiguration;
 import org.gbif.kvs.hbase.Command;
 import org.gbif.kvs.hbase.HBaseStore;
 import org.gbif.rest.client.RestClientFactory;
 import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.species.NameUsageMatchResponse;
 import org.gbif.rest.client.species.NameUsageMatchingService;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Factory of NameUsageMatch KV instances.
@@ -143,6 +142,24 @@ public class NameUsageMatchKVStoreFactory {
     return keyValueStore;
   }
 
+  public static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse>
+      nameUsageMatchRestKVStoreCaffeine(
+          CachedRestKVStoreConfiguration configuration, ClientConfiguration clientConfiguration) {
+    NameUsageMatchingService nameUsageMatchService =
+        RestClientFactory.createNameMatchService(clientConfiguration);
+
+    KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> keyValueStore =
+        restKVStore(nameUsageMatchService, () -> {});
+
+    if (Objects.nonNull(configuration.getCacheCapacity())) {
+      return CaffeineCache.cache(
+          keyValueStore,
+          configuration.getCacheCapacity(),
+          Optional.ofNullable(configuration.getCacheExpiryTimeInSeconds()).orElse(Long.MAX_VALUE));
+    } else {
+      return CaffeineCache.cache(keyValueStore);
+    }
+  }
 
   private static KeyValueStore<NameUsageMatchRequest, NameUsageMatchResponse> hbaseKVStore(CachedHBaseKVStoreConfiguration configuration,
                                                                                            NameUsageMatchingService nameUsageMatchService,
