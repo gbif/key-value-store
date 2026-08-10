@@ -40,7 +40,7 @@ public class CaffeineCache<K, V> implements KeyValueStore<K, V> {
    *
    * @param keyValueStore wrapped kv store
    */
-  private CaffeineCache(KeyValueStore<K, V> keyValueStore, int capacity, long expiryTimeInSeconds) {
+  private CaffeineCache(KeyValueStore<K, V> keyValueStore, long capacity, long expiryTimeInSeconds) {
     this.keyValueStore = keyValueStore;
     this.cache =
         Caffeine.newBuilder()
@@ -60,7 +60,7 @@ public class CaffeineCache<K, V> implements KeyValueStore<K, V> {
    * @return a new instance of KeyValueStore cache
    */
   public static <K1, V1> KeyValueStore<K1, V1> cache(
-      KeyValueStore<K1, V1> keyValueStore, int capacity, long expiryTimeInSeconds) {
+      KeyValueStore<K1, V1> keyValueStore, long capacity, long expiryTimeInSeconds) {
     return new CaffeineCache<>(keyValueStore, capacity, expiryTimeInSeconds);
   }
 
