@@ -42,6 +42,11 @@ public class NameUsageMatchResponse implements Serializable {
    * Status information from external sources like IUCN Red List.
    */
   private List<Status> additionalStatus = new ArrayList<>();
+  /**
+   * Environments of the (accepted) taxon as provided by the checklist, e.g. MARINE, BRACKISH,
+   * FRESHWATER, TERRESTRIAL.
+   */
+  private List<String> environments = new ArrayList<>();
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
