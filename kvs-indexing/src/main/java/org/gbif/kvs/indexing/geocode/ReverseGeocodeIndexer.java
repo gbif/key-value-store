@@ -13,47 +13,64 @@
  */
 package org.gbif.kvs.indexing.geocode;
 
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.SaltedKeyGenerator;
-import org.gbif.kvs.conf.CachedHBaseKVStoreConfiguration;
 import org.gbif.kvs.geocode.GeocodeKVStoreFactory;
 import org.gbif.kvs.geocode.GeocodeRequest;
-import org.gbif.kvs.indexing.options.ConfigurationMapper;
+import org.gbif.kvs.hbase.HBaseKVStoreConfiguration;
 import org.gbif.rest.client.RestClientFactory;
-import org.gbif.rest.client.configuration.ClientConfiguration;
 import org.gbif.rest.client.geocode.GeocodeResponse;
 import org.gbif.rest.client.geocode.GeocodeService;
 
-import java.util.Optional;
+import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
-import org.apache.avro.generic.GenericRecord;
-import org.apache.beam.runners.spark.SparkRunner;
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.PipelineResult;
-import org.apache.beam.sdk.coders.AvroCoder;
-import org.apache.beam.sdk.io.AvroIO;
-import org.apache.beam.sdk.io.hbase.HBaseIO;
-import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Distinct;
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.SerializableFunction;
-import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TypeDescriptor;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Mutation;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.BufferedMutator;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.spark.SparkJobInfo;
+import org.apache.spark.SparkStageInfo;
+import org.apache.spark.TaskContext;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.JavaSparkStatusTracker;
+import org.apache.spark.api.java.function.ForeachPartitionFunction;
+import org.apache.spark.sql.Column;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Apache Beam Pipeline that indexes Geocode country lookup responses in a HBase KV table. */
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.lit;
+
+/**
+ * Spark job that indexes Geocode reverse lookup responses in a HBase KV table.
+ *
+ * <ol>
+ *   <li>Reads the distinct coordinates from the occurrence Iceberg table using Spark SQL.
+ *   <li>Discards invalid coordinates.
+ *   <li>Calls the reverse geocode API twice for each coordinate and stores both responses in HBase
+ *       using the salted key of {@link GeocodeRequest#getLogicalKey()}:
+ *       <ul>
+ *         <li>with coordinateUncertaintyInMeters ({@link #EMPTY_UNCERTAINTY} when it is null),
+ *             keyed {@code lat|lng|uncertainty}
+ *         <li>without uncertainty, once per distinct latitude/longitude, keyed {@code lat|lng}
+ *       </ul>
+ * </ol>
+ *
+ * The Iceberg catalog is configured through Spark, e.g. {@code --conf spark.sql.catalog...}.
+ */
 public class ReverseGeocodeIndexer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReverseGeocodeIndexer.class);
+
   /**
    * Default value to use when uncertainty is not provided to avoid serialisation issues.
    * This dummy value is the circumference of the earth in meters as a negative number.
@@ -61,151 +78,275 @@ public class ReverseGeocodeIndexer {
    */
   public static final Double EMPTY_UNCERTAINTY = -40075000d;
 
+  /** Name of the flag column added to tell apart lookups with and without uncertainty. */
+  private static final String WITH_UNCERTAINTY = "withUncertainty";
+
+  private static final String GEOCODE_JOB_GROUP = "geocode-and-write";
+
+  private static final String QUERY =
+      "SELECT DISTINCT decimalLatitude, decimalLongitude, coordinateUncertaintyInMeters FROM %s";
+
   public static void main(String[] args) {
-    GeocodeIndexingOptions options =
-        PipelineOptionsFactory.fromArgs(args).withValidation().as(GeocodeIndexingOptions.class);
-    run(options);
+    run(GeocodeIndexingOptions.fromArgs(args));
   }
 
-  /**
-   * Creates a {@link CachedHBaseKVStoreConfiguration} from a {@link GeocodeIndexingOptions} instance.
-   *
-   * @param options pipeline options
-   * @return a new instance of GeocodeKVStoreConfiguration
-   */
-  private static CachedHBaseKVStoreConfiguration geocodeKVStoreConfiguration(GeocodeIndexingOptions options) {
-    return CachedHBaseKVStoreConfiguration.builder()
-            .withHBaseKVStoreConfiguration(ConfigurationMapper.hbaseKVStoreConfiguration(options))
-            .withValueColumnQualifier(options.getJsonColumnQualifier())
-            .build();
-  }
+  /** Runs the indexing job. */
+  public static void run(GeocodeIndexingOptions options) {
+    SparkSession spark =
+        SparkSession.builder().appName("Reverse geocode KV indexing").getOrCreate();
+    try {
+      String query = String.format(QUERY, options.getSourceTable());
+      LOG.info("Reading coordinates with query: {}", query);
+      Dataset<Row> coordinates = spark.sql(query);
 
-  /**
-   * Runs the indexing beam pipeline. 1. Reads all latitude and longitude from the occurrence table.
-   * 2. Selects only distinct coordinates 3. Store the Geocode country lookup in table with the KV
-   * format: latitude+longitude -> isoCountryCode2Digit.
-   *
-   * @param options beam HBase indexing options
-   */
-  private static void run(GeocodeIndexingOptions options) {
+      spark
+          .sparkContext()
+          .setJobGroup(
+              "count-coordinates",
+              "Counting distinct coordinates in " + options.getSourceTable(),
+              false);
+      LOG.info("Read {} distinct coordinates from {}", coordinates.count(), options.getSourceTable());
 
-    Pipeline pipeline = Pipeline.create(options);
-    options.setRunner(SparkRunner.class);
+      Dataset<Row> lookups = withAndWithoutUncertainty(coordinates);
+      if (options.getNumPartitions() != null) {
+        lookups = lookups.repartition(options.getNumPartitions());
+      }
 
-    // Occurrence table to read
-    String sourceGlob = options.getSourceGlob();
+      LookupMetrics metrics = new LookupMetrics(spark.sparkContext());
+      spark
+          .sparkContext()
+          .setJobGroup(
+              GEOCODE_JOB_GROUP,
+              "Reverse geocoding coordinates and writing to HBase table " + options.getTargetTable(),
+              false);
 
-    // Config
-    CachedHBaseKVStoreConfiguration storeConfiguration = geocodeKVStoreConfiguration(options);
-    ClientConfiguration geocodeClientConfiguration = ConfigurationMapper.clientConfiguration(options);
-    Configuration hBaseConfiguration = storeConfiguration.getHBaseKVStoreConfiguration().hbaseConfig();
-
-    // Retrieve just the latitude and longitude from the Avro record
-    SerializableFunction<GenericRecord, GeocodeRequest> recordToLatLng = input -> {
-      GeocodeRequest.GeocodeRequestBuilder builder = GeocodeRequest.builder();
-      putIfExists(input, DwcTerm.decimalLatitude, builder::withLat);
-      putIfExists(input, DwcTerm.decimalLongitude, builder::withLng);
-      putIfExistsOrElse(input, DwcTerm.coordinateUncertaintyInMeters, builder::withUncertaintyMeters, EMPTY_UNCERTAINTY);
-      return builder.build();
-    };
-
-    // Read the occurrence table
-    PCollection<GeocodeRequest> inputRecords =
-      pipeline.apply(AvroIO.parseGenericRecords(recordToLatLng)
-          .withCoder(AvroCoder.of(GeocodeRequest.class))
-          .from(sourceGlob)
-      );
-
-    // Select distinct coordinates
-    PCollection<GeocodeRequest> distinctCoordinates =
-        inputRecords
-            .apply(
-                ParDo.of(
-                    new DoFn<GeocodeRequest, GeocodeRequest>() {
-                      @ProcessElement
-                      public void processElement(ProcessContext context) {
-                        GeocodeRequest latLng = context.element();
-                        if (latLng.isValid()) {
-                          context.output(latLng);
-                        }
-                      }
-                    }))
-            .apply(
-                // Selects distinct values
-                Distinct.<GeocodeRequest, String>withRepresentativeValueFn(GeocodeRequest::getLogicalKey)
-                    .withRepresentativeType(TypeDescriptor.of(String.class)));
-
-    // Perform Geocode lookup
-    distinctCoordinates
-        .apply(
-            ParDo.of(
-                new DoFn<GeocodeRequest, Mutation>() {
-
-                  private final SaltedKeyGenerator keyGenerator =
-                      new SaltedKeyGenerator(
-                          storeConfiguration.getHBaseKVStoreConfiguration().getNumOfKeyBuckets());
-
-                  private transient GeocodeService geocodeService;
-
-                  private transient BiFunction<byte[], GeocodeResponse, Put> valueMutator;
-
-                  @Setup
-                  public void start() {
-                    geocodeService = RestClientFactory.createGeocodeService(geocodeClientConfiguration);
-                    valueMutator =
-                        GeocodeKVStoreFactory.valueMutator(
-                            Bytes.toBytes(storeConfiguration.getHBaseKVStoreConfiguration().getColumnFamily()),
-                            Bytes.toBytes(storeConfiguration.getValueColumnQualifier()));
-                  }
-
-                  @ProcessElement
-                  public void processElement(ProcessContext context) {
-                    try {
-                      GeocodeRequest latLng = context.element();
-                      Optional.ofNullable(geocodeService.reverse(latLng))
-                              .ifPresent( locations -> {
-                                  GeocodeResponse response = geocodeService.reverse(latLng);
-                                  byte[] saltedKey = keyGenerator.computeKey(latLng.getLogicalKey());
-                                  context.output(valueMutator.apply(saltedKey, response));
-                              });
-                    } catch (Exception ex) {
-                      LOG.error("Error performing Geocode lookup", ex);
-                    }
-                  }
-                }))
-        .apply(// Write to HBase
-            HBaseIO.write()
-                .withConfiguration(hBaseConfiguration)
-                .withTableId(storeConfiguration.getHBaseKVStoreConfiguration().getTableName()));
-
-    // Run and wait
-    PipelineResult result = pipeline.run(options);
-    result.waitUntilFinish();
-  }
-
-  /**
-   * Reads the double value associated to a term into the consumer 'with'.
-   * @param input Avro record
-   * @param term verbatim field/term
-   * @param with consumer
-   */
-  private static void putIfExists(GenericRecord input, Term term, Consumer<Double> with) {
-    Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
-      .map(Object::toString)
-      .map(Double::parseDouble)
-      .ifPresent(with);
-  }
-
-    /**
-     * Reads the double value associated to a term into the consumer 'with'.
-     * @param input Avro record
-     * @param term verbatim field/term
-     * @param with consumer
-     */
-    private static void putIfExistsOrElse(GenericRecord input, Term term, Consumer<Double> with, Double defaultIfNull) {
-        Optional.ofNullable(input.get(term.simpleName().toLowerCase()))
-                .map(Object::toString)
-                .map(Double::parseDouble)
-                .ifPresentOrElse(with, () -> with.accept(defaultIfNull));
+      long start = System.currentTimeMillis();
+      ScheduledExecutorService monitor = startProgressMonitor(spark, metrics, options, start);
+      try {
+        lookups.foreachPartition(new GeocodePartitionWriter(options, metrics));
+      } finally {
+        monitor.shutdownNow();
+        spark.sparkContext().clearJobGroup();
+      }
+      LOG.info(
+          "Finished indexing geocode responses into {}: {}",
+          options.getTargetTable(),
+          metrics.summary(System.currentTimeMillis() - start));
+    } finally {
+      spark.stop();
     }
+  }
+
+  /**
+   * Logs, on the driver, the task progress of the geocode job and the lookup counters at a fixed
+   * interval. Counters only include completed tasks; executors log progress of running tasks.
+   */
+  private static ScheduledExecutorService startProgressMonitor(
+      SparkSession spark, LookupMetrics metrics, GeocodeIndexingOptions options, long start) {
+    JavaSparkStatusTracker tracker =
+        JavaSparkContext.fromSparkContext(spark.sparkContext()).statusTracker();
+    ScheduledExecutorService monitor =
+        Executors.newSingleThreadScheduledExecutor(
+            r -> {
+              Thread t = new Thread(r, "geocode-progress-monitor");
+              t.setDaemon(true);
+              return t;
+            });
+    long interval = options.getProgressIntervalSeconds();
+    monitor.scheduleAtFixedRate(
+        () -> {
+          try {
+            int tasks = 0;
+            int completed = 0;
+            int active = 0;
+            for (int jobId : tracker.getJobIdsForGroup(GEOCODE_JOB_GROUP)) {
+              SparkJobInfo job = tracker.getJobInfo(jobId);
+              if (job == null) {
+                continue;
+              }
+              for (int stageId : job.stageIds()) {
+                SparkStageInfo stage = tracker.getStageInfo(stageId);
+                if (stage != null) {
+                  tasks += stage.numTasks();
+                  completed += stage.numCompletedTasks();
+                  active += stage.numActiveTasks();
+                }
+              }
+            }
+            double pct = tasks == 0 ? 0 : completed * 100d / tasks;
+            LOG.info(
+                "Geocode progress: tasks {}/{} ({}%) active={}, {}",
+                completed,
+                tasks,
+                String.format("%.1f", pct),
+                active,
+                metrics.summary(System.currentTimeMillis() - start));
+          } catch (Exception ex) {
+            LOG.warn("Unable to report geocode progress", ex);
+          }
+        },
+        interval,
+        interval,
+        TimeUnit.SECONDS);
+    return monitor;
+  }
+
+  /**
+   * Combines the distinct coordinates with uncertainty and the distinct latitude/longitude pairs
+   * without it. Rows have the columns: latitude, longitude, uncertainty, {@link #WITH_UNCERTAINTY}.
+   */
+  static Dataset<Row> withAndWithoutUncertainty(Dataset<Row> coordinates) {
+    StructField[] fields = coordinates.schema().fields();
+    Column lat = col(fields[0].name());
+    Column lng = col(fields[1].name());
+    Column uncertainty = col(fields[2].name());
+
+    Dataset<Row> withUncertainty =
+        coordinates.select(lat, lng, uncertainty, lit(true).as(WITH_UNCERTAINTY));
+    Dataset<Row> withoutUncertainty =
+        coordinates
+            .select(lat, lng)
+            .distinct()
+            .select(
+                lat,
+                lng,
+                lit(null).cast(fields[2].dataType()).as(fields[2].name()),
+                lit(false).as(WITH_UNCERTAINTY));
+    return withUncertainty.unionByName(withoutUncertainty);
+  }
+
+  /** Converts a row of {@link #withAndWithoutUncertainty(Dataset)} into a geocode request. */
+  static GeocodeRequest toRequest(Row row) {
+    Double lat = toDouble(row.get(0));
+    Double lng = toDouble(row.get(1));
+    if (!row.getBoolean(3)) {
+      return GeocodeRequest.create(lat, lng);
+    }
+    Double uncertainty = toDouble(row.get(2));
+    return GeocodeRequest.create(lat, lng, uncertainty != null ? uncertainty : EMPTY_UNCERTAINTY);
+  }
+
+  /** Converts numeric or string column values to Double, null if absent or unparsable. */
+  static Double toDouble(Object value) {
+    if (value == null) {
+      return null;
+    }
+    if (value instanceof Number) {
+      return ((Number) value).doubleValue();
+    }
+    try {
+      return Double.parseDouble(value.toString());
+    } catch (NumberFormatException ex) {
+      return null;
+    }
+  }
+
+  /**
+   * Looks up each coordinate of a partition and writes the response to HBase. The REST client and
+   * HBase connection are created once per partition on the executor.
+   */
+  static class GeocodePartitionWriter implements ForeachPartitionFunction<Row> {
+
+    private final GeocodeIndexingOptions options;
+    private final LookupMetrics metrics;
+
+    GeocodePartitionWriter(GeocodeIndexingOptions options, LookupMetrics metrics) {
+      this.options = options;
+      this.metrics = metrics;
+    }
+
+    @Override
+    public void call(Iterator<Row> rows) throws Exception {
+      HBaseKVStoreConfiguration hbaseConfig = options.hbaseKVStoreConfiguration();
+      SaltedKeyGenerator keyGenerator = new SaltedKeyGenerator(hbaseConfig.getNumOfKeyBuckets());
+      BiFunction<byte[], GeocodeResponse, Put> valueMutator =
+          GeocodeKVStoreFactory.valueMutator(
+              Bytes.toBytes(hbaseConfig.getColumnFamily()),
+              Bytes.toBytes(options.getJsonColumnQualifier()));
+      GeocodeService geocodeService =
+          RestClientFactory.createGeocodeService(options.clientConfiguration());
+
+      try (Connection connection = ConnectionFactory.createConnection(hbaseConfig.hbaseConfig());
+          BufferedMutator mutator =
+              connection.getBufferedMutator(TableName.valueOf(hbaseConfig.getTableName()))) {
+        PartitionProgress progress =
+            new PartitionProgress(
+                TaskContext.getPartitionId(), options.getProgressIntervalSeconds() * 1000L);
+        while (rows.hasNext()) {
+          GeocodeRequest request = toRequest(rows.next());
+          if (!request.isValid()) {
+            metrics.invalid.add(1);
+            progress.invalid++;
+            continue;
+          }
+          long lookupStart = System.currentTimeMillis();
+          try {
+            GeocodeResponse response = geocodeService.reverse(request);
+            Put put =
+                response == null
+                    ? null
+                    : valueMutator.apply(keyGenerator.computeKey(request.getLogicalKey()), response);
+            if (put != null) {
+              mutator.mutate(put);
+              metrics.written.add(1);
+              progress.written++;
+            } else {
+              metrics.empty.add(1);
+              progress.empty++;
+            }
+          } catch (Exception ex) {
+            metrics.failed.add(1);
+            progress.failed++;
+            LOG.error("Error performing Geocode lookup for {}", request, ex);
+          } finally {
+            long took = System.currentTimeMillis() - lookupStart;
+            metrics.lookups.add(1);
+            metrics.lookupTimeMs.add(took);
+            progress.lookups++;
+            progress.lookupTimeMs += took;
+          }
+          progress.logIfDue();
+        }
+        progress.log("finished");
+      }
+    }
+  }
+
+  /** Per-partition counters, logged on the executor while the partition is processed. */
+  static class PartitionProgress {
+    private final int partitionId;
+    private final long intervalMs;
+    private final long start = System.currentTimeMillis();
+    private long lastLog = start;
+
+    long lookups;
+    long written;
+    long empty;
+    long failed;
+    long invalid;
+    long lookupTimeMs;
+
+    PartitionProgress(int partitionId, long intervalMs) {
+      this.partitionId = partitionId;
+      this.intervalMs = intervalMs;
+    }
+
+    void logIfDue() {
+      long now = System.currentTimeMillis();
+      if (now - lastLog >= intervalMs) {
+        lastLog = now;
+        log("progress");
+      }
+    }
+
+    void log(String state) {
+      LOG.info(
+          "Geocode partition {} {}: {}",
+          partitionId,
+          state,
+          LookupMetrics.format(
+              lookups, written, empty, failed, invalid, lookupTimeMs,
+              System.currentTimeMillis() - start));
+    }
+  }
 }

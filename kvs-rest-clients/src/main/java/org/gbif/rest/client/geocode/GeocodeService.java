@@ -13,9 +13,10 @@
  */
 package org.gbif.rest.client.geocode;
 
+import org.gbif.kvs.geocode.GeocodeRequest;
+
 import feign.QueryMap;
 import feign.RequestLine;
-import org.gbif.kvs.geocode.GeocodeRequest;
 
 
 /**

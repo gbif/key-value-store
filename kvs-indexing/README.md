@@ -11,15 +11,17 @@ To build, install and run tests, execute the Maven command:
 
 ## Reverse Geocode Indexing
 
-[ReverseGeocodeIndexer](src/main/java/org/gbif/kvs/indexing/geocode/ReverseGeocodeIndexer.java) runs a Beam pipeline on Apache Spark.
-In general, this pipeline executes this workflow:
-  1. Read occurrence data from Avro files.
-  2. Collect the distinct values for each latitude and longitude.
-  3. Perform a reverse Geocode lookup using each coordinate and stores the result in a column family in HBase.
+[ReverseGeocodeIndexer](src/main/java/org/gbif/kvs/indexing/geocode/ReverseGeocodeIndexer.java) is a Spark SQL job.
+It executes this workflow:
+  1. Read the distinct coordinates from the occurrence Iceberg table:
+     `SELECT DISTINCT decimalLatitude, decimalLongitude, coordinateUncertaintyInMeters FROM occurrence`
+  2. Discard invalid coordinates (missing, or outside ±90 latitude / ±180 longitude).
+  3. Perform two reverse Geocode lookups and store each JSON response in a column family in HBase:
+     - with `coordinateUncertaintyInMeters`, keyed `lat|lng|uncertainty` (a placeholder of `-4.0075E7` is used when it is null)
+     - without uncertainty, once per distinct latitude/longitude, keyed `lat|lng`
 
 By default uses the table definition:
   - Column family: `v`
-  - Column qualifier for iso country code: `c`
   - Column qualifier for the JSON response: `j`
 
 # Prepare HBase tables
@@ -35,35 +37,34 @@ create 'grscicoll_lookup_kv', {NAME => 'v', BLOOMFILTER => 'ROW', VERSIONS => '1
 
 ### Run
 
+The Iceberg catalog is configured through Spark (`--conf spark.sql.catalog.*` or `spark-defaults.conf`) and the
+Iceberg Spark runtime must be on the classpath, e.g. `--packages org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:<version>`.
 
-### Pipeline arguments
+### Job arguments
 
-  - runner: Apache Beam runner
-  - hbaseZk: Zookeeper HBase ensemble
-  - sourceGlob: glob (wildcard pattern) for Avro occurrence files
-  - targetTable: HBase table to store Geocode responses
-  - baseApiUrl: GBIF base API url
-  - saltedKeyBuckets: Number of buckets to use for the salted/primary key
-  - apiTimeOut: connection time-out to the Geocode service
-  - restClientCacheMaxSize: client file cache maximum size
+  - sourceTable: table to read coordinates from (default `occurrence`), may be qualified, e.g. `iceberg.uat.occurrence`
+  - numPartitions: optional, repartition the distinct coordinates; controls how many tasks call the API concurrently
+  - hbaseZk: Zookeeper HBase ensemble (required)
+  - hbaseZkNode: Zookeeper HBase znode parent
+  - targetTable: HBase table to store Geocode responses (required)
+  - kvColumnFamily: HBase column family (default `v`)
+  - jsonColumnQualifier: HBase column qualifier for the JSON response (default `j`)
+  - saltedKeyBuckets: Number of buckets to use for the salted/primary key (required)
+  - baseApiUrl: GBIF base API url (required)
+  - apiTimeOut: connection time-out to the Geocode service in seconds (default 60)
+  - restClientCacheMaxSize: client file cache maximum size in MB (default 64)
+  - progressIntervalSeconds: how often the driver and each partition log lookup progress (default 60)
+
+### Monitoring progress
+
+- The Spark UI groups the jobs as `count-coordinates` and `geocode-and-write`, and lists the
+  `geocode.*` accumulators (lookups, written, emptyResponses, failedLookups, invalidCoordinates, lookupTimeMs)
+  on the stage page.
+- The driver logs `Geocode progress: tasks <completed>/<total> ...` with the accumulator totals. These only include
+  completed tasks.
+- Each executor logs `Geocode partition <id> progress: ...` for its running partition, and a `finished` line at the end.
 
 ### Example
-
-After running the build command the produced shaded jar that can be used to execute the pipeline:
-
-```bash
-spark2-submit --class org.gbif.kvs.indexing.geocode.ReverseGeocodeIndexer \
-  --master yarn --executor-memory 8G --executor-cores 2 --num-executors 10 \
-  --conf spark.dynamicAllocation.enabled=false kvs-indexing-1.9-SNAPSHOT-shaded.jar \
-  --runner=SparkRunner \
-  --hbaseZk=c4zk1.gbif-uat.org,c4zk2.gbif-uat.org,c4zk3.gbif-uat.org \
-  --sourceGlob=hdfs://ha-nn/data/hdfsview/occurrence/view_occurrence_* \
-  --targetTable=geocode_new_kv \
-  --baseApiUrl=http://api.gbif-uat.org/v1/ \
-  --saltedKeyBuckets=5 \
-  --apiTimeOut=6000 \
-  --restClientCacheMaxSize=64
-```
 
 On k8s
 
@@ -86,15 +87,16 @@ On k8s
 --conf spark.executor.extraClassPath="/etc/hadoop/conf/:/etc/gbif/:/stackable/spark/extra-jars/*" \
 --conf spark.jars.ivy="/tmp" \
 --conf spark.kubernetes.container.image="docker.stackable.tech/stackable/spark-k8s:3.5.0-stackable23.11.0" \
---packages com.coxautodata:spark-distcp_2.12:0.2.5 \
+--conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+--conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog \
+--conf spark.sql.catalog.iceberg.type=hive \
 --class org.gbif.kvs.indexing.geocode.ReverseGeocodeIndexer \
 /tmp/kvs-indexing.jar \
---runner=SparkRunner \
 --hbaseZk=gbif-zookeeper-server-default-0.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-1.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-2.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-3.gbif-zookeeper-server-default.uat.svc.cluster.local:2282,gbif-zookeeper-server-default-4.gbif-zookeeper-server-default.uat.svc.cluster.local:2282  \
---sourceGlob=hdfs://gbif-hdfs/data/hdfsview/occurrence/occurrence/*.avro \
+--sourceTable=iceberg.uat.occurrence \
 --targetTable=test_geocode_kv \
 --saltedKeyBuckets=5 \
---baseApiUrl=http://api.gbif-uat.org/v1/ 
+--baseApiUrl=http://api.gbif-uat.org/v1/
 ```
 
 
